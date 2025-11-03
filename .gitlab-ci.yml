@@ -1,0 +1,76 @@
+# .gitlab-ci.yml — DRY multi-env Terraform using GitLab-managed state
+image: hashicorp/terraform:1.9
+stages: [lint, plan, apply]
+
+variables:
+  TF_CLI_ARGS_init: "-upgrade"      # optional
+  TF_WORKING_DIR: ".cloud/tf"
+
+.env_matrix: &env_matrix
+  parallel:
+    matrix:
+      - ENV_NAME: ["dev", "staging", "prod"]
+
+.cache_tf:
+  cache:
+    key: "${CI_PROJECT_PATH}-${ENV_NAME}"
+    paths:
+      - .cloud/tf/.terraform/
+      - .cloud/tf/.terraform.lock.hcl
+
+# Lint (single job)
+lint:
+  stage: lint
+  script:
+    - terraform --version
+    - terraform -chdir="${TF_WORKING_DIR}" init -backend=false
+    - terraform -chdir="${TF_WORKING_DIR}" fmt -check
+    - terraform -chdir="${TF_WORKING_DIR}" validate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+# Plan (per env)
+plan:
+  stage: plan
+  <<: [*env_matrix, .cache_tf]
+  script:
+    - terraform -chdir="${TF_WORKING_DIR}" init
+    - >
+      terraform -chdir="${TF_WORKING_DIR}" plan
+      -out "${TF_VARS_FILE_NAME}.tfplan"
+      -var-file="${TF_VARS_FILE_NAME}.tfvars"
+      -var="tenant_id=${AZURE_TENANT_ID}"
+      -var="subscription_id=${AZURE_SUBSCRIPTION_ID}"
+  artifacts:
+    when: always
+    paths:
+      - ".cloud/tf/${TF_VARS_FILE_NAME}.tfplan"
+    expire_in: 7 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+# Apply (per env)
+apply:
+  stage: apply
+  <<: [*env_matrix, .cache_tf]
+  needs:
+    - job: plan
+      parallel:
+        matrix:
+          - ENV_NAME: ['$[[ matrix.ENV_NAME ]]']
+  resource_group: "tf-$ENV_NAME"
+  environment:
+    name: $ENV_NAME
+  script:
+    - terraform -chdir="${TF_WORKING_DIR}" init
+    - terraform -chdir="${TF_WORKING_DIR}" apply -auto-approve "${TF_VARS_FILE_NAME}.tfplan"
+  rules:
+    - if: '$ENV_NAME == "dev" && $CI_COMMIT_BRANCH == "dev"'
+      when: on_success
+    - if: '$ENV_NAME == "staging" && $CI_COMMIT_BRANCH == "staging"'
+      when: manual
+      allow_failure: false
+    - if: '$ENV_NAME == "prod" && $CI_COMMIT_BRANCH == "main"'
+      when: manual
+      allow_failure: false
+    - when: never
