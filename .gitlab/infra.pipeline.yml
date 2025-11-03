@@ -1,0 +1,12 @@
+stages:
+  - plan
+  - apply
+
+# Use the component from THIS repo at THIS commit
+include:
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/terraform-plan-apply@$CI_COMMIT_SHA
+    inputs:
+      env: "infra"
+      tf_working_dir: ".cloud/tf-infra"
+      plan_stage: "plan"
+      apply_stage: "apply"

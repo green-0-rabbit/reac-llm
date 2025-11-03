@@ -1,2 +1,2 @@
-location            = "westus2"
-resource_group_name = "myTFResourceGroup"
+location            = "westeurope"
+resource_group_name = "sbx-prod-rg"

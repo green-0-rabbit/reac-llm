@@ -1,0 +1,64 @@
+spec:
+  inputs:
+    env:
+      description: "Environment"
+      options: [dev, staging, prod, infra]
+    tf_working_dir:
+      description: "Terraform working dir"
+      default: ".cloud/tf"
+    plan_stage:
+      description: "Stage name for plan"
+      default: "plan"
+    apply_stage:
+      description: "Stage name for apply"
+      default: "apply"
+---
+"tf::plan:$[[ inputs.env ]]":
+  image:
+    name: "hashicorp/terraform:1.13"
+    entrypoint: [""]
+  stage: $[[ inputs.plan_stage ]]
+  environment:
+    name: $[[ inputs.env ]]
+  variables:
+    TF_HTTP_LOCK_METHOD: "POST"
+    TF_HTTP_UNLOCK_METHOD: "DELETE"
+  rules:
+    - when: manual
+      allow_failure: false
+  script:
+    - test -n "$TF_VARS_FILE_NAME" || { echo "TF_VARS_FILE_NAME not set"; exit 1; }
+    - terraform -chdir="$[[ inputs.tf_working_dir ]]" init
+    - >
+      terraform -chdir="$[[ inputs.tf_working_dir ]]" plan
+      -out "${TF_VARS_FILE_NAME}.tfplan"
+      -var-file="${TF_VARS_FILE_NAME}.tfvars"
+      -var="tenant_id=${AZURE_TENANT_ID}"
+      -var="subscription_id=${AZURE_SUBSCRIPTION_ID}"
+      -var="env=$[[ inputs.env ]]"
+  artifacts:
+    when: always
+    paths:
+      - "$[[ inputs.tf_working_dir ]]/${TF_VARS_FILE_NAME}.tfplan"
+    expire_in: 7 days
+
+"tf::apply:$[[ inputs.env ]]":
+  image:
+    name: "hashicorp/terraform:1.13"
+    entrypoint: [""]
+  stage: $[[ inputs.apply_stage ]]
+  needs:
+    - "tf::plan:$[[ inputs.env ]]"
+  resource_group: "tf-$[[ inputs.env ]]"
+  environment:
+    name: $[[ inputs.env ]]
+  variables:
+    TF_HTTP_LOCK_METHOD: "POST"
+    TF_HTTP_UNLOCK_METHOD: "DELETE"
+  rules:
+    - when: manual
+      allow_failure: false
+  script:
+    - test -n "$TF_VARS_FILE_NAME" || { echo "TF_VARS_FILE_NAME not set"; exit 1; }
+    - terraform -chdir="$[[ inputs.tf_working_dir ]]" init
+    - terraform -chdir="$[[ inputs.tf_working_dir ]]" apply -auto-approve "${TF_VARS_FILE_NAME}.tfplan"

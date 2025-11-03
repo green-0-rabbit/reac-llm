@@ -1,0 +1,52 @@
+stages:
+  - lint
+  - plan
+  - apply
+
+lint:
+  image:
+    name: "hashicorp/terraform:1.13"
+    entrypoint: [""]
+  stage: lint
+  script:
+    - terraform --version
+    - terraform -chdir=".cloud/tf" init -backend=false
+    - terraform -chdir=".cloud/tf" fmt -check -diff -recursive
+    - terraform -chdir=".cloud/tf" validate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+# Include the component from THIS repo at THIS commit (FQDN + SHA)
+include:
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/terraform-plan-apply@$CI_COMMIT_SHA
+    inputs:
+      env: "dev"
+      tf_working_dir: ".cloud/tf"
+      plan_stage: "plan"
+      apply_stage: "apply"
+
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/terraform-plan-apply@$CI_COMMIT_SHA
+    inputs:
+      env: "staging"
+      tf_working_dir: ".cloud/tf"
+      plan_stage: "plan"
+      apply_stage: "apply"
+
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/terraform-plan-apply@$CI_COMMIT_SHA
+    inputs:
+      env: "prod"
+      tf_working_dir: ".cloud/tf"
+      plan_stage: "plan"
+      apply_stage: "apply"
+
+# ---- Promotion chain inside the single "apply" stage ----
+# (Arrays replace, so restate both needs: own plan + previous env apply)
+"tf::apply:staging":
+  needs:
+    - job: "tf::plan:staging"
+    - job: "tf::apply:dev"
+
+"tf::apply:prod":
+  needs:
+    - job: "tf::plan:prod"
+    - job: "tf::apply:staging"
