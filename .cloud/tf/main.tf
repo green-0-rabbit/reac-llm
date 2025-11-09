@@ -1,3 +1,7 @@
+locals {
+  acr_login_server = data.azurerm_container_registry.acr.login_server
+}
+
 module "container_app_environment" {
   source = "./modules/container_app_environment"
 
@@ -11,6 +15,8 @@ module "container_app_environment" {
   tags                       = var.tags
 }
 
+# Example https://github.com/Azure/terraform-azure-container-apps/blob/v0.4.0/examples/acr/main.tf
+# Check this https://github.com/thomast1906/thomasthorntoncloud-examples/tree/master/Azure-Container-App-Terraform/Terraform
 module "busybox_app" {
   source = "./modules/container_app"
 
@@ -22,18 +28,16 @@ module "busybox_app" {
   location                     = var.location
   resource_group_name          = var.resource_group_name
   container_app_environment_id = module.container_app_environment.id
-  registry = {
-    server      = var.nexus_fqdn
-    username    = var.admin_username
-    password    = var.admin_password
-    secret_name = "nexus-registry-secret"
-  }
+
+  registry_fqdn = local.acr_login_server
+
+  acr_id = data.azurerm_container_registry.acr.id
 
   template = {
     containers = [
       {
         name   = "busybox"
-        image  = "${var.nexus_fqdn}/docker-hosted/busybox:latest"
+        image  = "${local.acr_login_server}/library/busybox:latest"
         cpu    = 0.5
         memory = "1Gi"
       }

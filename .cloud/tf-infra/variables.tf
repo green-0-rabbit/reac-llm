@@ -71,3 +71,50 @@ variable "admin_password" {
 }
 
 
+variable "acr_settings" {
+  description = "Azure Container Registry configuration."
+  type = object({
+    name                 = string
+    sku                  = optional(string, "Premium")
+    private_link_enabled = optional(bool, true)
+  })
+}
+
+variable "dockerhub_credentials" {
+  type = object({
+    username = string
+    password = string
+  })
+  default = {
+    username = ""
+    password = ""
+  }
+  sensitive = true
+}
+
+variable "seed_config" {
+  type = object({
+    images      = list(string)
+    batch_size  = number
+    timer_every = string
+  })
+  default = {
+    images      = []
+    batch_size  = 1
+    timer_every = "2min"
+  }
+}
+
+variable "sync_config" {
+  type = object({
+    enable      = bool
+    timer_every = string
+  })
+  default = {
+    enable      = true
+    timer_every = "2min"
+  }
+}
+
+
+

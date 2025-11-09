@@ -9,6 +9,9 @@ internal_only        = true
 admin_username = "nexusadmin"
 nexus_fqdn     = "nexus-infra.sbx-kag.io"
 
+### VNet and subnet names
+acr_name = "sbxinfraacrkag"
+
 workload_subnet_name = "WorkloadSubnet"
 bastion_subnet_name  = "AzureBastionSubnet"
 main_vnet_name       = "sbx-main-vnet"

@@ -103,3 +103,9 @@ variable "nexus_fqdn" {
   type        = string
   description = "Fully Qualified Domain Name for the Nexus server (e.g., nexus.sbx-kag.io)."
 }
+
+# ACR variables
+variable "acr_name" {
+  type        = string
+  description = "Name of the Azure Container Registry to integrate with Nexus."
+}

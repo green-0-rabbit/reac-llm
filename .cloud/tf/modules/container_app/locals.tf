@@ -4,11 +4,6 @@ locals {
     workload_profile_name = null
   }, var.app_config)
 
-
-  registry_config = var.registry != null ? merge({
-    secret_name = "registry-password"
-  }, var.registry) : null
-
   default_ingress = {
     allow_insecure_connections = false
     external_enabled           = false

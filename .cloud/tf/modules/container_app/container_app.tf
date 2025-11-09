@@ -6,6 +6,11 @@ resource "azurerm_container_app" "app" {
   revision_mode                = local.app_settings.revision_mode
   workload_profile_name        = local.app_settings.workload_profile_name
 
+  # https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/manage-user-assigned-managed-identities-azure-portal
+  identity {
+    type = "SystemAssigned"
+  }
+
 
   dynamic "ingress" {
     for_each = local.effective_ingress == null ? [] : [local.effective_ingress]
@@ -28,21 +33,9 @@ resource "azurerm_container_app" "app" {
     }
   }
 
-  dynamic "registry" {
-    for_each = local.registry_config == null ? [] : [local.registry_config]
-    content {
-      server               = registry.value.server
-      username             = registry.value.username
-      password_secret_name = registry.value.secret_name
-    }
-  }
-
-  dynamic "secret" {
-    for_each = local.registry_config != null && try(local.registry_config.password, "") != "" ? [local.registry_config.password] : []
-    content {
-      name  = local.registry_config.secret_name
-      value = secret.value
-    }
+  registry {
+    server   = var.registry_fqdn
+    identity = "system"
   }
 
   template {
@@ -74,4 +67,10 @@ resource "azurerm_container_app" "app" {
   }
 
   tags = var.tags
+}
+
+resource "azurerm_role_assignment" "containerapp" {
+  scope                = var.acr_id
+  role_definition_name = "acrpull"
+  principal_id         = azurerm_container_app.app.identity[0].principal_id
 }

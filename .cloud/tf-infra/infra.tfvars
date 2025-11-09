@@ -2,6 +2,14 @@ project      = "sbx"
 location     = "westeurope"
 environments = ["dev", "staging", "prod"]
 
+
+#### acr variables
+acr_settings = {
+  name                 = "sbxinfraacrkag"
+  sku                  = "Premium"
+  private_link_enabled = true
+}
+
 #### nexus vm variables
 admin_username = "nexusadmin"
 
@@ -29,4 +37,18 @@ main_vnet_subnets = {
     #   }
     # } 
   }
+}
+
+seed_config = {
+  images = [
+    "library/busybox:latest",
+    "node:alpine3.22",
+  ]
+  batch_size  = 1
+  timer_every = "2min"
+}
+
+sync_config = {
+  enable      = true
+  timer_every = "2min"
 }

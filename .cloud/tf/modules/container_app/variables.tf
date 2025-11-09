@@ -4,6 +4,13 @@ variable "app_config" {
     revision_mode         = optional(string, "Single")
     workload_profile_name = optional(string)
   })
+  validation {
+    condition = var.app_config == null ? true : try(
+      contains(["Single", "Multiple"], var.app_config.revision_mode),
+      true
+    )
+    error_message = "revision_mode must be either \"Single\" or \"Multiple\"."
+  }
 }
 variable "container_app_environment_id" { type = string }
 variable "environment" { type = string }
@@ -48,13 +55,13 @@ variable "template" {
     error_message = "The template object must be provided with at least one container definition."
   }
 }
-variable "registry" {
-  type = object({
-    server      = string
-    username    = string
-    password    = optional(string)
-    secret_name = optional(string)
-  })
-  default  = null
-  nullable = true
+
+variable "registry_fqdn" {
+  type        = string
+  description = "FQDN of the container registry (e.g., myregistry.azurecr.io)."
+}
+
+variable "acr_id" {
+  type        = string
+  description = "the name of the acr"
 }

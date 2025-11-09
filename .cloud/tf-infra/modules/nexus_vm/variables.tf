@@ -152,3 +152,65 @@ variable "allowed_vnet_subnets" {
   type        = map(string)
 }
 
+# === ACR / Identity ===
+variable "enable_managed_identity" {
+  type        = bool
+  default     = true
+  description = "Enable system-assigned managed identity on the Nexus VM."
+}
+
+variable "acr_id" {
+  type        = string
+  default     = ""
+  description = "Target ACR resource ID for AcrPush assignment. Leave empty to disable."
+}
+
+variable "acr_name" {
+  type        = string
+  default     = ""
+  description = "ACR name (login server is <acr_name>.azurecr.io)."
+}
+
+
+# Optional Docker Hub auth (avoid rate limits)
+variable "dockerhub_credentials" {
+  type = object({
+    username = string
+    password = string
+  })
+  default = {
+    username = ""
+    password = ""
+  }
+  sensitive   = true
+  description = "Docker Hub credentials (optional; leave empty to skip auth)."
+}
+
+# === Seeding (Docker Hub -> Nexus) ===
+variable "seed_config" {
+  description = "Seeding configuration for Docker Hub -> Nexus sync."
+  type = object({
+    images      = list(string)
+    batch_size  = number
+    timer_every = string
+  })
+  default = {
+    images      = []
+    batch_size  = 1
+    timer_every = "2min"
+  }
+}
+
+# === Nexus -> ACR sync ===
+variable "sync_config" {
+  description = "Configuration for Nexus -> ACR mirroring."
+  type = object({
+    enable      = bool
+    timer_every = string
+  })
+  default = {
+    enable      = true
+    timer_every = "2min"
+  }
+}
+

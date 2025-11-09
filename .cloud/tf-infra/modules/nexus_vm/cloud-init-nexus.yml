@@ -299,6 +299,201 @@ write_files:
       echo "[wait] timeout waiting nexus api" >&2
       exit 1
 
+  - path: /etc/nexus-acr-sync.env
+    permissions: "0600"
+    owner: root:root
+    content: |
+      ACR_NAME=${acr_name}
+      NEXUS_HOST=127.0.0.1:5000
+      NEXUS_SCHEME=http
+      NEXUS_USERNAME=admin
+      NEXUS_PASSWORD='${nexus_password}'
+      DOCKERHUB_USERNAME=${dockerhub_username}
+      DOCKERHUB_PASSWORD=${dockerhub_password}
+      SEED_BATCH_SIZE=${seed_config.batch_size}
+      ENABLE_SYNC_TO_ACR=${sync_config.enable}
+
+  - path: /etc/nexus-seed.list
+    permissions: "0644"
+    owner: root:root
+    content: |
+      %{ for img in seed_config.images ~}
+      ${img}
+      %{ endfor ~}
+
+  - path: /usr/local/bin/seed-dockerhub-to-nexus.sh
+    permissions: "0755"
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      source /etc/nexus-acr-sync.env
+
+      BASE="$${NEXUS_SCHEME}://$${NEXUS_HOST}"
+      SEED_LIST="/etc/nexus-seed.list"
+      STATE_DIR="/var/lib/nexus-seed"; mkdir -p "$STATE_DIR"
+      DONE_FILE="$STATE_DIR/seeded.log"; touch "$DONE_FILE"
+
+      # Wait for Docker & /v2 readiness
+      until [ -S /var/run/docker.sock ]; do sleep 1; done
+      for i in {1..60}; do
+        if curl -fsSI "$BASE/v2/" | grep -qE 'HTTP/.* (200|401)'; then break; fi
+        sleep 2
+      done
+
+      if [[ -n "$${DOCKERHUB_USERNAME:-}" && -n "$${DOCKERHUB_PASSWORD:-}" ]]; then
+        echo "$${DOCKERHUB_PASSWORD}" | docker login docker.io --username "$${DOCKERHUB_USERNAME}" --password-stdin
+      fi
+      printf '%s' "$${NEXUS_PASSWORD}" | docker login "$${NEXUS_HOST}" --username "$${NEXUS_USERNAME}" --password-stdin
+
+      to_seed=0
+      grep -v '^\s*$' "$SEED_LIST" | while read -r src; do
+        grep -qxF "$src" "$DONE_FILE" && continue
+        (( to_seed+=1 ))
+        echo "[seed] docker.io/$src -> $${NEXUS_HOST}/$src"
+        docker pull "docker.io/$src"
+        docker tag  "docker.io/$src" "$${NEXUS_HOST}/$src"
+        docker push "$${NEXUS_HOST}/$src"
+        echo "$src" >> "$DONE_FILE"
+        if [[ "$${SEED_BATCH_SIZE:-1}" -gt 0 && "$to_seed" -ge "$${SEED_BATCH_SIZE:-1}" ]]; then
+            break
+        fi
+      done
+
+  - path: /usr/local/bin/mirror-all-nexus-to-acr.sh
+    permissions: "0755"
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      source /etc/nexus-acr-sync.env
+
+      [[ "$${ENABLE_SYNC_TO_ACR}" == "true" || "$${ENABLE_SYNC_TO_ACR}" == "1" ]] || exit 0
+
+      BASE="$${NEXUS_SCHEME}://$${NEXUS_HOST}"
+      ACR_LOGIN_SERVER="$${ACR_NAME}.azurecr.io"
+
+      # Ensure Docker & /v2 readiness
+      until [ -S /var/run/docker.sock ]; do sleep 1; done
+      for i in {1..60}; do
+        if curl -fsSI "$BASE/v2/" | grep -qE 'HTTP/.* (200|401)'; then break; fi
+        sleep 2
+      done
+
+      # MI login (no subs required) + robust ACR docker auth
+      az login --identity --allow-no-subscriptions 1>/dev/null
+      if ! az acr login -n "$${ACR_NAME}" 1>/dev/null 2>&1; then
+        TOK=$(az acr login -n "$${ACR_NAME}" --expose-token -o tsv --query accessToken)
+        echo "$TOK" | docker login "$ACR_LOGIN_SERVER" \
+          --username 00000000-0000-0000-0000-000000000000 --password-stdin
+      fi
+
+      printf '%s' "$${NEXUS_PASSWORD}" | docker login "$${NEXUS_HOST}" --username "$${NEXUS_USERNAME}" --password-stdin
+
+      repos=$(curl -fsSL -u "$${NEXUS_USERNAME}:$${NEXUS_PASSWORD}" "$${BASE}/v2/_catalog?n=1000" | jq -r '.repositories[]' )
+      for repo in $repos; do
+        tags=$(curl -fsSL -u "$${NEXUS_USERNAME}:$${NEXUS_PASSWORD}" "$${BASE}/v2/$repo/tags/list" | jq -r '.tags[]?' || true)
+        for tag in $tags; do
+          src="$${NEXUS_HOST}/$repo:$tag"
+          dst="$${ACR_NAME}.azurecr.io/$repo:$tag"
+          echo "[mirror] $${src} -> $${dst}"
+          docker pull "$${src}" || { echo "pull failed: $${src}" >&2; continue; }
+          docker tag  "$${src}" "$${dst}"
+          docker push "$${dst}" || { echo "push failed: $${dst}" >&2; continue; }
+        done
+      done
+
+  - path: /usr/local/bin/provision-acr-sync.sh
+    permissions: "0755"
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      # Ensure docker up
+      systemctl enable --now docker || true
+      until systemctl is-active --quiet docker; do sleep 2; done
+      until [ -S /var/run/docker.sock ]; do sleep 2; done
+
+      # Allow HTTP push to localhost:5000 (insecure registry)
+      mkdir -p /etc/docker
+      if ! grep -q '"insecure-registries"' /etc/docker/daemon.json 2>/dev/null; then
+        cat >/etc/docker/daemon.json <<'JSON'
+      { "insecure-registries": ["127.0.0.1:5000"] }
+      JSON
+        systemctl restart docker
+        until [ -S /var/run/docker.sock ]; do sleep 2; done
+      fi
+
+      # Install Azure CLI if missing
+      if ! command -v az >/dev/null 2>&1; then
+        curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+      fi
+
+      # First batch seed (if list present) then first mirror
+      if [[ -s /etc/nexus-seed.list ]]; then
+        /usr/local/bin/seed-dockerhub-to-nexus.sh || true
+      fi
+      /usr/local/bin/mirror-all-nexus-to-acr.sh || true
+
+      # Enable timers
+      systemctl daemon-reload
+      systemctl enable --now nexus-acr-mirror.timer || true
+      systemctl enable --now nexus-seed.timer || true
+
+# systemd units for periodic tasks
+  - path: /etc/systemd/system/nexus-acr-mirror.service
+    permissions: "0644"
+    owner: root:root
+    content: |
+      [Unit]
+      Description=Mirror Nexus images to Azure Container Registry
+      After=network-online.target docker.service nexus.service
+      Wants=network-online.target docker.service nexus.service
+      [Service]
+      Type=oneshot
+      EnvironmentFile=/etc/nexus-acr-sync.env
+      ExecStart=/usr/local/bin/mirror-all-nexus-to-acr.sh
+
+  - path: /etc/systemd/system/nexus-acr-mirror.timer
+    permissions: "0644"
+    owner: root:root
+    content: |
+      [Unit]
+      Description=Run Nexus→ACR mirror periodically
+      [Timer]
+      OnBootSec=2min
+      OnUnitActiveSec=${sync_config.timer_every}
+      Persistent=true
+      [Install]
+      WantedBy=timers.target
+
+  - path: /etc/systemd/system/nexus-seed.service
+    permissions: "0644"
+    owner: root:root
+    content: |
+      [Unit]
+      Description=Seed Docker Hub images into Nexus (batch)
+      After=network-online.target docker.service nexus.service
+      Wants=network-online.target docker.service nexus.service
+      [Service]
+      Type=oneshot
+      EnvironmentFile=/etc/nexus-acr-sync.env
+      ExecStart=/usr/local/bin/seed-dockerhub-to-nexus.sh
+
+  - path: /etc/systemd/system/nexus-seed.timer
+    permissions: "0644"
+    owner: root:root
+    content: |
+      [Unit]
+      Description=Run Docker Hub -> Nexus seeding periodically (batch)
+      [Timer]
+      OnBootSec=2min
+      OnUnitActiveSec=${seed_config.timer_every}
+      Persistent=true
+      [Install]
+      WantedBy=timers.target
+
 
 runcmd:
   - [ bash, -lc, 'mkfs.ext4 -F /dev/disk/azure/scsi1/lun0 || true' ]

@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Wait for cloud-init & docker socket to be ready
+for i in {1..300}; do [[ -f /var/lib/cloud/instance/boot-finished ]] && break; sleep 1; done
+systemctl is-active --quiet docker || systemctl start docker
+for i in {1..120}; do [[ -S /var/run/docker.sock ]] && break; sleep 1; done
+
+# Load Nexus/ACR env shared by your provisioners
+if [[ -f /etc/nexus-acr-sync.env ]]; then
+  # shellcheck disable=SC1091
+  source /etc/nexus-acr-sync.env
+fi
+
+# Defaults
+: "${NEXUS_SCHEME:=http}"
+: "${NEXUS_HOST:=127.0.0.1:5000}"
+: "${NEXUS_USERNAME:=admin}"
+: "${NEXUS_PASSWORD:=}"
+
+BASE="$${NEXUS_SCHEME}://$${NEXUS_HOST}"
+
+# Injected by Terraform
+IMAGES_JSON='${images_json}'
+
+if [[ -z "$${IMAGES_JSON}" || "$${IMAGES_JSON}" == "[]" ]]; then
+  echo "[seed] No images declared in seed_config.images – nothing to do."
+  exit 0
+fi
+
+# Optional Docker Hub auth
+if [[ -n "$${DOCKERHUB_USERNAME:-}" && -n "$${DOCKERHUB_PASSWORD:-}" ]]; then
+  echo "$${DOCKERHUB_PASSWORD}" | docker login docker.io --username "$${DOCKERHUB_USERNAME}" --password-stdin || true
+fi
+
+# Nexus auth
+printf '%s' "$${NEXUS_PASSWORD}" | docker login "$${NEXUS_HOST}" --username "$${NEXUS_USERNAME}" --password-stdin
+
+# Helper: check if repo:tag exists in Nexus via v2 API
+exists_in_nexus() {
+  local repo="$1" tag="$2"
+  curl -fsu "$${NEXUS_USERNAME}:$${NEXUS_PASSWORD}" \
+    "$${BASE}/v2/$repo/tags/list" \
+    | jq -e --arg t "$tag" '.tags | index($t) != null' >/dev/null 2>&1
+}
+
+# Iterate desired refs ("repo[:tag]"); default tag=latest
+echo "$${IMAGES_JSON}" | jq -r '.[]' | while read -r ref; do
+  [[ -z "$ref" ]] && continue
+  if [[ "$ref" == *:* ]]; then
+    repo="$${ref%:*}"
+    tag="$${ref##*:}"
+  else
+    repo="$ref"
+    tag="latest"
+  fi
+
+  if exists_in_nexus "$repo" "$tag"; then
+    echo "[seed] Skip $repo:$tag (already present in Nexus)"
+    continue
+  fi
+
+  echo "[seed] Pull docker.io/$repo:$tag"
+  docker pull "docker.io/$repo:$tag"
+
+  echo "[seed] Tag -> $${NEXUS_HOST}/$repo:$tag"
+  docker tag "docker.io/$repo:$tag" "$${NEXUS_HOST}/$repo:$tag"
+
+  echo "[seed] Push $${NEXUS_HOST}/$repo:$tag"
+  docker push "$${NEXUS_HOST}/$repo:$tag"
+done
+
+echo "[seed] Completed."

@@ -20,6 +20,18 @@ module "nexus_vm" {
     ACASubnet = var.main_vnet_subnets["ACASubnet"].address_prefix
   }
 
+  # ACR / identity wiring
+  enable_managed_identity = true
+  acr_id                  = module.acr.id
+  acr_name                = module.acr.name
+
+  # Optional Docker Hub auth (to avoid rate limits)
+  dockerhub_credentials = var.dockerhub_credentials
+
+  # Seeding and sync
+  seed_config = var.seed_config
+  sync_config = var.sync_config
+
 }
 
 
