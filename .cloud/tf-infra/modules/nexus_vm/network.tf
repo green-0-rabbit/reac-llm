@@ -32,9 +32,9 @@ resource "azurerm_network_security_group" "nexus" {
 
 # Allow Nexus UI (8081) from Bastion/admin CIDRs
 resource "azurerm_network_security_rule" "ui_from_admin" {
-  for_each                    = toset(var.ui_allowed_cidrs)
-  name                        = "ui-from-${replace(each.key, ".", "-")}"
-  priority                    = 200 + index(tolist(toset(var.ui_allowed_cidrs)), each.key)
+  for_each                    = var.allowed_vnet_subnets
+  name                        = "ui-from-${each.key}"
+  priority                    = 200
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "Tcp"
@@ -48,9 +48,9 @@ resource "azurerm_network_security_rule" "ui_from_admin" {
 
 # Allow HTTPS (443) from ACA subnets or other allowed CIDRs
 resource "azurerm_network_security_rule" "https_from_allowed" {
-  for_each                    = toset(var.allowed_cidrs)
-  name                        = "https-from-${replace(each.key, ".", "-")}"
-  priority                    = 100 + index(tolist(toset(var.allowed_cidrs)), each.key)
+  for_each                    = var.allowed_vnet_subnets
+  name                        = "https-from-${each.key}"
+  priority                    = 100
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "Tcp"

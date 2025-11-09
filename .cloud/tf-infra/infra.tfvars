@@ -1,18 +1,32 @@
-project               = "sbx"
-location              = "westeurope"
-environments          = ["dev", "staging", "prod"]
+project      = "sbx"
+location     = "westeurope"
+environments = ["dev", "staging", "prod"]
+
+#### nexus vm variables
+admin_username = "nexusadmin"
+
 private_dns_zone_name = "sbx-kag.io"
 
 main_vnet_address_space = ["10.0.0.0/16"]
 
 main_vnet_subnets = {
   MainSubnet = {
-    address_prefixes = ["10.0.1.0/24"]
+    address_prefix = "10.0.1.0/24"
   }
   WorkloadSubnet = {
-    address_prefixes = ["10.0.4.0/24"]
+    address_prefix = "10.0.4.0/24"
   }
   AzureBastionSubnet = {
-    address_prefixes = ["10.0.3.0/26"]
+    address_prefix = "10.0.3.0/26"
+  }
+  ACASubnet = {
+    address_prefix = "10.0.6.0/23"
+    # delegation = {
+    #   name = "aca-delegation"
+    #   service_delegation = {
+    #     name    = "Microsoft.App/environments"
+    #     actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+    #   }
+    # } 
   }
 }

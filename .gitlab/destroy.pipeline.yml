@@ -1,0 +1,33 @@
+stages:
+  - plan
+  - apply
+
+# Use the destroy component from this repo at the current commit
+include:
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/terraform-destroy@$CI_COMMIT_SHA
+    inputs:
+      env: "dev"
+      tf_working_dir: ".cloud/tf"
+      plan_stage: "plan"
+      apply_stage: "apply"
+
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/terraform-destroy@$CI_COMMIT_SHA
+    inputs:
+      env: "staging"
+      tf_working_dir: ".cloud/tf"
+      plan_stage: "plan"
+      apply_stage: "apply"
+
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/terraform-destroy@$CI_COMMIT_SHA
+    inputs:
+      env: "prod"
+      tf_working_dir: ".cloud/tf"
+      plan_stage: "plan"
+      apply_stage: "apply"
+
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/terraform-destroy@$CI_COMMIT_SHA
+    inputs:
+      env: "infra"
+      tf_working_dir: ".cloud/tf-infra"
+      plan_stage: "plan"
+      apply_stage: "apply"

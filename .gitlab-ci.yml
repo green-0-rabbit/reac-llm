@@ -4,6 +4,10 @@ spec:
       type: boolean
       default: false
       description: "Also include the infra pipeline?"
+    run_destroy:
+      type: boolean
+      default: false
+      description: "Run the destroy pipeline instead of plan/apply?"
 ---
 workflow:
   rules:
@@ -13,8 +17,12 @@ workflow:
 include:
   - local: ".gitlab/main.pipeline.yml"
     rules:
-      - if: '"$[[ inputs.run_infra ]]" != "true"'
+      - if: '"$[[ inputs.run_destroy ]]" != "true" && "$[[ inputs.run_infra ]]" != "true"'
 
   - local: ".gitlab/infra.pipeline.yml"
     rules:
-      - if: '"$[[ inputs.run_infra ]]" == "true"'
+      - if: '"$[[ inputs.run_destroy ]]" != "true" && "$[[ inputs.run_infra ]]" == "true"'
+
+  - local: ".gitlab/destroy.pipeline.yml"
+    rules:
+      - if: '"$[[ inputs.run_destroy ]]" == "true"'

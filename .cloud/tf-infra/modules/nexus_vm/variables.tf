@@ -147,3 +147,8 @@ variable "private_dns_zone_name" {
   }
 }
 
+variable "allowed_vnet_subnets" {
+  description = "Subnets allowed to reach the Nexus endpoints, keyed by friendly name."
+  type        = map(string)
+}
+

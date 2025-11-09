@@ -1,40 +1,43 @@
-# --- Look up the existing workload subnet (from backbone) ---
-data "azurerm_subnet" "workload" {
-  name                 = var.workload_subnet_name # e.g. "snet-work"
-  virtual_network_name = var.main_vnet_name       # e.g. "sbx-main-vnet"
-  resource_group_name  = var.main_rg_name         # e.g. "sbx-main-rg" (backbone RG)
+module "container_app_environment" {
+  source = "./modules/container_app_environment"
+
+  environment                = var.env
+  location                   = var.location
+  resource_group_name        = var.resource_group_name
+  infrastructure_subnet_id   = data.azurerm_subnet.aca.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+  create_log_analytics       = var.create_log_analytics
+  internal_only              = var.internal_only
+  tags                       = var.tags
 }
 
-data "azurerm_subnet" "bastion" {
-  name                 = var.bastion_subnet_name
-  virtual_network_name = var.main_vnet_name
-  resource_group_name  = var.main_rg_name
-}
+module "busybox_app" {
+  source = "./modules/container_app"
 
+  app_config = {
+    name          = "busybox"
+    revision_mode = "Single"
+  }
+  environment                  = var.env
+  location                     = var.location
+  resource_group_name          = var.resource_group_name
+  container_app_environment_id = module.container_app_environment.id
+  registry = {
+    server      = var.nexus_fqdn
+    username    = var.admin_username
+    password    = var.admin_password
+    secret_name = "nexus-registry-secret"
+  }
 
-module "nexus_vm" {
-  source = "./modules/nexus_vm"
-
-  # Placement
-  resource_group_name   = var.resource_group_name
-  location              = var.location # e.g. "westeurope"
-  subnet_id             = data.azurerm_subnet.workload.id
-  bastion_subnet_prefix = data.azurerm_subnet.bastion.address_prefix
-
-  # VM basics
-  vm_name        = "vm-nexus-${var.env}"
-  admin_username = var.admin_username
-  admin_password = var.admin_password
-
-  # Private DNS (provided by backbone)
-  private_dns_zone_name = var.private_dns_zone_name # e.g. "sbx.example.com"
-  private_dns_zone_rg   = var.main_rg_name          # e.g. "sbx-main-rg" (zone holder RG)
-  dns_record_name       = "nexus-${var.env}"        # e.g. "nexus-dev"
-
-
-  # Network access
-  # allowed_cidrs    = local.https_cidrs                 # HTTPS(443) for registry (ACA subnets)
-  ui_allowed_cidrs = var.ui_allowed_cidrs # 8081 for admin/Bastion IPs
-
+  template = {
+    containers = [
+      {
+        name   = "busybox"
+        image  = "${var.nexus_fqdn}/docker-hosted/busybox:latest"
+        cpu    = 0.5
+        memory = "1Gi"
+      }
+    ]
+  }
 }
 

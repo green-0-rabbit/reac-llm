@@ -33,7 +33,14 @@ variable "main_vnet_address_space" {
 variable "main_vnet_subnets" {
   description = "Subnets to create inside the main virtual network."
   type = map(object({
-    address_prefixes = list(string)
+    address_prefix = string
+    delegation = optional(object({
+      name = string
+      service_delegation = object({
+        name    = string
+        actions = list(string)
+      })
+    }))
   }))
 }
 
@@ -49,6 +56,18 @@ variable "env" {
 variable "private_dns_zone_name" {
   type        = string
   description = "Private DNS zone name (e.g. sbx.example.com)."
+}
+
+## Nexus VM Module Variables
+variable "admin_username" {
+  type    = string
+  default = "azureuser"
+}
+
+# Nexus VM Admin Password - Defined at the Gitlab level
+variable "admin_password" {
+  type      = string
+  sensitive = true
 }
 
 

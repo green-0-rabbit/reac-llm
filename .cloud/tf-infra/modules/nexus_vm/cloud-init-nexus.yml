@@ -1,0 +1,311 @@
+#cloud-config
+package_update: true
+packages:
+  - docker.io
+  - nginx
+  - jq
+  - ca-certificates
+  - openssl
+  - curl
+
+write_files:
+  - path: /etc/default/nexus-fqdn
+    permissions: "0644"
+    owner: root:root
+    content: |
+      FQDN="${nexus_fqdn}"
+
+  - path: /usr/local/bin/ensure-sni-cert.sh
+    permissions: "0755"
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      if [ -f /etc/default/nexus-fqdn ]; then . /etc/default/nexus-fqdn; fi
+      set +u
+      if [ -z "$FQDN" ]; then FQDN="$(hostname -f 2>/dev/null || hostname)"; fi
+      set -u
+
+      cert_dir=/etc/nginx/certs
+      cert=$cert_dir/fullchain.pem
+      key=$cert_dir/privkey.pem
+      cfg=$cert_dir/openssl-san.cnf
+
+      mkdir -p "$cert_dir"
+      umask 077
+      cat >"$cfg" <<EOF
+      [req]
+      default_bits = 2048
+      prompt       = no
+      default_md   = sha256
+      distinguished_name = dn
+      req_extensions     = v3_req
+      [dn]
+      CN = $FQDN
+      [v3_req]
+      subjectAltName = @alt_names
+      keyUsage = critical, digitalSignature, keyEncipherment
+      extendedKeyUsage = serverAuth
+      [alt_names]
+      DNS.1 = $FQDN
+      EOF
+
+      regen=1
+      if [ -s "$cert" ]; then
+        if openssl x509 -in "$cert" -noout -ext subjectAltName 2>/dev/null | grep -q "DNS:$FQDN"; then
+          regen=0
+        fi
+      fi
+
+      if [ "$regen" -eq 1 ]; then
+        echo "[ensure-sni-cert] Generating SAN cert for $FQDN"
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+          -keyout "$key" -out "$cert" -config "$cfg" -extensions v3_req
+        chmod 600 "$key"
+        chmod 644 "$cert"
+      fi
+
+      openssl x509 -in "$cert" -noout -ext subjectAltName | grep -q "DNS:$FQDN"
+      echo "[ensure-sni-cert] OK for $FQDN"
+
+  - path: /etc/nginx/conf.d/nexus.conf
+    permissions: "0644"
+    owner: root:root
+    content: |
+      server {
+        listen 443 ssl http2 default_server;
+        server_name _;
+
+        ssl_certificate     /etc/nginx/certs/fullchain.pem;
+        ssl_certificate_key /etc/nginx/certs/privkey.pem;
+
+        ssl_session_timeout 1d;
+        ssl_protocols TLSv1.2 TLSv1.3;
+
+        location /v2/ {
+          proxy_pass http://127.0.0.1:5000;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-Proto https;
+          proxy_read_timeout 900;
+        }
+
+        location / {
+          proxy_pass http://127.0.0.1:8081/;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-Proto https;
+        }
+      }
+
+  - path: /usr/local/bin/provision-nexus.sh
+    permissions: "0755"
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      if [ -f /etc/default/nexus-fqdn ]; then . /etc/default/nexus-fqdn; fi
+      set +u
+      if [ -z "$FQDN" ]; then FQDN="$(hostname -f 2>/dev/null || hostname)"; fi
+      set -u
+
+      NEW_PASS='${nexus_password}'
+      AUTH="admin:$${NEW_PASS}"
+
+      retry() {
+        local attempts="$1"; shift
+        local delay="$1"; shift
+        local n=1
+        while true; do
+          if "$@"; then return 0; fi
+          if [ "$n" -ge "$attempts" ]; then return 1; fi
+          n=$((n+1))
+          sleep "$delay"
+        done
+      }
+
+      echo "[provision] Wait Nexus 8081..."
+      retry 60 2 curl -sf http://127.0.0.1:8081/service/rest/v1/status >/dev/null
+
+      INIT_PASS="$(tr -d '\r\n' </nexus-data/admin.password)"
+      AUTH_INIT="admin:$INIT_PASS"
+
+      echo "[provision] Change admin password..."
+      retry 5 2 curl -sf -u "$AUTH_INIT" -X PUT \
+        -H 'Content-Type: text/plain' \
+        -H 'X-Requested-By: cli' \
+        --data "$NEW_PASS" \
+        http://127.0.0.1:8081/service/rest/v1/security/users/admin/change-password
+
+      echo "[provision] Accept EULA..."
+      EULA="$(curl -sf -u "$AUTH" http://127.0.0.1:8081/service/rest/v1/system/eula)"
+      if [ "$(echo "$EULA" | jq -r .accepted)" != "true" ]; then
+        echo "$EULA" \
+        | jq -c '{accepted:true, disclaimer:.disclaimer}' \
+        | curl -sf -u "$AUTH" -H 'Content-Type: application/json' -H 'X-Requested-By: cli' -d @- \
+            http://127.0.0.1:8081/service/rest/v1/system/eula
+      fi
+
+      echo "[provision] Ensure DockerToken realm enabled..."
+      for i in $(seq 1 30); do
+        current="$(curl -sS -u "$AUTH" -H 'X-Requested-By: cli' \
+          http://127.0.0.1:8081/service/rest/v1/security/realms/active || true)"
+
+        if echo "$current" | jq -e 'index("DockerToken") != null' >/dev/null 2>&1; then
+          echo "[provision] DockerToken already active"
+          break
+        fi
+
+        code=$(curl -sS -o /dev/null -w "%%{http_code}" -u "$AUTH" -X PUT \
+          -H 'Content-Type: application/json' -H 'X-Requested-By: cli' \
+          --data '["NexusAuthenticatingRealm","NexusAuthorizingRealm","DockerToken"]' \
+          http://127.0.0.1:8081/service/rest/v1/security/realms/active || true)
+
+        if [ "$code" -ge 200 ] && [ "$code" -lt 300 ]; then
+          echo "[provision] Realms updated ($code)"
+          break
+        fi
+
+        echo "[provision] Realms not ready (code=$code), retry..."
+        sleep 2
+      done
+
+      echo "[provision] Recreate docker-hosted on 5000..."
+      curl -sf -u "$AUTH" -X DELETE -H 'X-Requested-By: cli' \
+        http://127.0.0.1:8081/service/rest/v1/repositories/docker-hosted || true
+
+      cat <<'JSON' \
+      | curl -sf -u "$AUTH" -X POST -H 'Content-Type: application/json' -H 'X-Requested-By: cli' -d @- \
+          http://127.0.0.1:8081/service/rest/v1/repositories/docker/hosted
+      {
+        "name":"docker-hosted",
+        "online":true,
+        "storage":{"blobStoreName":"default","strictContentTypeValidation":true,"writePolicy":"ALLOW_ONCE"},
+        "docker":{"v1Enabled":false,"forceBasicAuth":true,"httpPort":5000}
+      }
+      JSON
+
+      echo "[provision] Wait registry v2 on :5000..."
+      retry 60 2 bash -lc 'curl -sI http://127.0.0.1:5000/v2/ | grep -q " 401"'
+
+      echo "[provision] Update nginx server_name to FQDN and reload..."
+      sed -i -E "s/^[[:space:]]*server_name[[:space:]]+.*/server_name $${FQDN};/" /etc/nginx/conf.d/nexus.conf
+
+      echo "[provision] Reload nginx..."
+      nginx -t && systemctl reload nginx
+
+      echo "[provision] DONE."
+
+  - path: /etc/systemd/system/nginx.service.d/override.conf
+    permissions: "0644"
+    owner: root:root
+    content: |
+      [Service]
+      ExecStartPre=
+      ExecStartPre=/usr/local/bin/ensure-sni-cert.sh
+      ExecStartPre=/usr/sbin/nginx -t -q -g 'daemon on; master_process on;'
+
+  - path: /etc/systemd/system/ensure-sni-cert.service
+    permissions: "0644"
+    owner: root:root
+    content: |
+      [Unit]
+      Description=Ensure self-signed certificate with SAN exists
+      After=network-online.target
+      Wants=network-online.target
+      Before=nginx.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/ensure-sni-cert.sh
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /etc/systemd/system/nexus.service
+    permissions: "0644"
+    owner: root:root
+    content: |
+      [Unit]
+      Description=Nexus via Docker
+      After=network-online.target docker.service
+      Wants=network-online.target docker.service
+      Requires=docker.service
+      RequiresMountsFor=/nexus-data
+
+      [Service]
+      Type=simple
+      Restart=on-failure
+      RestartSec=5s
+      TimeoutStartSec=0
+
+      ExecStartPre=/usr/bin/mkdir -p /nexus-data
+      ExecStartPre=/usr/bin/chown -R 200:200 /nexus-data
+      ExecStartPre=/bin/bash -lc 'until /usr/bin/docker info >/dev/null 2>&1; do sleep 1; done'
+      ExecStartPre=/bin/bash -lc '/usr/bin/docker rm -f nexus || true'
+      ExecStartPre=/bin/bash -lc '/usr/bin/docker image inspect sonatype/nexus3:latest >/dev/null 2>&1 || /usr/bin/docker pull sonatype/nexus3:latest'
+
+      ExecStart=/usr/bin/docker run --name nexus \
+        -p 8081:8081 -p 5000:5000 \
+        -v /nexus-data:/nexus-data \
+        sonatype/nexus3:latest
+
+      ExecStop=/usr/bin/docker rm -f nexus
+
+      [Install]
+      WantedBy=multi-user.target
+
+
+  - path: /usr/local/bin/nexus-wait.sh
+    permissions: "0755"
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      for i in {1..600}; do
+        [[ -f /var/lib/cloud/instance/boot-finished ]] && break
+        sleep 1
+      done
+
+      for i in {1..300}; do
+        if command -v /usr/bin/docker >/dev/null 2>&1 && systemctl is-active --quiet docker; then
+          [[ -S /var/run/docker.sock ]] && break
+        fi
+        echo "[wait] docker runtime..."
+        sleep 2
+      done
+
+      for i in {1..900}; do
+        if /usr/bin/docker ps --filter name=^/nexus$ --filter status=running -q | grep -q .; then
+          break
+        fi
+        echo "[wait] nexus container..."
+        sleep 3
+      done
+
+      ok=0
+      for i in {1..120}; do
+        if curl -sfI http://127.0.0.1:8081/service/rest/v1/status >/dev/null; then
+          ok=$((ok+1))
+          [[ $ok -ge 2 ]] && exit 0
+        else
+          ok=0
+        fi
+        echo "[wait] nexus api 8081..."
+        sleep 3
+      done
+
+      echo "[wait] timeout waiting nexus api" >&2
+      exit 1
+
+
+runcmd:
+  - [ bash, -lc, 'mkfs.ext4 -F /dev/disk/azure/scsi1/lun0 || true' ]
+  - [ bash, -lc, 'mkdir -p /nexus-data && echo "/dev/disk/azure/scsi1/lun0 /nexus-data ext4 defaults,nofail 0 2" >> /etc/fstab && mount -a' ]
+  - [ bash, -lc, 'chown -R 200:200 /nexus-data && chmod 700 /nexus-data' ]
+  - [ systemctl, daemon-reload ]
+  - [ systemctl, enable, --now, docker ]
+  - [ systemctl, enable, --now, ensure-sni-cert.service ]
+  - [ systemctl, enable, --now, nexus ]
+  - [ systemctl, enable, --now, nginx ]
