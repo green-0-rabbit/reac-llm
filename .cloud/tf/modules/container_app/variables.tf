@@ -14,7 +14,14 @@ variable "app_config" {
 }
 variable "container_app_environment_id" { type = string }
 variable "environment" { type = string }
-variable "location" { type = string }
+variable "location" {
+  type        = string
+  description = "Azure region for the environment (must be Switzerland North/West)."
+  validation {
+    condition     = contains(["switzerlandnorth", "switzerlandwest","westeurope"], var.location)
+    error_message = "location must be one of: switzerlandnorth, switzerlandwest."
+  }
+}
 variable "resource_group_name" { type = string }
 variable "tags" {
   type    = map(string)

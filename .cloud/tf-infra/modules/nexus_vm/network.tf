@@ -64,6 +64,7 @@ resource "azurerm_network_security_rule" "https_from_allowed" {
 
 # Allow SSH from Azure Bastion
 resource "azurerm_network_security_rule" "ssh_from_bastion" {
+  count = var.bastion_subnet_prefix != "" ? 1 : 0
   name                        = "ssh-from-azurebastion"
   priority                    = 150
   direction                   = "Inbound"

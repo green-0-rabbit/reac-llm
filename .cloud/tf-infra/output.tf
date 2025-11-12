@@ -8,10 +8,10 @@ output "private_dns_zone_rg" {
   description = "RG hosting the private DNS zone."
 }
 
-output "bastion_name" {
-  value = azurerm_bastion_host.bastion.name
-}
+# output "bastion_name" {
+#   value = azurerm_bastion_host.bastion.name
+# }
 
-output "bastion_pip" {
-  value = azurerm_public_ip.bastion.ip_address
-}
+# output "bastion_pip" {
+#   value = azurerm_public_ip.bastion.ip_address
+# }

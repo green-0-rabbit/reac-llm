@@ -32,6 +32,7 @@ variable "subnet_id" {
 variable "bastion_subnet_prefix" {
   type        = string
   description = "Address prefix of the Azure Bastion subnet (for NSG rules)."
+  default = ""
 }
 
 variable "vm_name" {

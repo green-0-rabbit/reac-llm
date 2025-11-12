@@ -19,11 +19,16 @@ module "container_app_environment" {
   infrastructure_subnet_id   = data.azurerm_subnet.aca.id
   log_analytics_workspace_id = var.log_analytics_workspace_id
   create_log_analytics       = var.create_log_analytics
-  internal_only              = var.internal_only
+
+  workload_profile = {
+    name = "wkp_container_app_env"
+    workload_profile_type = "Consumption"
+  }
+
   tags                       = var.tags
 }
 
-# Example https://github.com/Azure/terraform-azure-container-apps/blob/v0.4.0/examples/acr/main.tf
+#  Example https://github.com/Azure/terraform-azure-container-apps/blob/v0.4.0/examples/acr/main.tf
 # Check this https://github.com/thomast1906/thomasthorntoncloud-examples/tree/master/Azure-Container-App-Terraform/Terraform
 module "busybox_app" {
   source = "./modules/container_app"
@@ -58,4 +63,5 @@ module "busybox_app" {
     ]
   }
 }
+
 

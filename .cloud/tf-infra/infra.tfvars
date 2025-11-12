@@ -24,18 +24,18 @@ main_vnet_subnets = {
   WorkloadSubnet = {
     address_prefix = "10.0.4.0/24"
   }
-  AzureBastionSubnet = {
-    address_prefix = "10.0.3.0/26"
-  }
+  # AzureBastionSubnet = {
+  #   address_prefix = "10.0.3.0/26"
+  # }
   ACASubnet = {
-    address_prefix = "10.0.6.0/23"
-    # delegation = {
-    #   name = "aca-delegation"
-    #   service_delegation = {
-    #     name    = "Microsoft.App/environments"
-    #     actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
-    #   }
-    # } 
+    address_prefix = "10.0.6.0/27"
+    delegation = {
+      name = "aca-delegation"
+      service_delegation = {
+        name    = "Microsoft.App/environments"
+        actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+      }
+    } 
   }
 }
 
