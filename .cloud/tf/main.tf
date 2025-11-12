@@ -2,6 +2,14 @@ locals {
   acr_login_server = data.azurerm_container_registry.acr.login_server
 }
 
+
+resource "azurerm_user_assigned_identity" "containerapp" {
+  location            = var.location
+  name                = "acami-${var.env}"
+  resource_group_name = var.resource_group_name
+}
+
+
 module "container_app_environment" {
   source = "./modules/container_app_environment"
 
@@ -29,6 +37,11 @@ module "busybox_app" {
   resource_group_name          = var.resource_group_name
   container_app_environment_id = module.container_app_environment.id
 
+  user_assigned_identity = {
+    id           = azurerm_user_assigned_identity.containerapp.id
+    principal_id = azurerm_user_assigned_identity.containerapp.principal_id
+  }
+
   registry_fqdn = local.acr_login_server
 
   acr_id = data.azurerm_container_registry.acr.id
@@ -39,7 +52,8 @@ module "busybox_app" {
         name   = "busybox"
         image  = "${local.acr_login_server}/library/busybox:latest"
         cpu    = 0.5
-        memory = "1Gi"
+        memory = "1Gi",
+        args   = ["sleep", "3600"]
       }
     ]
   }

@@ -8,7 +8,8 @@ resource "azurerm_container_app" "app" {
 
   # https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/manage-user-assigned-managed-identities-azure-portal
   identity {
-    type = "SystemAssigned"
+    type         = "UserAssigned"
+    identity_ids = [var.user_assigned_identity.id]
   }
 
 
@@ -35,7 +36,7 @@ resource "azurerm_container_app" "app" {
 
   registry {
     server   = var.registry_fqdn
-    identity = "system"
+    identity = var.user_assigned_identity.id
   }
 
   template {
@@ -44,10 +45,12 @@ resource "azurerm_container_app" "app" {
         for index, container in local.effective_template.containers : index => container
       }
       content {
-        name   = container.value.name
-        image  = container.value.image
-        cpu    = lookup(container.value, "cpu", null)
-        memory = lookup(container.value, "memory", null)
+        name    = container.value.name
+        image   = container.value.image
+        cpu     = lookup(container.value, "cpu", null)
+        memory  = lookup(container.value, "memory", null)
+        command = try(container.value.command, null)
+        args    = try(container.value.args, null)
 
         dynamic "env" {
           for_each = {
@@ -72,5 +75,5 @@ resource "azurerm_container_app" "app" {
 resource "azurerm_role_assignment" "containerapp" {
   scope                = var.acr_id
   role_definition_name = "acrpull"
-  principal_id         = azurerm_container_app.app.identity[0].principal_id
+  principal_id         = var.user_assigned_identity.principal_id
 }

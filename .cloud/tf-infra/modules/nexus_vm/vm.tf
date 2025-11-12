@@ -36,13 +36,13 @@ resource "azurerm_linux_virtual_machine" "nexus" {
   # Pass the computed FQDN into cloud-init
   custom_data = base64encode(
     templatefile("${path.module}/cloud-init-nexus.yml", {
-      nexus_fqdn              = local.nexus_fqdn
-      nexus_password          = var.admin_password
-      acr_name                = var.acr_name
-      dockerhub_username      = var.dockerhub_credentials.username
-      dockerhub_password      = var.dockerhub_credentials.password
-      seed_config             = var.seed_config
-      sync_config             = var.sync_config
+      nexus_fqdn         = local.nexus_fqdn
+      nexus_password     = var.admin_password
+      acr_name           = var.acr_name
+      dockerhub_username = var.dockerhub_credentials.username
+      dockerhub_password = var.dockerhub_credentials.password
+      seed_config        = var.seed_config
+      sync_config        = var.sync_config
     })
   )
 

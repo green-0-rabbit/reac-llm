@@ -37,10 +37,12 @@ variable "ingress" {
 variable "template" {
   type = object({
     containers = list(object({
-      name   = string
-      image  = string
-      cpu    = optional(number)
-      memory = optional(string)
+      name    = string
+      image   = string
+      cpu     = optional(number)
+      memory  = optional(string)
+      command = optional(list(string))
+      args    = optional(list(string))
       env = optional(list(object({
         name        = string
         value       = optional(string)
@@ -64,4 +66,12 @@ variable "registry_fqdn" {
 variable "acr_id" {
   type        = string
   description = "the name of the acr"
+}
+
+variable "user_assigned_identity" {
+  type = object({
+    id           = string
+    principal_id = string
+  })
+  description = "The user assigned identity object to be used by the Container App."
 }
