@@ -84,6 +84,12 @@ resource "azurerm_container_app" "app" {
 
 resource "azurerm_role_assignment" "containerapp" {
   scope                = var.acr_id
-  role_definition_name = "acrpull"
+  role_definition_name = "AcrPull"
+  principal_id         = var.user_assigned_identity.principal_id
+}
+
+resource "azurerm_role_assignment" "kv_secrets_user" {
+  scope                = var.kv_id
+  role_definition_name = "Key Vault Secrets User"
   principal_id         = var.user_assigned_identity.principal_id
 }

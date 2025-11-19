@@ -75,12 +75,6 @@ variable "create_log_analytics" {
   default     = true
 }
 
-variable "internal_only" {
-  type        = bool
-  description = "Sets the Container Apps environment to use an internal load balancer."
-  default     = true
-}
-
 variable "tags" {
   type        = map(string)
   description = "Common tags applied to resources."

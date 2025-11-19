@@ -75,6 +75,11 @@ variable "acr_id" {
   description = "the name of the acr"
 }
 
+variable "kv_id" {
+  type        = string
+  description = "The ID of the Key Vault to assign 'Key Vault Secrets User' role to the user assigned identity."
+}
+
 variable "user_assigned_identity" {
   type = object({
     id           = string

@@ -45,6 +45,7 @@ module "busybox_app" {
   registry_fqdn = local.acr_login_server
 
   acr_id = data.azurerm_container_registry.acr.id
+  kv_id = data.azurerm_key_vault.kv.id
 
   template = {
     containers = [

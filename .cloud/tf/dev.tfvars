@@ -3,7 +3,6 @@ resource_group_name = "sbx-dev-rg"
 
 #### container apps
 create_log_analytics = true
-internal_only        = true
 
 #### nexus vm variables
 admin_username = "nexusadmin"
