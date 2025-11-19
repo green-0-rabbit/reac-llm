@@ -8,3 +8,8 @@ data "azurerm_container_registry" "acr" {
   name                = var.acr_name
   resource_group_name = var.main_rg_name
 }
+
+data "azurerm_private_dns_zone" "sbx" {
+  name                = var.private_dns_zone_name
+  resource_group_name = var.main_rg_name
+}
