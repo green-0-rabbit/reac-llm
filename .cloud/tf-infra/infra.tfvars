@@ -1,5 +1,5 @@
 project      = "sbx"
-location     = "westeurope"
+location     = "eastus"
 environments = ["dev", "staging", "prod"]
 
 

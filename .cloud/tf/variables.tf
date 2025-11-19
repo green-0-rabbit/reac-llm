@@ -109,3 +109,8 @@ variable "acr_name" {
   type        = string
   description = "Name of the Azure Container Registry to integrate with Nexus."
 }
+
+variable "key_vault_name" {
+  type        = string
+  description = "Name of the Azure Key Vault."
+}

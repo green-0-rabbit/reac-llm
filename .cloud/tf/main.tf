@@ -3,11 +3,6 @@ locals {
 }
 
 
-resource "azurerm_user_assigned_identity" "containerapp" {
-  location            = var.location
-  name                = "acami-${var.env}"
-  resource_group_name = var.resource_group_name
-}
 
 
 module "container_app_environment" {

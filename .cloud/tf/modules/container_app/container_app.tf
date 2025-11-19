@@ -12,6 +12,16 @@ resource "azurerm_container_app" "app" {
     identity_ids = [var.user_assigned_identity.id]
   }
 
+  dynamic "secret" {
+    for_each = var.secrets
+    content {
+      name                = secret.value.name
+      value               = secret.value.value
+      key_vault_secret_id = secret.value.key_vault_secret_id
+      identity            = secret.value.key_vault_secret_id != null ? var.user_assigned_identity.id : null
+    }
+  }
+
 
   dynamic "ingress" {
     for_each = local.effective_ingress == null ? [] : [local.effective_ingress]

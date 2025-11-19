@@ -82,3 +82,14 @@ variable "user_assigned_identity" {
   })
   description = "The user assigned identity object to be used by the Container App."
 }
+
+variable "secrets" {
+  type = list(object({
+    name                = string
+    value               = optional(string)
+    key_vault_secret_id = optional(string)
+    identity            = optional(string)
+  }))
+  default     = []
+  description = "List of secrets to be used by the Container App. Can be a value or a Key Vault reference."
+}

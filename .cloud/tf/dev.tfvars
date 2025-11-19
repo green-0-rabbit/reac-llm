@@ -22,3 +22,5 @@ main_rg_name         = "sbx-main-rg"
 ### Private DNS zone RG (backbone)
 private_dns_zone_name = "sbx-kag.io"
 
+key_vault_name = "sbx-kv-dev"
+

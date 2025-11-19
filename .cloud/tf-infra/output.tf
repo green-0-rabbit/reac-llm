@@ -8,6 +8,11 @@ output "private_dns_zone_rg" {
   description = "RG hosting the private DNS zone."
 }
 
+output "key_vault_ids" {
+  value       = { for k, v in azurerm_key_vault.env : k => v.id }
+  description = "Map of Key Vault IDs per environment."
+}
+
 # output "bastion_name" {
 #   value = azurerm_bastion_host.bastion.name
 # }
