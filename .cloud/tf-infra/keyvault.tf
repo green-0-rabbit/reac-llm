@@ -11,7 +11,7 @@ resource "azurerm_key_vault" "env" {
 
   sku_name = "standard"
 
-  rbac_authorization_enabled  = true
+  rbac_authorization_enabled = true
 
   network_acls {
     bypass         = "AzureServices"

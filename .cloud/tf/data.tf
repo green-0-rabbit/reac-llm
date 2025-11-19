@@ -18,3 +18,8 @@ data "azurerm_private_dns_zone" "sbx" {
   name                = var.private_dns_zone_name
   resource_group_name = var.main_rg_name
 }
+
+data "azurerm_storage_account" "infra" {
+  name                = var.storage_account_name
+  resource_group_name = var.main_rg_name
+}

@@ -24,6 +24,9 @@ main_vnet_subnets = {
   WorkloadSubnet = {
     address_prefix = "10.0.4.0/24"
   }
+  PrivateEndpointSubnet = {
+    address_prefix = "10.0.5.0/24"
+  }
   # AzureBastionSubnet = {
   #   address_prefix = "10.0.3.0/26"
   # }
@@ -35,7 +38,7 @@ main_vnet_subnets = {
         name    = "Microsoft.App/environments"
         actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
       }
-    } 
+    }
   }
 }
 
@@ -56,3 +59,5 @@ sync_config = {
 trusted_source_prefixes = []
 
 firewall_ip_address = "10.0.100.4" # Placeholder IP, update with actual Firewall IP
+
+storage_account_name = "sbxinfrastsa"

@@ -1,7 +1,7 @@
 resource "azurerm_route_table" "aca" {
-  name                = "${var.project}-aca-udr"
-  location            = var.location
-  resource_group_name = azurerm_resource_group.main.name
+  name                          = "${var.project}-aca-udr"
+  location                      = var.location
+  resource_group_name           = azurerm_resource_group.main.name
   bgp_route_propagation_enabled = true
 
   route {

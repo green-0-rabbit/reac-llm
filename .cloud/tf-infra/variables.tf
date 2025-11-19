@@ -127,5 +127,10 @@ variable "sync_config" {
   }
 }
 
+variable "storage_account_name" {
+  type        = string
+  description = "Name of the Azure Storage Account."
+}
+
 
 

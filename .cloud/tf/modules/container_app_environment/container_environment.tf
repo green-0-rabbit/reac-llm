@@ -6,7 +6,7 @@ resource "azurerm_container_app_environment" "this" {
   infrastructure_subnet_id       = var.infrastructure_subnet_id
   log_analytics_workspace_id     = local.law_id
   internal_load_balancer_enabled = var.lb_internal_only
-  
+
 
   # https://learn.microsoft.com/en-us/azure/container-apps/workload-profiles-overview
   dynamic "workload_profile" {

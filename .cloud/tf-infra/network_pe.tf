@@ -7,7 +7,7 @@ resource "azurerm_private_endpoint" "acr_pe" {
   name                = "${var.acr_settings.name}-pe"
   location            = var.location
   resource_group_name = azurerm_resource_group.main.name
-  subnet_id           = azurerm_subnet.main["WorkloadSubnet"].id
+  subnet_id           = azurerm_subnet.main["PrivateEndpointSubnet"].id
 
   private_service_connection {
     name                           = "${var.acr_settings.name}-pl"
@@ -30,7 +30,7 @@ resource "azurerm_private_endpoint" "kv_pe" {
   name                = "${var.project}-kv-${each.value}-pe"
   location            = var.location
   resource_group_name = azurerm_resource_group.env[each.value].name
-  subnet_id           = azurerm_subnet.main["WorkloadSubnet"].id
+  subnet_id           = azurerm_subnet.main["PrivateEndpointSubnet"].id
 
   private_service_connection {
     name                           = "${var.project}-kv-${each.value}-pl"
@@ -42,6 +42,25 @@ resource "azurerm_private_endpoint" "kv_pe" {
   private_dns_zone_group {
     name                 = "kv-dns-group"
     private_dns_zone_ids = [azurerm_private_dns_zone.keyvault.id]
+  }
+}
+# https://learn.microsoft.com/en-us/azure/storage/common/storage-private-endpoints#dns-changes-for-private-endpoints
+resource "azurerm_private_endpoint" "storage_blob" {
+  name                = "${var.storage_account_name}-blob-pe"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+  subnet_id           = azurerm_subnet.main["PrivateEndpointSubnet"].id
+
+  private_service_connection {
+    name                           = "${var.storage_account_name}-blob-pl"
+    private_connection_resource_id = azurerm_storage_account.this.id
+    is_manual_connection           = false
+    subresource_names              = ["blob"]
+  }
+
+  private_dns_zone_group {
+    name                 = "blob-dns-group"
+    private_dns_zone_ids = [azurerm_private_dns_zone.blob.id]
   }
 }
 

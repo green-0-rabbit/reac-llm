@@ -1,4 +1,4 @@
-location            = "westeurope"
+location            = "eastus"
 resource_group_name = "sbx-dev-rg"
 
 #### container apps
@@ -22,4 +22,6 @@ main_rg_name         = "sbx-main-rg"
 private_dns_zone_name = "sbx-kag.io"
 
 key_vault_name = "sbx-kv-dev"
+
+storage_account_name = "sbxinfrastsa"
 

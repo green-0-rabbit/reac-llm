@@ -13,6 +13,11 @@ output "key_vault_ids" {
   description = "Map of Key Vault IDs per environment."
 }
 
+output "storage_account_name" {
+  value       = azurerm_storage_account.this.name
+  description = "Name of the infrastructure storage account."
+}
+
 # output "bastion_name" {
 #   value = azurerm_bastion_host.bastion.name
 # }

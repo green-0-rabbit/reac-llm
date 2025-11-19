@@ -16,11 +16,11 @@ module "container_app_environment" {
   create_log_analytics       = var.create_log_analytics
 
   workload_profile = {
-    name = "wkp_container_app_env"
+    name                  = "wkp_container_app_env"
     workload_profile_type = "Consumption"
   }
 
-  tags                       = var.tags
+  tags = var.tags
 }
 
 #  Example https://github.com/Azure/terraform-azure-container-apps/blob/v0.4.0/examples/acr/main.tf
@@ -45,7 +45,7 @@ module "busybox_app" {
   registry_fqdn = local.acr_login_server
 
   acr_id = data.azurerm_container_registry.acr.id
-  kv_id = data.azurerm_key_vault.kv.id
+  kv_id  = data.azurerm_key_vault.kv.id
 
   template = {
     containers = [
