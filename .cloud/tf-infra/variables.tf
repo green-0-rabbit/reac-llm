@@ -64,6 +64,11 @@ variable "trusted_source_prefixes" {
   default     = []
 }
 
+variable "firewall_ip_address" {
+  description = "IP address of the Azure Firewall or proxy for egress traffic."
+  type        = string
+}
+
 ## Nexus VM Module Variables
 variable "admin_username" {
   type    = string
