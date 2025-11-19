@@ -52,3 +52,5 @@ sync_config = {
   enable      = true
   timer_every = "2min"
 }
+
+trusted_source_prefixes = []

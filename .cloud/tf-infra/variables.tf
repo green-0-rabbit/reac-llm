@@ -58,6 +58,12 @@ variable "private_dns_zone_name" {
   description = "Private DNS zone name (e.g. sbx.example.com)."
 }
 
+variable "trusted_source_prefixes" {
+  description = "List of trusted source IP prefixes (CIDRs) allowed to access ACA."
+  type        = list(string)
+  default     = []
+}
+
 ## Nexus VM Module Variables
 variable "admin_username" {
   type    = string
