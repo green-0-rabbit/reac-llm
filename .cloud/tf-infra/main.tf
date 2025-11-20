@@ -5,7 +5,7 @@ module "nexus_vm" {
   resource_group_name = azurerm_resource_group.main.name
   location            = var.location # e.g. "westeurope"
   subnet_id           = azurerm_subnet.main["WorkloadSubnet"].id
-  # bastion_subnet_prefix = azurerm_subnet.main["AzureBastionSubnet"].address_prefixes[0]
+  bastion_subnet_prefix = azurerm_subnet.main["AzureBastionSubnet"].address_prefixes[0]
 
   # VM basics
   vm_name        = "vm-nexus-${var.env}"

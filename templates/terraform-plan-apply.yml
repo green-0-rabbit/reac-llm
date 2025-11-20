@@ -33,8 +33,8 @@ spec:
       terraform -chdir="$[[ inputs.tf_working_dir ]]" plan
       -out "${TF_VARS_FILE_NAME}.tfplan"
       -var-file="${TF_VARS_FILE_NAME}.tfvars"
-      -var="tenant_id=${AZURE_TENANT_ID}"
-      -var="subscription_id=${AZURE_SUBSCRIPTION_ID}"
+      -var="tenant_id=${ARM_TENANT_ID}"
+      -var="subscription_id=${ARM_SUBSCRIPTION_ID}"
       -var="env=$[[ inputs.env ]]"
   artifacts:
     when: always

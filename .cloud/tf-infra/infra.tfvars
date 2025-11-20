@@ -27,9 +27,9 @@ main_vnet_subnets = {
   PrivateEndpointSubnet = {
     address_prefix = "10.0.5.0/24"
   }
-  # AzureBastionSubnet = {
-  #   address_prefix = "10.0.3.0/26"
-  # }
+  AzureBastionSubnet = {
+    address_prefix = "10.0.3.0/26"
+  }
   ACASubnet = {
     address_prefix = "10.0.6.0/27"
     delegation = {
@@ -46,6 +46,7 @@ seed_config = {
   images = [
     "library/busybox:latest",
     "node:alpine3.22",
+    "wbitt/network-multitool:alpine-extra"
   ]
   batch_size  = 1
   timer_every = "2min"

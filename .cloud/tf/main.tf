@@ -51,7 +51,7 @@ module "busybox_app" {
     containers = [
       {
         name   = "busybox"
-        image  = "${local.acr_login_server}/library/busybox:latest"
+        image  = "${local.acr_login_server}/wbitt/network-multitool:alpine-extra"
         cpu    = 0.5
         memory = "1Gi",
         args   = ["sleep", "3600"]
