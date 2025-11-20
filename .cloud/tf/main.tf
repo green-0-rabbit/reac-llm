@@ -47,12 +47,12 @@ module "container_app" {
 
   ingress = {
     target_port = 80
-    traffic_weight = [ 
+    traffic_weight = [
       {
         latest_revision = true
         percentage      = 100
       }
-     ]
+    ]
   }
 
   template = {

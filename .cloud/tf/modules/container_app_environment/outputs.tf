@@ -11,7 +11,7 @@ output "log_analytics_workspace_id" {
 }
 
 output "workload_profile_name" {
-  value = local.effective_workload_profile.name
+  value = tolist(azurerm_container_app_environment.this.workload_profile)[0].name
 }
 
 output "static_ip_address" {

@@ -10,12 +10,20 @@ resource "azurerm_container_app_environment" "this" {
 
   # https://learn.microsoft.com/en-us/azure/container-apps/workload-profiles-overview
   dynamic "workload_profile" {
-    for_each = local.effective_workload_profile != null && local.effective_workload_profile.workload_profile_type != "Consumption" ? [local.effective_workload_profile] : []
+    for_each = var.workload_profile.workload_profile_type == "Consumption" ? [1] : []
     content {
-      name                  = workload_profile.value.name
-      workload_profile_type = workload_profile.value.workload_profile_type
-      minimum_count         = workload_profile.value.minimum_count
-      maximum_count         = workload_profile.value.maximum_count
+      name                  = var.workload_profile.name
+      workload_profile_type = "Consumption"
+    }
+  }
+
+  dynamic "workload_profile" {
+    for_each = var.workload_profile.workload_profile_type != "Consumption" ? [1] : []
+    content {
+      name                  = var.workload_profile.name
+      workload_profile_type = var.workload_profile.workload_profile_type
+      minimum_count         = var.workload_profile.minimum_count
+      maximum_count         = var.workload_profile.maximum_count
     }
   }
 

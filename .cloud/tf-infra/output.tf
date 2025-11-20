@@ -20,6 +20,3 @@ output "bastion_name" {
   value = azurerm_bastion_host.bastion.name
 }
 
-output "bastion_pip" {
-  value = azurerm_public_ip.bastion.ip_address
-}

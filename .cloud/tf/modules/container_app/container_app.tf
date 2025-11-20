@@ -30,7 +30,7 @@ resource "azurerm_container_app" "app" {
       external_enabled           = lookup(ingress.value, "external_enabled", false)
       target_port                = lookup(ingress.value, "target_port", 8080)
       transport                  = lookup(ingress.value, "transport", "auto")
-        
+
       dynamic "traffic_weight" {
         for_each = {
           for index, weight in try(ingress.value.traffic_weight, local.default_ingress.traffic_weight) : index => weight
@@ -82,14 +82,3 @@ resource "azurerm_container_app" "app" {
   tags = var.tags
 }
 
-resource "azurerm_role_assignment" "containerapp" {
-  scope                = var.acr_id
-  role_definition_name = "AcrPull"
-  principal_id         = var.user_assigned_identity.principal_id
-}
-
-resource "azurerm_role_assignment" "kv_secrets_user" {
-  scope                = var.kv_id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = var.user_assigned_identity.principal_id
-}
