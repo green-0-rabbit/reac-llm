@@ -2,9 +2,6 @@ locals {
   acr_login_server = data.azurerm_container_registry.acr.login_server
 }
 
-
-
-
 module "container_app_environment" {
   source = "./modules/container_app_environment"
 
@@ -15,6 +12,7 @@ module "container_app_environment" {
   log_analytics_workspace_id = var.log_analytics_workspace_id
   create_log_analytics       = var.create_log_analytics
 
+  # @see https://learn.microsoft.com/en-us/azure/container-apps/workload-profiles-overview
   workload_profile = {
     name                  = "wkp_container_app_env"
     workload_profile_type = "Consumption"
@@ -25,11 +23,11 @@ module "container_app_environment" {
 
 #  Example https://github.com/Azure/terraform-azure-container-apps/blob/v0.4.0/examples/acr/main.tf
 # Check this https://github.com/thomast1906/thomasthorntoncloud-examples/tree/master/Azure-Container-App-Terraform/Terraform
-module "busybox_app" {
+module "container_app" {
   source = "./modules/container_app"
 
   app_config = {
-    name          = "busybox"
+    name          = "containerappdemo"
     revision_mode = "Single"
   }
   environment                  = var.env
@@ -45,7 +43,17 @@ module "busybox_app" {
   registry_fqdn = local.acr_login_server
 
   acr_id = data.azurerm_container_registry.acr.id
-  kv_id  = data.azurerm_key_vault.kv.id
+  kv_id  = azurerm_key_vault.this.id
+
+  ingress = {
+    target_port = 80
+    traffic_weight = [ 
+      {
+        latest_revision = true
+        percentage      = 100
+      }
+     ]
+  }
 
   template = {
     containers = [
@@ -54,7 +62,7 @@ module "busybox_app" {
         image  = "${local.acr_login_server}/wbitt/network-multitool:alpine-extra"
         cpu    = 0.5
         memory = "1Gi",
-        args   = ["sleep", "3600"]
+        # args   = ["sleep", "3600"]
       }
     ]
   }

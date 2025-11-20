@@ -18,7 +18,7 @@ variable "location" {
   type        = string
   description = "Azure region for the environment (must be Switzerland North/West)."
   validation {
-    condition     = contains(["switzerlandnorth", "switzerlandwest", "westeurope"], var.location)
+    condition     = contains(["switzerlandnorth", "switzerlandwest", "eastus"], var.location)
     error_message = "location must be one of: switzerlandnorth, switzerlandwest."
   }
 }
@@ -33,11 +33,11 @@ variable "ingress" {
     external_enabled           = optional(bool)
     target_port                = optional(number)
     transport                  = optional(string)
-    traffic_weight = optional(list(object({
+    traffic_weight = list(object({
       latest_revision = optional(bool)
       percentage      = optional(number)
       label           = optional(string)
-    })))
+    }))
   })
   default = null
 }

@@ -5,7 +5,7 @@ resource "azurerm_user_assigned_identity" "containerapp" {
 }
 
 resource "azurerm_role_assignment" "kv_secrets_user" {
-  scope                = data.azurerm_key_vault.kv.id
+  scope                = azurerm_key_vault.this.id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_user_assigned_identity.containerapp.principal_id
 }

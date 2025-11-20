@@ -1,9 +1,8 @@
-resource "azurerm_key_vault" "env" {
-  for_each = toset(var.environments)
+resource "azurerm_key_vault" "this" {
 
-  name                        = "${var.project}-kv-${each.value}"
+  name                        = "kv-${var.env}-kag"
   location                    = var.location
-  resource_group_name         = azurerm_resource_group.env[each.value].name
+  resource_group_name         = var.resource_group_name
   enabled_for_disk_encryption = true
   tenant_id                   = var.tenant_id
   soft_delete_retention_days  = 7
@@ -19,8 +18,7 @@ resource "azurerm_key_vault" "env" {
   }
 
   tags = {
-    project = var.project
-    env     = each.value
+    env = var.env
   }
 }
 

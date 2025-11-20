@@ -34,7 +34,7 @@ resource "azurerm_network_security_rule" "allow_aca_ports" {
   access                      = "Allow"
   protocol                    = "Tcp"
   source_port_range           = "*"
-  destination_port_ranges     = ["31080", "31443", "30000-32767"]
+  destination_port_ranges     = ["30000-32767"]
   source_address_prefix       = "VirtualNetwork"
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.main.name

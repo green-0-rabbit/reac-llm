@@ -60,5 +60,3 @@ sync_config = {
 trusted_source_prefixes = []
 
 firewall_ip_address = "10.0.100.4" # Placeholder IP, update with actual Firewall IP
-
-storage_account_name = "sbxinfrastsa"

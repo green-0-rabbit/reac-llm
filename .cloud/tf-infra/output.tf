@@ -8,14 +8,12 @@ output "private_dns_zone_rg" {
   description = "RG hosting the private DNS zone."
 }
 
-output "key_vault_ids" {
-  value       = { for k, v in azurerm_key_vault.env : k => v.id }
-  description = "Map of Key Vault IDs per environment."
+output "nexus_private_ip" {
+  value = module.nexus_vm.nexus_private_ip
 }
 
-output "storage_account_name" {
-  value       = azurerm_storage_account.this.name
-  description = "Name of the infrastructure storage account."
+output "nexus_fqdn" {
+  value = module.nexus_vm.nexus_fqdn
 }
 
 output "bastion_name" {

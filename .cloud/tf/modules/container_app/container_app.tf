@@ -30,7 +30,7 @@ resource "azurerm_container_app" "app" {
       external_enabled           = lookup(ingress.value, "external_enabled", false)
       target_port                = lookup(ingress.value, "target_port", 8080)
       transport                  = lookup(ingress.value, "transport", "auto")
-
+        
       dynamic "traffic_weight" {
         for_each = {
           for index, weight in try(ingress.value.traffic_weight, local.default_ingress.traffic_weight) : index => weight

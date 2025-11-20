@@ -113,3 +113,19 @@ variable "storage_account_name" {
   type        = string
   description = "Name of the Azure Storage Account."
 }
+
+variable "private_endpoint_subnet_name" {
+  type        = string
+  description = "Name of the subnet for Private Endpoints."
+}
+
+variable "private_dns_zone_kv_name" {
+  type        = string
+  description = "Private DNS zone name for Key Vault"
+}
+
+variable "private_dns_zone_storage_name" {
+  type        = string
+  description = "Private DNS zone name for Storage Account"
+}
+
