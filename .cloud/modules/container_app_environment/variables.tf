@@ -1,23 +1,18 @@
-variable "environment" { type = string }
+variable "env" { type = string }
 
 variable "location" {
   type        = string
   description = "Azure region for the environment (must be Switzerland North/West)."
   validation {
-    condition     = contains(["switzerlandnorth", "switzerlandwest", "eastus"], var.location)
-    error_message = "location must be one of: switzerlandnorth, switzerlandwest."
+    condition     = contains(["switzerlandnorth", "switzerlandwest", "eastus", "westeurope"], var.location)
+    error_message = "location must be one of: switzerlandnorth, switzerlandwest, eastus, westeurope."
   }
 }
 
 variable "resource_group_name" { type = string }
 variable "infrastructure_subnet_id" { type = string }
 variable "log_analytics_workspace_id" {
-  type    = string
-  default = ""
-}
-variable "create_log_analytics" {
-  type    = bool
-  default = true
+  type = string
 }
 variable "lb_internal_only" {
   type    = bool
@@ -46,4 +41,14 @@ variable "workload_profile" {
 variable "tags" {
   type    = map(string)
   default = {}
+}
+
+variable "certificate_config" {
+  description = "Configuration for the Container App Environment Certificate"
+  type = object({
+    name                    = string
+    certificate_blob_base64 = string
+    certificate_password    = optional(string, "")
+  })
+  default = null
 }

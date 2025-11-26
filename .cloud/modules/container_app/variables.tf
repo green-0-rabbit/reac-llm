@@ -1,8 +1,8 @@
 variable "app_config" {
   type = object({
-    name                  = string
+    name                  = optional(string, "default-app")
     revision_mode         = optional(string, "Single")
-    workload_profile_name = optional(string)
+    workload_profile_name = optional(string, "Consumption")
   })
   validation {
     condition = var.app_config == null ? true : try(
@@ -18,8 +18,8 @@ variable "location" {
   type        = string
   description = "Azure region for the environment (must be Switzerland North/West)."
   validation {
-    condition     = contains(["switzerlandnorth", "switzerlandwest", "eastus"], var.location)
-    error_message = "location must be one of: switzerlandnorth, switzerlandwest."
+    condition     = contains(["switzerlandnorth", "switzerlandwest", "eastus", "westeurope"], var.location)
+    error_message = "location must be one of: switzerlandnorth, switzerlandwest, eastus, westeurope."
   }
 }
 variable "resource_group_name" { type = string }
@@ -29,15 +29,28 @@ variable "tags" {
 }
 variable "ingress" {
   type = object({
-    allow_insecure_connections = optional(bool)
-    external_enabled           = optional(bool)
-    target_port                = optional(number)
-    transport                  = optional(string)
-    traffic_weight = list(object({
-      latest_revision = optional(bool)
-      percentage      = optional(number)
+    allow_insecure_connections = optional(bool, false)
+    external_enabled           = optional(bool, false)
+    target_port                = optional(number, 8080)
+    transport                  = optional(string, "auto")
+    traffic_weight = optional(list(object({
+      latest_revision = optional(bool, true)
+      percentage      = optional(number, 100)
       label           = optional(string)
-    }))
+    })), [{
+      latest_revision = true
+      percentage      = 100
+    }])
+  })
+  default = null
+}
+
+variable "custom_domain" {
+  description = "Custom domain configuration for the container app"
+  type = object({
+    name                     = string
+    certificate_id           = string
+    certificate_binding_type = string
   })
   default = null
 }
@@ -46,18 +59,18 @@ variable "template" {
     containers = list(object({
       name    = string
       image   = string
-      cpu     = optional(number)
-      memory  = optional(string)
+      cpu     = optional(number, 0.25)
+      memory  = optional(string, "0.5Gi")
       command = optional(list(string))
       args    = optional(list(string))
       env = optional(list(object({
         name        = string
         value       = optional(string)
         secret_name = optional(string)
-      })))
+      })), [])
     }))
-    min_replicas = optional(number)
-    max_replicas = optional(number)
+    min_replicas = optional(number, 0)
+    max_replicas = optional(number, 10)
   })
   validation {
     condition     = var.template != null && length(var.template.containers) > 0
@@ -86,6 +99,7 @@ variable "user_assigned_identity" {
     principal_id = string
   })
   description = "The user assigned identity object to be used by the Container App."
+  default     = null
 }
 
 variable "secrets" {

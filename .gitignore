@@ -10,6 +10,7 @@ override.tf.json
 .terraform/local/
 terraform.tfstate
 terraform.tfstate.*
+*.tfplan
 
 # Github
 .github/

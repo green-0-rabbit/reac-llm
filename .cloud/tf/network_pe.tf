@@ -4,7 +4,7 @@ resource "azurerm_private_endpoint" "kv_pe" {
   name                = "kv-${var.env}-pe"
   location            = var.location
   resource_group_name = var.resource_group_name
-  subnet_id           = data.azurerm_subnet.private_endpoint.id
+  subnet_id           = module.vnet-spoke1.subnet_ids["PrivateEndpointSubnet"]
 
   private_service_connection {
     name                           = "kv-${var.env}-pl"
@@ -23,7 +23,7 @@ resource "azurerm_private_endpoint" "storage_blob" {
   name                = "${var.storage_account_name}-blob-pe"
   location            = var.location
   resource_group_name = var.resource_group_name
-  subnet_id           = data.azurerm_subnet.private_endpoint.id
+  subnet_id           = module.vnet-spoke1.subnet_ids["PrivateEndpointSubnet"]
 
   private_service_connection {
     name                           = "${var.storage_account_name}-blob-pl"

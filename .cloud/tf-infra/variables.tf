@@ -24,23 +24,57 @@ variable "environments" {
   default     = ["dev", "staging", "prod"]
 }
 
+variable "vnet_name" {
+  description = "The name of the main virtual network."
+  type        = string
+}
 
 variable "main_vnet_address_space" {
   description = "CIDR blocks for the main virtual network."
   type        = list(string)
 }
 
-variable "main_vnet_subnets" {
+variable "hub_subnets" {
   description = "Subnets to create inside the main virtual network."
   type = map(object({
-    address_prefix = string
+    subnet_address_prefix                         = list(string)
+    service_endpoints                             = optional(list(string), [])
+    private_link_service_network_policies_enabled = optional(bool, true)
+    firewall_enabled                              = optional(bool, false)
     delegation = optional(object({
-      name = string
-      service_delegation = object({
-        name    = string
-        actions = list(string)
-      })
+      name = optional(string)
+      service_delegation = optional(object({
+        name    = optional(string)
+        actions = optional(list(string))
+      }))
     }))
+
+    nsg_inbound_rules = optional(map(object({
+      priority                   = number
+      direction                  = optional(string, "Inbound")
+      access                     = optional(string, "Allow")
+      protocol                   = optional(string, "Tcp")
+      source_port_range          = optional(string, "*")
+      destination_port_range     = optional(string, "*")
+      destination_port_ranges    = optional(set(string), [])
+      source_address_prefix      = optional(string)
+      source_address_prefixes    = optional(set(string), [])
+      destination_address_prefix = optional(string)
+      description                = optional(string)
+    })), {})
+
+    nsg_outbound_rules = optional(map(object({
+      priority                   = number
+      direction                  = optional(string, "Outbound")
+      access                     = optional(string, "Allow")
+      protocol                   = optional(string, "Tcp")
+      source_port_range          = optional(string, "*")
+      destination_port_range     = optional(string, "*")
+      source_address_prefix      = optional(string)
+      source_address_prefixes    = optional(set(string), [])
+      destination_address_prefix = optional(string)
+      description                = optional(string)
+    })), {})
   }))
 }
 
@@ -56,17 +90,6 @@ variable "env" {
 variable "private_dns_zone_name" {
   type        = string
   description = "Private DNS zone name (e.g. sbx.example.com)."
-}
-
-variable "trusted_source_prefixes" {
-  description = "List of trusted source IP prefixes (CIDRs) allowed to access ACA."
-  type        = list(string)
-  default     = []
-}
-
-variable "firewall_ip_address" {
-  description = "IP address of the Azure Firewall or proxy for egress traffic."
-  type        = string
 }
 
 ## Nexus VM Module Variables
@@ -127,5 +150,11 @@ variable "sync_config" {
   }
 }
 
-
-
+variable "hub_firewall" {
+  type = object({
+    sku_name              = string
+    sku_tier              = string
+    private_ip_address    = optional(string)
+    subnet_address_prefix = optional(list(string), [])
+  })
+}

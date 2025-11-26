@@ -8,7 +8,7 @@ resource "azurerm_private_endpoint" "acr_pe" {
   name                = "${var.acr_settings.name}-pe"
   location            = var.location
   resource_group_name = azurerm_resource_group.main.name
-  subnet_id           = azurerm_subnet.main["PrivateEndpointSubnet"].id
+  subnet_id           = module.vnet-hub.subnet_ids["PrivateEndpointSubnet"]
 
   private_service_connection {
     name                           = "${var.acr_settings.name}-pl"

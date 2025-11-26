@@ -29,12 +29,6 @@ variable "subnet_id" {
   description = "Subnet ID where the Nexus VM NIC will be attached."
 }
 
-variable "bastion_subnet_prefix" {
-  type        = string
-  description = "Address prefix of the Azure Bastion subnet (for NSG rules)."
-  default     = ""
-}
-
 variable "vm_name" {
   type        = string
   default     = "vm-nexus"
@@ -45,12 +39,6 @@ variable "nic_name" {
   type        = string
   default     = null
   description = "Optional NIC name (defaults to <vm_name>-nic when null)."
-}
-
-variable "nsg_name" {
-  type        = string
-  default     = null
-  description = "Optional NSG name (defaults to <vm_name>-nsg when null)."
 }
 
 variable "osdisk_name" {
@@ -126,12 +114,6 @@ variable "tags" {
   description = "Tags to apply to created resources."
 }
 
-variable "ui_allowed_cidrs" {
-  type        = list(string)
-  default     = ["AzureBastion"]
-  description = "CIDRs (or service tags) allowed to access Nexus UI on 8081 (default allows AzureBastion)."
-}
-
 # Private DNS — provided by the backbone (.cloud/tf-infra)
 variable "dns_record_name" {
   type        = string
@@ -146,11 +128,6 @@ variable "private_dns_zone_name" {
     condition     = length(var.private_dns_zone_name) > 0
     error_message = "private_dns_zone_name must be provided (e.g., 'sbx.example.com')."
   }
-}
-
-variable "allowed_vnet_subnets" {
-  description = "Subnets allowed to reach the Nexus endpoints, keyed by friendly name."
-  type        = map(string)
 }
 
 # === ACR / Identity ===
