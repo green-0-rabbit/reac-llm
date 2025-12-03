@@ -1,0 +1,16 @@
+# Local backend override
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Local TF state
+.terraform/
+.terraform.lock.hcl
+.terraform/local/
+terraform.tfstate
+terraform.tfstate.*
+*.tfplan
+
+# Github
+.github/

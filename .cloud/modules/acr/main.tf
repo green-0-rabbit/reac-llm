@@ -25,14 +25,4 @@ resource "azurerm_private_dns_zone" "acr" {
   tags                = var.tags
 }
 
-# Link the zone to provided VNets (if any)
-resource "azurerm_private_dns_zone_virtual_network_link" "acr_links" {
-  for_each = var.create_private_link_dns_zone ? local.private_link_vnet_links : {}
 
-  name                  = "${var.dns_link_name_prefix}-${each.key}"
-  private_dns_zone_name = azurerm_private_dns_zone.acr[0].name
-  resource_group_name   = var.resource_group_name
-  virtual_network_id    = each.value
-  registration_enabled  = false
-  tags                  = var.tags
-}

@@ -1,61 +1,128 @@
 locals {
-  acr_login_server = data.azurerm_container_registry.acr.login_server
+  acr_login_server   = data.azurerm_container_registry.acr.login_server
+  container_app_fqdn = "containerappdemo-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
 }
 
+module "vnet-spoke1" {
+  source = "../modules/vnet"
 
-resource "azurerm_user_assigned_identity" "containerapp" {
-  location            = var.location
-  name                = "acami-${var.env}"
-  resource_group_name = var.resource_group_name
+  # By default, this module will create a resource group, proivde the name here
+  # to use an existing resource group, specify the existing resource group name,
+  # and set the argument to `create_resource_group = false`. Location will be same as existing RG.
+  resource_group_name                        = azurerm_resource_group.rg.name
+  location                                   = var.location
+  vnet_name                                  = var.spoke_vnet_name
+  remote_virtual_network_id                  = data.azurerm_virtual_network.hub-vnet.id
+  remote_virtual_network_name                = data.azurerm_virtual_network.hub-vnet.name
+  remote_virtual_network_resource_group_name = var.main_rg_name
+  enable_peering                             = true
+
+  # Provide valid VNet Address space for spoke virtual network.  
+  vnet_address_space = var.spoke_vnet_address_space
+
+  # Private DNS zones to link with this VNet
+  private_dns_zone_resource_group_name = var.main_rg_name
+
+  private_dns_zone_names = [
+    data.azurerm_private_dns_zone.sbx.name,
+    data.azurerm_private_dns_zone.keyvault.name,
+    data.azurerm_private_dns_zone.storage.name,
+    data.azurerm_private_dns_zone.acr.name,
+  ]
+
+
+  # Multiple Subnets, Service delegation, Service Endpoints, Network security groups
+  # These are default subnets with required configuration, check README.md for more details
+  # Route_table and NSG association to be added automatically for all subnets listed here.
+  subnets = var.spoke_vnet_subnets
+
+  tags = {
+    project-name = "sbx-${var.env}-kag"
+  }
 }
-
 
 module "container_app_environment" {
-  source = "./modules/container_app_environment"
+  source = "../modules/container_app_environment"
 
-  environment                = var.env
+  env                        = var.env
   location                   = var.location
-  resource_group_name        = var.resource_group_name
-  infrastructure_subnet_id   = data.azurerm_subnet.aca.id
-  log_analytics_workspace_id = var.log_analytics_workspace_id
-  create_log_analytics       = var.create_log_analytics
-  internal_only              = var.internal_only
-  tags                       = var.tags
+  resource_group_name        = azurerm_resource_group.rg.name
+  infrastructure_subnet_id   = module.vnet-spoke1.subnet_ids["ACASubnet"]
+  log_analytics_workspace_id = var.log_analytics_workspace_id != "" ? var.log_analytics_workspace_id : azurerm_log_analytics_workspace.this[0].id
+
+  # @see https://learn.microsoft.com/en-us/azure/container-apps/workload-profiles-overview
+  workload_profile = {
+    name                  = "Consumption"
+    workload_profile_type = "Consumption"
+  }
+
+  certificate_config = {
+    name                    = "containerapp-cert"
+    certificate_blob_base64 = data.azurerm_key_vault_secret.containerapp_cert.value
+  }
+
+  tags = var.tags
 }
 
-# Example https://github.com/Azure/terraform-azure-container-apps/blob/v0.4.0/examples/acr/main.tf
+#  Example https://github.com/Azure/terraform-azure-container-apps/blob/v0.4.0/examples/acr/main.tf
 # Check this https://github.com/thomast1906/thomasthorntoncloud-examples/tree/master/Azure-Container-App-Terraform/Terraform
-module "busybox_app" {
-  source = "./modules/container_app"
+module "container_app" {
+  source = "../modules/container_app"
 
   app_config = {
-    name          = "busybox"
-    revision_mode = "Single"
+    name                  = "containerappdemo"
+    revision_mode         = "Single"
+    workload_profile_name = module.container_app_environment.workload_profile_name
   }
   environment                  = var.env
   location                     = var.location
-  resource_group_name          = var.resource_group_name
+  resource_group_name          = azurerm_resource_group.rg.name
   container_app_environment_id = module.container_app_environment.id
 
-  user_assigned_identity = {
-    id           = azurerm_user_assigned_identity.containerapp.id
-    principal_id = azurerm_user_assigned_identity.containerapp.principal_id
-  }
+  # user_assigned_identity = {
+  #   id           = azurerm_user_assigned_identity.containerapp.id
+  #   principal_id = azurerm_user_assigned_identity.containerapp.principal_id
+  # }
 
   registry_fqdn = local.acr_login_server
 
   acr_id = data.azurerm_container_registry.acr.id
+  kv_id  = azurerm_key_vault.this.id
+
+  ingress = {
+    external_enabled = true
+    target_port      = 80
+    traffic_weight = [
+      {
+        latest_revision = true
+        percentage      = 100
+      }
+    ]
+  }
+
+  custom_domain = {
+    name                     = local.container_app_fqdn
+    certificate_binding_type = "SniEnabled"
+    certificate_id           = module.container_app_environment.certificate_id
+  }
 
   template = {
     containers = [
       {
         name   = "busybox"
-        image  = "${local.acr_login_server}/library/busybox:latest"
+        image  = "${local.acr_login_server}/wbitt/network-multitool:alpine-extra"
+        # image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
         cpu    = 0.5
         memory = "1Gi",
-        args   = ["sleep", "3600"]
+        # args   = ["sleep", "3600"]
       }
     ]
   }
 }
+
+
+
+
+
+
 

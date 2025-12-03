@@ -43,19 +43,9 @@ variable "workload_subnet_name" {
   description = "Name of the workload subnet where Nexus VM will be deployed."
 }
 
-variable "bastion_subnet_name" {
-  type        = string
-  description = "Name of the bastion subnet."
-}
-
 variable "main_vnet_name" {
   type        = string
   description = "Name of the main virtual network (from backbone)."
-}
-
-variable "aca_subnet_name" {
-  type        = string
-  description = "Name of the ACA subnet."
 }
 
 variable "main_rg_name" {
@@ -75,16 +65,15 @@ variable "create_log_analytics" {
   default     = true
 }
 
-variable "internal_only" {
-  type        = bool
-  description = "Sets the Container Apps environment to use an internal load balancer."
-  default     = true
-}
-
 variable "tags" {
   type        = map(string)
   description = "Common tags applied to resources."
   default     = {}
+}
+
+variable "current_ip" {
+  description = "The current IP address of the user running Terraform, to be whitelisted in Key Vault."
+  type        = string
 }
 
 ## Nexus VM Module Variables
@@ -109,3 +98,93 @@ variable "acr_name" {
   type        = string
   description = "Name of the Azure Container Registry to integrate with Nexus."
 }
+
+variable "key_vault_name" {
+  type        = string
+  description = "Name of the Azure Key Vault."
+}
+
+variable "storage_account_name" {
+  type        = string
+  description = "Name of the Azure Storage Account."
+}
+
+variable "private_endpoint_subnet_name" {
+  type        = string
+  description = "Name of the subnet for Private Endpoints."
+}
+
+variable "private_dns_zone_kv_name" {
+  type        = string
+  description = "Private DNS zone name for Key Vault"
+}
+
+variable "private_dns_zone_storage_name" {
+  type        = string
+  description = "Private DNS zone name for Storage Account"
+}
+
+variable "private_dns_zone_acr_name" {
+  type        = string
+  description = "Private DNS zone name for Azure Container Registry"
+}
+
+variable "spoke_vnet_name" {
+  description = "The name of the spoke virtual network."
+  type        = string
+}
+
+variable "spoke_vnet_address_space" {
+  description = "The address space to be used for the spoke virtual network."
+  type        = list(string)
+}
+
+variable "hub_vnet_name" {
+  description = "The name of the hub virtual network."
+  type        = string
+}
+
+variable "spoke_vnet_subnets" {
+  description = "Subnets to create inside the spoke virtual network."
+  type = map(object({
+    subnet_address_prefix                         = list(string)
+    service_endpoints                             = optional(list(string), [])
+    private_link_service_network_policies_enabled = optional(bool, true)
+    firewall_enabled                              = optional(bool, false)
+    delegation = optional(object({
+      name = optional(string)
+      service_delegation = optional(object({
+        name    = optional(string)
+        actions = optional(list(string))
+      }))
+    }))
+
+    nsg_inbound_rules = optional(map(object({
+      priority                   = number
+      direction                  = optional(string, "Inbound")
+      access                     = optional(string, "Allow")
+      protocol                   = optional(string, "Tcp")
+      source_port_range          = optional(string, "*")
+      destination_port_range     = optional(string, "*")
+      destination_port_ranges    = optional(set(string), [])
+      source_address_prefix      = optional(string)
+      source_address_prefixes    = optional(set(string), [])
+      destination_address_prefix = optional(string)
+      description                = optional(string)
+    })), {})
+
+    nsg_outbound_rules = optional(map(object({
+      priority                   = number
+      direction                  = optional(string, "Outbound")
+      access                     = optional(string, "Allow")
+      protocol                   = optional(string, "Tcp")
+      source_port_range          = optional(string, "*")
+      destination_port_range     = optional(string, "*")
+      source_address_prefix      = optional(string)
+      source_address_prefixes    = optional(set(string), [])
+      destination_address_prefix = optional(string)
+      description                = optional(string)
+    })), {})
+  }))
+}
+

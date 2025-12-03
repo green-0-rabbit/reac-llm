@@ -1,25 +1,36 @@
+# NOTE: Using Standard SKU because Developer SKU does not support VNet peering (required for Hub-Spoke)
+# and has limitations with dedicated subnet/IP configurations.
+
+# resource "azurerm_public_ip" "bastion_pip" {
+#   name                = "${var.project}-bastion-pip"
+#   location            = var.location
+#   resource_group_name = azurerm_resource_group.main.name
+#   allocation_method   = "Static"
+#   sku                 = "Standard"
+# }
+
+# resource "azurerm_bastion_host" "bastion" {
+#   name                = "${var.project}-bastion"
+#   resource_group_name = azurerm_resource_group.main.name
+#   location            = var.location
+#   sku                 = "Standard"
+
+#   ip_configuration {
+#     name                 = "configuration"
+#     subnet_id            = module.vnet-spoke1.subnet_ids["AzureBastionSubnet"]
+#     public_ip_address_id = azurerm_public_ip.bastion_pip.id
+#   }
+# }
+
 resource "azurerm_bastion_host" "bastion" {
   name                = "${var.project}-bastion"
   resource_group_name = azurerm_resource_group.main.name
   location            = var.location
-  sku                 = "Standard"
+  sku                 = "Developer"
 
-  ip_configuration {
-    name                 = "configuration"
-    subnet_id            = azurerm_subnet.main["AzureBastionSubnet"].id
-    public_ip_address_id = azurerm_public_ip.bastion.id
-  }
+  #   virtual_network_id = azurerm_virtual_network.main.id
+  virtual_network_id = module.vnet-hub.id
 
-  copy_paste_enabled     = true
-  file_copy_enabled      = true
-  tunneling_enabled      = true # needed for az network bastion tunnel
-  shareable_link_enabled = false
-}
-
-resource "azurerm_public_ip" "bastion" {
-  name                = "${var.project}-bastion-pip"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = var.location
-  allocation_method   = "Static"
-  sku                 = "Standard"
+  # Ensure the AzureBastionSubnet is created before the Bastion Host
+  depends_on = [module.vnet-hub]
 }

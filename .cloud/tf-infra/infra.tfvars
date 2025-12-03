@@ -15,34 +15,71 @@ admin_username = "nexusadmin"
 
 private_dns_zone_name = "sbx-kag.io"
 
+vnet_name               = "main-hub"
 main_vnet_address_space = ["10.0.0.0/16"]
 
-main_vnet_subnets = {
+hub_subnets = {
   MainSubnet = {
-    address_prefix = "10.0.1.0/24"
+    subnet_address_prefix = ["10.0.1.0/24"]
   }
   WorkloadSubnet = {
-    address_prefix = "10.0.4.0/24"
+    subnet_address_prefix = ["10.0.4.0/24"]
+    nsg_inbound_rules = {
+      "Allow-SSH-Trusted" = {
+        priority                   = 200
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "22"
+        source_address_prefixes    = ["81.65.88.13"]
+        destination_address_prefix = "*"
+      }
+      "Allow-Bastion-Dev" = {
+        priority                   = 150
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_ranges    = ["22", "3389"]
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "*"
+      }
+      "Allow-Nexus-UI-VNet" = {
+        priority                   = 210
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "8081"
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "*"
+      }
+    }
   }
-  AzureBastionSubnet = {
-    address_prefix = "10.0.3.0/26"
+  PrivateEndpointSubnet = {
+    subnet_address_prefix = ["10.0.5.0/24"]
   }
-  ACASubnet = {
-    address_prefix = "10.0.6.0/23"
-    # delegation = {
-    #   name = "aca-delegation"
-    #   service_delegation = {
-    #     name    = "Microsoft.App/environments"
-    #     actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
-    #   }
-    # } 
-  }
+  # Only needed if Azure Bastion is sku 'Standard' or higher
+  # AzureBastionSubnet = {
+  #   subnet_address_prefix = ["10.0.3.0/26"]
+  # }
 }
+
+hub_firewall = {
+  sku_name = "AZFW_VNet"
+  sku_tier = "Standard"
+  # private_ip_address    = "10.0.100.4"
+  subnet_address_prefix = ["10.0.14.0/23"]
+}
+
+
 
 seed_config = {
   images = [
     "library/busybox:latest",
-    "node:alpine3.22",
+    # "node:alpine3.22",
+    "wbitt/network-multitool:alpine-extra"
   ]
   batch_size  = 1
   timer_every = "2min"
@@ -52,3 +89,5 @@ sync_config = {
   enable      = true
   timer_every = "2min"
 }
+
+
