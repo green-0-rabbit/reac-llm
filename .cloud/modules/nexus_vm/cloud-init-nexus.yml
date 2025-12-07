@@ -7,6 +7,7 @@ packages:
   - ca-certificates
   - openssl
   - curl
+  - unzip
 
 write_files:
   - path: /etc/default/nexus-fqdn
@@ -95,6 +96,12 @@ write_files:
           proxy_set_header X-Forwarded-Proto https;
         }
       }
+
+  - path: /opt/nexus-build/Dockerfile
+    permissions: "0644"
+    owner: root:root
+    encoding: b64
+    content: ${dockerfile_content_b64}
 
   - path: /usr/local/bin/provision-nexus.sh
     permissions: "0755"
@@ -194,6 +201,48 @@ write_files:
       nginx -t && systemctl reload nginx
 
       echo "[provision] DONE."
+
+  - path: /usr/local/bin/build-custom-image.sh
+    permissions: "0755"
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      
+      IMAGE_NAME="$${1:-todo-app-api:latest}"
+      CONTEXT_URL="${docker_context_url}"
+      
+      mkdir -p /opt/nexus-build
+      cd /opt/nexus-build
+
+      if [ -n "$CONTEXT_URL" ]; then
+        echo "[build] Downloading context from $CONTEXT_URL..."
+        
+        # Install Azure CLI if missing
+        if ! command -v az >/dev/null 2>&1; then
+            curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+        fi
+        
+        # Login with Managed Identity
+        az login --identity --allow-no-subscriptions
+        
+        # Retry download to handle propagation delays
+        for i in {1..10}; do
+          if az storage blob download --auth-mode login --blob-url "$CONTEXT_URL" --file context.zip; then
+            break
+          fi
+          echo "[build] Download failed, retrying in 10s..."
+          sleep 10
+        done
+      fi
+
+      if [ -s /opt/nexus-build/Dockerfile ] && [ -s context.zip ]; then
+        echo "[build] Found Dockerfile and context, building custom image $IMAGE_NAME..."
+        unzip -o context.zip
+        docker build -t "$IMAGE_NAME" .
+      else
+        echo "[build] No Dockerfile or context found, skipping build."
+      fi
 
   - path: /etc/systemd/system/nginx.service.d/override.conf
     permissions: "0644"
@@ -337,7 +386,7 @@ write_files:
       # Wait for Docker & /v2 readiness
       until [ -S /var/run/docker.sock ]; do sleep 1; done
       for i in {1..60}; do
-        if curl -fsSI "$BASE/v2/" | grep -qE 'HTTP/.* (200|401)'; then break; fi
+        if curl -sSI "$BASE/v2/" | grep -qE 'HTTP/.* (200|401)'; then break; fi
         sleep 2
       done
 
@@ -350,9 +399,18 @@ write_files:
       grep -v '^\s*$' "$SEED_LIST" | while read -r src; do
         grep -qxF "$src" "$DONE_FILE" && continue
         (( to_seed+=1 ))
-        echo "[seed] docker.io/$src -> $${NEXUS_HOST}/$src"
-        docker pull "docker.io/$src"
-        docker tag  "docker.io/$src" "$${NEXUS_HOST}/$src"
+
+        # Check local image first, else pull from docker.io  
+        if docker image inspect "$src" >/dev/null 2>&1; then
+            echo "[seed] Found local image: $src"
+            docker tag "$src" "$${NEXUS_HOST}/$src"
+        else
+            echo "[seed] Pulling docker.io/$src"
+            docker pull "docker.io/$src"
+            docker tag  "docker.io/$src" "$${NEXUS_HOST}/$src"
+        fi
+
+        echo "[seed] Pushing $${NEXUS_HOST}/$src"
         docker push "$${NEXUS_HOST}/$src"
         echo "$src" >> "$DONE_FILE"
         if [[ "$${SEED_BATCH_SIZE:-1}" -gt 0 && "$to_seed" -ge "$${SEED_BATCH_SIZE:-1}" ]]; then
@@ -376,7 +434,7 @@ write_files:
       # Ensure Docker & /v2 readiness
       until [ -S /var/run/docker.sock ]; do sleep 1; done
       for i in {1..60}; do
-        if curl -fsSI "$BASE/v2/" | grep -qE 'HTTP/.* (200|401)'; then break; fi
+        if curl -sSI "$BASE/v2/" | grep -qE 'HTTP/.* (200|401)'; then break; fi
         sleep 2
       done
 

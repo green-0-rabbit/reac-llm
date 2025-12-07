@@ -192,3 +192,21 @@ variable "sync_config" {
   }
 }
 
+variable "dockerfile_content" {
+  type        = string
+  default     = ""
+  description = "Content of the Dockerfile to build on the Nexus VM."
+}
+
+variable "docker_build_context_url" {
+  type        = string
+  default     = ""
+  description = "URL of the zip file containing the build context (e.g. dist folder) for the Docker build."
+}
+
+variable "custom_image_name" {
+  type        = string
+  default     = "local/todo-app-api:latest"
+  description = "Name (and tag) of the custom Docker image to build."
+}
+

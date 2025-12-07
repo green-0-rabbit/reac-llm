@@ -80,15 +80,15 @@ resource "azurerm_container_app" "app" {
   depends_on = [
     azurerm_role_assignment.acr_pull_uai
   ]
-  
+
 }
 
 resource "azurerm_container_app_custom_domain" "custom_domain" {
   count = var.custom_domain != null ? 1 : 0
 
-  container_app_id         = azurerm_container_app.app.id
-  name                     = var.custom_domain.name
-  certificate_binding_type = var.custom_domain.certificate_binding_type
+  container_app_id                         = azurerm_container_app.app.id
+  name                                     = var.custom_domain.name
+  certificate_binding_type                 = var.custom_domain.certificate_binding_type
   container_app_environment_certificate_id = var.custom_domain.certificate_id
 }
 

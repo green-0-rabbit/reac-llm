@@ -37,7 +37,7 @@ variable "ingress" {
       latest_revision = optional(bool, true)
       percentage      = optional(number, 100)
       label           = optional(string)
-    })), [{
+      })), [{
       latest_revision = true
       percentage      = 100
     }])

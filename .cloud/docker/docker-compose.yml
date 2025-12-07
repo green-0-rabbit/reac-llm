@@ -1,6 +1,6 @@
 services:
   todo-api:
-    # image: docker.ch.pbk:8085/my-todo-api:1.0.0
+    image: local/todo-app-api:latest # Use as the image name for the built image
     build:
       context: .
       dockerfile: Dockerfile

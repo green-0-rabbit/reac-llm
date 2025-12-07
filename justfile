@@ -36,6 +36,12 @@
     terraform -chdir={{target}}  fmt -recursive
 
 [group('terraform')]
+@tf-fmt-all:
+    just tf-fmt .cloud/tf-infra
+    just tf-fmt .cloud/tf
+    just tf-fmt .cloud/modules
+
+[group('terraform')]
 [working-directory: '.cloud/tf']
 @tf-init env:
     terraform init -var-file="{{env}}.tfvars" \
@@ -67,6 +73,17 @@
 
 [group('docker')]
 [working-directory: '.cloud/docker']
+@prepare-dist:
+    @echo "Preparing dist folder..."
+    cp -r ../../packages/todo-app-api/dist ./dist
+
+[group('docker')]
+[working-directory: '.cloud/docker']
 @docker-up:
     cp -r ../../packages/todo-app-api/dist ./dist
     docker compose up
+
+[group('docker')]
+[working-directory: '.cloud/docker']
+@docker-build: prepare-dist
+    docker build -t local/todo-app-api:latest .

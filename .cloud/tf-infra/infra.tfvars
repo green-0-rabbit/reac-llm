@@ -10,6 +10,8 @@ acr_settings = {
   private_link_enabled = true
 }
 
+storage_account_name = "sbxinfrastoragekag"
+
 #### nexus vm variables
 admin_username = "nexusadmin"
 
@@ -73,13 +75,12 @@ hub_firewall = {
   subnet_address_prefix = ["10.0.14.0/23"]
 }
 
-
-
 seed_config = {
   images = [
     "library/busybox:latest",
     # "node:alpine3.22",
-    "wbitt/network-multitool:alpine-extra"
+    "wbitt/network-multitool:alpine-extra",
+    "local/todo-app-api:latest"
   ]
   batch_size  = 1
   timer_every = "2min"
@@ -89,5 +90,4 @@ sync_config = {
   enable      = true
   timer_every = "2min"
 }
-
 

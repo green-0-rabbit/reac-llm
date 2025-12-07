@@ -26,6 +26,10 @@ module "nexus_vm" {
   # Seeding and sync
   seed_config = var.seed_config
   sync_config = var.sync_config
+
+  dockerfile_content       = file("${path.module}/../docker/Dockerfile")
+  docker_build_context_url = azurerm_storage_blob.docker_context.url
+  custom_image_name        = "local/todo-app-api:latest"
 }
 
 module "vnet-hub" {
@@ -44,8 +48,6 @@ module "vnet-hub" {
 
   # Hub network details to create peering and other setup
 
-
-  # firewall_private_ip_address = "10.1.0.4"
   private_dns_zone_names = [
     azurerm_private_dns_zone.sbx_zone.name,
     azurerm_private_dns_zone.keyvault.name,

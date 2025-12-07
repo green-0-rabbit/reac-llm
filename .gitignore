@@ -17,9 +17,13 @@ terraform.tfstate.*
 
 # Node
 dist
+!.cloud/docker/dist
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnp.*
 .cache/
+
+*.zip
+*.tar.gz

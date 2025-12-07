@@ -36,13 +36,16 @@ resource "azurerm_linux_virtual_machine" "nexus" {
   # Pass the computed FQDN into cloud-init
   custom_data = base64encode(
     templatefile("${path.module}/cloud-init-nexus.yml", {
-      nexus_fqdn         = local.nexus_fqdn
-      nexus_password     = var.admin_password
-      acr_name           = var.acr_name
-      dockerhub_username = var.dockerhub_credentials.username
-      dockerhub_password = var.dockerhub_credentials.password
-      seed_config        = var.seed_config
-      sync_config        = var.sync_config
+      nexus_fqdn             = local.nexus_fqdn
+      nexus_password         = var.admin_password
+      acr_name               = var.acr_name
+      dockerhub_username     = var.dockerhub_credentials.username
+      dockerhub_password     = var.dockerhub_credentials.password
+      seed_config            = var.seed_config
+      sync_config            = var.sync_config
+      dockerfile_content_b64 = base64encode(var.dockerfile_content)
+      docker_context_url     = var.docker_build_context_url
+      custom_image_name      = var.custom_image_name
     })
   )
 
@@ -90,7 +93,18 @@ resource "azurerm_virtual_machine_extension" "nexus_provision" {
   auto_upgrade_minor_version = true
 
   protected_settings = jsonencode({
-    commandToExecute = "bash -lc 'until [ -f /var/lib/cloud/instance/boot-finished ]; do echo waiting-cloud-init; sleep 5; done; systemctl enable --now docker || true; until systemctl is-active --quiet docker; do echo wait-docker; sleep 2; done; until [ -S /var/run/docker.sock ]; do echo wait-docker-sock; sleep 2; done; /usr/local/bin/nexus-wait.sh && /usr/local/bin/provision-nexus.sh && /usr/local/bin/provision-acr-sync.sh 2>&1 | tee -a /var/log/provision-acr-sync.log'"
+    commandToExecute = <<-EOT
+      bash -lc '
+      until [ -f /var/lib/cloud/instance/boot-finished ]; do echo waiting-cloud-init; sleep 5; done
+      systemctl enable --now docker || true
+      until systemctl is-active --quiet docker; do echo wait-docker; sleep 2; done
+      until [ -S /var/run/docker.sock ]; do echo wait-docker-sock; sleep 2; done
+      /usr/local/bin/nexus-wait.sh && \
+      /usr/local/bin/provision-nexus.sh && \
+      /usr/local/bin/build-custom-image.sh ${var.custom_image_name} && \
+      /usr/local/bin/provision-acr-sync.sh 2>&1 | tee -a /var/log/provision-acr-sync.log
+      '
+    EOT
   })
 
   depends_on = [
