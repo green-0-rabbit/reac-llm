@@ -109,8 +109,8 @@ module "container_app" {
   template = {
     containers = [
       {
-        name   = "busybox"
-        image  = "${local.acr_login_server}/wbitt/network-multitool:alpine-extra"
+        name  = "busybox"
+        image = "${local.acr_login_server}/wbitt/network-multitool:alpine-extra"
         # image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
         cpu    = 0.5
         memory = "1Gi",

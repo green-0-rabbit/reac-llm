@@ -64,3 +64,9 @@
         -var="env={{env}}" \
         -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
         -var="tenant_id=${ARM_TENANT_ID}"
+
+[group('docker')]
+[working-directory: '.cloud/docker']
+@docker-up:
+    cp -r ../../packages/todo-app-api/dist ./dist
+    docker compose up
