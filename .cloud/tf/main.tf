@@ -79,10 +79,10 @@ module "container_app" {
   resource_group_name          = azurerm_resource_group.rg.name
   container_app_environment_id = module.container_app_environment.id
 
-  # user_assigned_identity = {
-  #   id           = azurerm_user_assigned_identity.containerapp.id
-  #   principal_id = azurerm_user_assigned_identity.containerapp.principal_id
-  # }
+  user_assigned_identity = {
+    id           = azurerm_user_assigned_identity.containerapp.id
+    principal_id = azurerm_user_assigned_identity.containerapp.principal_id
+  }
 
   registry_fqdn = local.acr_login_server
 
@@ -91,7 +91,7 @@ module "container_app" {
 
   ingress = {
     external_enabled = true
-    target_port      = 80
+    target_port      = 3000
     traffic_weight = [
       {
         latest_revision = true
@@ -109,12 +109,18 @@ module "container_app" {
   template = {
     containers = [
       {
-        name  = "busybox"
-        image = "${local.acr_login_server}/wbitt/network-multitool:alpine-extra"
+        name  = "todo-app-api"
+        image = "${local.acr_login_server}/local/todo-app-api:latest"
+        # image = "${local.acr_login_server}/wbitt/network-multitool:alpine-extra"
         # image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
         cpu    = 0.5
-        memory = "1Gi",
-        # args   = ["sleep", "3600"]
+        memory = "1Gi"
+        env = [
+          {
+            name  = "PORT"
+            value = "3000"
+          }
+        ]
       }
     ]
   }
