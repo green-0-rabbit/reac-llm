@@ -12,11 +12,11 @@ resource "azurerm_key_vault" "this" {
 
   rbac_authorization_enabled = true
 
-  network_acls {
-    bypass         = "AzureServices"
-    default_action = "Deny"
-    ip_rules       = [var.current_ip]
-  }
+  # network_acls {
+  #   bypass         = "AzureServices"
+  #   default_action = "Deny"
+  #   ip_rules       = [var.current_ip]
+  # }
 
   tags = {
     env = var.env

@@ -75,7 +75,7 @@
 [working-directory: '.cloud/docker']
 @prepare-dist:
     @echo "Preparing dist folder..."
-    cp -r ../../packages/todo-app-api/dist ./dist
+    cp -r ../../packages/todo-app-api/dist .
 
 [group('docker')]
 [working-directory: '.cloud/docker']

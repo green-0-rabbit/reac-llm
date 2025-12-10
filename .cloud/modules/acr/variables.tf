@@ -44,3 +44,9 @@ variable "dns_link_name_prefix" {
   type        = string
   default     = "link"
 }
+
+variable "public_access_enabled" {
+  type        = bool
+  description = "Enable public network access for the ACR"
+  default     = false
+}
