@@ -27,3 +27,6 @@ yarn-error.log*
 
 *.zip
 *.tar.gz
+
+temp
+*.db

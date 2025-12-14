@@ -87,3 +87,20 @@
 [working-directory: '.cloud/docker']
 @docker-build: prepare-dist
     docker build -t local/todo-app-api:latest .
+
+### API Server Tasks ###
+[group('api')]
+[working-directory: 'packages/todo-app-api']
+@todo-dev:
+    #!/usr/bin/env bash
+    source .env
+    echo "Port is: $PORT"
+    yarn start
+
+[group('api')]
+[working-directory: 'packages/todo-app-api']
+@todo-seed:
+    #!/usr/bin/env bash
+    source .env
+    echo "Seeding database..."
+    yarn schema:recreate
