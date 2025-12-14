@@ -5,12 +5,22 @@ import { ConfigService } from "@nestjs/config";
 import express from "express";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { MikroORM } from "@mikro-orm/core";
+import { DatabaseSeeder } from "./seeder/database.seeder";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // https://mikro-orm.io/docs/usage-with-nestjs#app-shutdown-and-cleanup
   app.enableShutdownHooks();
   const configService = app.get(ConfigService);
+
+  const nodeEnv = configService.get("NODE_ENV");
+  if (nodeEnv === "dev" || nodeEnv === "prod") {
+    const orm = app.get(MikroORM);
+    await orm.schema.refreshDatabase();
+    await orm.seeder.seed(DatabaseSeeder);
+  }
+
   /**
    * @see https://mikro-orm.io/docs/usage-with-nestjs#request-scoping-when-using-graphql
    * or use   body-parser @see https://www.npmjs.com/package/body-parser#bodyparserrawoptions
@@ -43,6 +53,6 @@ async function bootstrap() {
   });
   SwaggerModule.setup("api", app, document, {jsonDocumentUrl: "/api/openapi.json"});
 
-  await app.listen(configService.get("PORT") ?? 3001)
+  await app.listen(configService.get("PORT") ?? 3001, '0.0.0.0')
 }
 bootstrap();

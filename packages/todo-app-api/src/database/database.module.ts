@@ -14,7 +14,8 @@ import {
   NODE_ENV_TYPE
 } from "../configuration/schema/common.schema";
 import { Migrator } from "@mikro-orm/migrations";
-import { TsMorphMetadataProvider } from "@mikro-orm/reflection";
+import { SeedManager } from "@mikro-orm/seeder";
+// import { TsMorphMetadataProvider } from "@mikro-orm/reflection";
 import { SqliteDriver } from "@mikro-orm/sqlite";
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
 
@@ -50,11 +51,11 @@ export class DatabaseModule {
             : mikroOrmConfig(params);
         return {
           ...dbConfig,
-          entities: ["dist/**/*.entity.js"],
-          entitiesTs: ["src/**/*.entity.ts"],
-          metadataProvider: TsMorphMetadataProvider,
+          // entities: ["dist/**/*.entity.js"],
+          // entitiesTs: ["src/**/*.entity.ts"],
+          // metadataProvider: TsMorphMetadataProvider,
           highlighter: debug ? highligher : undefined,
-        //   autoLoadEntities: true, will conflit with MikroORMModule.forFeature([**Entity**])
+          autoLoadEntities: true, 
           strict: true,
           loadStrategy: LoadStrategy.SELECT_IN,
           debug,
@@ -64,7 +65,7 @@ export class DatabaseModule {
             transactional: true,
             allOrNothing: true
           },
-          extensions: [Migrator],
+          extensions: [Migrator, SeedManager],
           seeder: {
             path: "dist/seeder",
             pathTs: "src/seeder",

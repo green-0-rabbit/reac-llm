@@ -20,6 +20,9 @@ export default defineConfig({
   },
   ignoreWarnings: [
     /Critical dependency: the request of a dependency is an expression/,
+    /Unsupported feature: require.extensions is not supported by Rspack/,
+    // /Module not found: Can't resolve '..\/..\/package.json'/,
+    /Critical dependency: require function is used in a way/,
   ],
   resolve: {
     extensions: ['...', '.ts'],
@@ -90,6 +93,16 @@ export default defineConfig({
         'bson-ext',
         'snappy/package.json',
         'aws4',
+        'mariadb/callback',
+        'better-sqlite3',
+        'libsql',
+        'class-transformer/storage',
+        'tedious',
+        'mysql',
+        'mysql2',
+        'oracledb',
+        'pg-query-stream',
+        'pg-native',
       ];
       if (!request) {
         throw new Error('Request object is empty');

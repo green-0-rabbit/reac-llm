@@ -62,7 +62,8 @@ export function mikroOrmConfigDev(params: IDatabaseConfigDevParams) {
       min: 5,
       max: maxPoolSize,
       idleTimeoutMillis: idleTimeoutMillis
-    }
+    },
+    metadataProvider: TsMorphMetadataProvider,
   });
 }
 

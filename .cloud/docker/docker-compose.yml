@@ -1,4 +1,21 @@
 services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secretadmin
+      POSTGRES_DB: todo_app
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d todo_app"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   todo-api:
     image: local/todo-app-api:latest # Use as the image name for the built image
     build:
@@ -6,7 +23,22 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=prod
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=admin
+      - DATABASE_PASSWORD=secretadmin
+      - DATABASE_SCHEMA=todo_app
+      - DATABASE_SSL=false
+    depends_on:
+      postgres:
+        condition: service_healthy
 
     # Ensure the container restarts unless explicitly stopped
     restart: unless-stopped
     container_name: todo_app_api_container
+
+volumes:
+  postgres_data:

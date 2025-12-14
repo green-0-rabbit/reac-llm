@@ -79,9 +79,14 @@
 
 [group('docker')]
 [working-directory: '.cloud/docker']
-@docker-up:
-    cp -r ../../packages/todo-app-api/dist ./dist
-    docker compose up
+@docker-up args="": prepare-dist
+    # cp -r ../../packages/todo-app-api/dist ./dist
+    docker compose up {{args}}
+
+[group('docker')]
+[working-directory: '.cloud/docker']
+@docker-down:
+    docker compose down
 
 [group('docker')]
 [working-directory: '.cloud/docker']
@@ -104,3 +109,9 @@
     source .env
     echo "Seeding database..."
     yarn schema:recreate
+
+[group('api')]
+[working-directory: 'packages/todo-app-api']
+@todo-build:
+    yarn build
+
