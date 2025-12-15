@@ -52,6 +52,7 @@ module "vnet-hub" {
     azurerm_private_dns_zone.sbx_zone.name,
     azurerm_private_dns_zone.keyvault.name,
     azurerm_private_dns_zone.blob.name,
+    azurerm_private_dns_zone.postgres.name,
     module.acr.private_dns_zone_name,
   ]
 

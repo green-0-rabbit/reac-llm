@@ -28,6 +28,7 @@ module "vnet-spoke1" {
     data.azurerm_private_dns_zone.keyvault.name,
     data.azurerm_private_dns_zone.storage.name,
     data.azurerm_private_dns_zone.acr.name,
+    data.azurerm_private_dns_zone.postgres.name,
   ]
 
 
@@ -106,6 +107,14 @@ module "container_app" {
     certificate_id           = module.container_app_environment.certificate_id
   }
 
+  secrets = [
+    {
+      name                = "database-password"
+      value               = var.admin_password
+      key_vault_secret_id = azurerm_key_vault_secret.database_password.id
+    }
+  ]
+
   template = {
     containers = [
       {
@@ -117,8 +126,36 @@ module "container_app" {
         memory = "1Gi"
         env = [
           {
+            name        = "DATABASE_PASSWORD"
+            secret_name = "database-password"
+          },
+          {
             name  = "PORT"
             value = "3000"
+          },
+          {
+            name  = "DATABASE_HOST"
+            value = module.postgres.fqdn
+          },
+          {
+            name  = "DATABASE_PORT"
+            value = "5432"
+          },
+          {
+            name  = "DATABASE_USERNAME"
+            value = module.postgres.administrator_login
+          },
+          {
+            name  = "DATABASE_SCHEMA"
+            value = module.postgres.database_name
+          },
+          {
+            name  = "DATABASE_SSL"
+            value = "true"
+          },
+          {
+            name  = "NODE_ENV"
+            value = "prod"
           }
         ]
       }

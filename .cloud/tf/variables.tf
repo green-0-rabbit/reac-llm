@@ -188,3 +188,13 @@ variable "spoke_vnet_subnets" {
   }))
 }
 
+variable "postgres_administrator_login" {
+  description = "The Administrator Login for the PostgreSQL Flexible Server."
+  type        = string
+}
+
+variable "private_dns_zone_postgres_name" {
+  type        = string
+  description = "Private DNS zone name for PostgreSQL Flexible Server"
+}
+

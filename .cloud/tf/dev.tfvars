@@ -20,9 +20,12 @@ main_rg_name                 = "sbx-main-rg"
 ### Private DNS zone RG (backbone)
 private_dns_zone_name = "sbx-kag.io"
 
-private_dns_zone_kv_name      = "privatelink.vaultcore.azure.net"
-private_dns_zone_storage_name = "privatelink.blob.core.windows.net"
-private_dns_zone_acr_name     = "privatelink.azurecr.io"
+private_dns_zone_kv_name       = "privatelink.vaultcore.azure.net"
+private_dns_zone_storage_name  = "privatelink.blob.core.windows.net"
+private_dns_zone_acr_name      = "privatelink.azurecr.io"
+private_dns_zone_postgres_name = "sbx-kag.postgres.database.azure.com"
+
+postgres_administrator_login = "psqladmin"
 
 key_vault_name = "sbx-kv-dev-kag"
 
@@ -80,6 +83,16 @@ spoke_vnet_subnets = {
   }
   PrivateEndpointSubnet = {
     subnet_address_prefix = ["10.1.5.0/24"]
+  }
+  PostgresSubnet = {
+    subnet_address_prefix = ["10.1.8.0/24"]
+    delegation = {
+      name = "fs-delegation"
+      service_delegation = {
+        name    = "Microsoft.DBforPostgreSQL/flexibleServers"
+        actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+      }
+    }
   }
 }
 

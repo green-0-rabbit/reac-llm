@@ -4,10 +4,11 @@
 module "acr" {
   source = "../modules/acr"
 
-  acr_name            = var.acr_settings.name
-  resource_group_name = azurerm_resource_group.main.name
-  location            = var.location
-  sku                 = var.acr_settings.sku
+  acr_name              = var.acr_settings.name
+  resource_group_name   = azurerm_resource_group.main.name
+  location              = var.location
+  sku                   = var.acr_settings.sku
+  public_access_enabled = true
 
   # DNS zone inside the module, linked to the main VNet for resolution
   create_private_link_dns_zone = true

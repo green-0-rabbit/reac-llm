@@ -32,3 +32,8 @@ data "azurerm_key_vault_secret" "containerapp_cert" {
   name         = azurerm_key_vault_certificate.containerapp.name
   key_vault_id = azurerm_key_vault.this.id
 }
+
+data "azurerm_private_dns_zone" "postgres" {
+  name                = var.private_dns_zone_postgres_name
+  resource_group_name = var.main_rg_name
+}
