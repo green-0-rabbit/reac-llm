@@ -127,7 +127,7 @@ locals {
   fw_network_rules     = var.firewall != null ? { for idx, rule in var.firewall.firewall_network_rules : rule.name => { idx = idx, rule = rule } } : {}
   fw_nat_rules         = var.firewall != null ? { for idx, rule in var.firewall.firewall_nat_rules : rule.name => { idx = idx, rule = rule } } : {}
 }
-
+# https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/configure-public-ip-firewall
 resource "azurerm_public_ip" "fw-pip" {
   count               = var.firewall != null ? 1 : 0
   name                = lower("pip-fw-${var.vnet_name}-${var.location}")

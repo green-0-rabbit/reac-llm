@@ -46,6 +46,7 @@ spoke_vnet_name          = "spoke1"
 spoke_vnet_address_space = ["10.1.0.0/16"]
 spoke_vnet_subnets = {
   ACASubnet = {
+    firewall_enabled      = true
     subnet_address_prefix = ["10.1.6.0/23"]
     delegation = {
       name = "aca-delegation"

@@ -66,51 +66,108 @@ module "vnet-hub" {
   # subnet name will be set as per Azure naming convention by defaut. expected value here is: <App or project name>
   subnets = var.hub_subnets
 
-  # firewall = {
-  #   sku_name              = var.hub_firewall.sku_name
-  #   sku_tier              = var.hub_firewall.sku_tier
-  #   subnet_address_prefix = var.hub_firewall.subnet_address_prefix
-  #   private_ip_address    = var.hub_firewall.private_ip_address
-  #   # (Optional) specify the application rules for Azure Firewall
-  #   firewall_application_rules = [
-  #     {
-  #       name             = "microsoft"
-  #       action           = "Allow"
-  #       source_addresses = ["10.0.0.0/8"]
-  #       target_fqdns     = ["*.microsoft.com"]
-  #       protocol = {
-  #         type = "Http"
-  #         port = "80"
-  #       }
-  #     },
-  #   ]
-  #   # (Optional) specify the Network rules for Azure Firewall
-  #   firewall_network_rules = [
-  #     {
-  #       name                  = "ntp"
-  #       action                = "Allow"
-  #       source_addresses      = ["10.0.0.0/8"]
-  #       destination_ports     = ["123"]
-  #       destination_addresses = ["*"]
-  #       protocols             = ["UDP"]
-  #     },
-  #   ]
-  #   # (Optional) specify the NAT rules for Azure Firewall
-  #   # Destination address must be Firewall public IP
-  #   # `fw-public` is a variable value and automatically pick the firewall public IP from module.
-  #   firewall_nat_rules = [
-  #     {
-  #       name                  = "testrule"
-  #       action                = "Dnat"
-  #       source_addresses      = ["10.0.0.0/8"]
-  #       destination_ports     = ["53", ]
-  #       destination_addresses = ["fw-public"]
-  #       translated_port       = 53
-  #       translated_address    = "8.8.8.8"
-  #       protocols             = ["TCP", "UDP", ]
-  #     },
-  #   ]
-  # }
+  firewall = {
+    sku_name              = var.hub_firewall.sku_name
+    sku_tier              = var.hub_firewall.sku_tier
+    subnet_address_prefix = var.hub_firewall.subnet_address_prefix
+    private_ip_address    = var.hub_firewall.private_ip_address
+
+    # Application rules for Azure Firewall
+    #  https://learn.microsoft.com/en-us/azure/container-apps/use-azure-firewall
+    firewall_application_rules = [
+      {
+        name             = "AzureContainerRegistry"
+        action           = "Allow"
+        source_addresses = ["*"]
+        target_fqdns = [
+          "*.azurecr.io",
+          "*.blob.core.windows.net",
+          "login.microsoft.com"
+        ]
+        protocol = {
+          type = "Https"
+          port = "443"
+        }
+      },
+      {
+        name             = "MicrosoftContainerRegistry"
+        action           = "Allow"
+        source_addresses = ["*"]
+        target_fqdns = [
+          "mcr.microsoft.com",
+          "*.data.mcr.microsoft.com",
+          "packages.aks.azure.com",
+          "acs-mirror.azureedge.net"
+        ]
+        protocol = {
+          type = "Https"
+          port = "443"
+        }
+      },
+      {
+        name             = "AzureKeyVault"
+        action           = "Allow"
+        source_addresses = ["*"]
+        target_fqdns = [
+          "*.vault.azure.net",
+          "login.microsoft.com"
+        ]
+        protocol = {
+          type = "Https"
+          port = "443"
+        }
+      },
+      {
+        name             = "AzureActiveDirectory"
+        action           = "Allow"
+        source_addresses = ["*"]
+        target_fqdns = [
+          "login.microsoftonline.com",
+          "*.login.microsoftonline.com",
+          "*.login.microsoft.com",
+          "*.identity.azure.net",
+          "*.graph.windows.net",
+          "*.aadcdn.microsoftonline-p.com"
+        ]
+        protocol = {
+          type = "Https"
+          port = "443"
+        }
+      },
+      {
+        name             = "AzureMonitor"
+        action           = "Allow"
+        source_addresses = ["*"]
+        target_fqdns = [
+          "*.ods.opinsights.azure.com",
+          "*.oms.opinsights.azure.com",
+          "*.monitor.azure.com"
+        ]
+        protocol = {
+          type = "Https"
+          port = "443"
+        }
+      },
+      {
+        name             = "AzureManagement"
+        action           = "Allow"
+        source_addresses = ["*"]
+        target_fqdns = [
+          "management.azure.com"
+        ]
+        protocol = {
+          type = "Https"
+          port = "443"
+        }
+      }
+    ]
+
+    # Network rules for Azure Firewall
+    firewall_network_rules = []
+
+    # NAT rules for Azure Firewall
+    firewall_nat_rules = []
+  }
 
 
   tags = {
