@@ -21,3 +21,11 @@ output "static_ip_address" {
 output "certificate_id" {
   value = var.certificate_config != null ? azurerm_container_app_environment_certificate.this[0].id : null
 }
+
+output "logs_destination" {
+  value = var.logs_destination
+}
+
+output "diagnostic_setting_id" {
+  value = var.logs_destination == "azure-monitor" ? azurerm_monitor_diagnostic_setting.cae_to_law[0].id : null
+}

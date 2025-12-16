@@ -24,6 +24,12 @@ private_dns_zone_kv_name       = "privatelink.vaultcore.azure.net"
 private_dns_zone_storage_name  = "privatelink.blob.core.windows.net"
 private_dns_zone_acr_name      = "privatelink.azurecr.io"
 private_dns_zone_postgres_name = "sbx-kag.postgres.database.azure.com"
+private_dns_azure_monitor_names = [
+  "privatelink.monitor.azure.com",
+  "privatelink.oms.opinsights.azure.com",
+  "privatelink.ods.opinsights.azure.com",
+  "privatelink.agentsvc.azure-automation.net",
+]
 
 postgres_administrator_login = "psqladmin"
 

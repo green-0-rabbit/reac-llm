@@ -23,13 +23,13 @@ module "vnet-spoke1" {
   # Private DNS zones to link with this VNet
   private_dns_zone_resource_group_name = var.main_rg_name
 
-  private_dns_zone_names = [
+  private_dns_zone_names = concat([
     data.azurerm_private_dns_zone.sbx.name,
     data.azurerm_private_dns_zone.keyvault.name,
     data.azurerm_private_dns_zone.storage.name,
     data.azurerm_private_dns_zone.acr.name,
     data.azurerm_private_dns_zone.postgres.name,
-  ]
+  ], values(data.azurerm_private_dns_zone.monitor)[*].name)
 
 
   # Multiple Subnets, Service delegation, Service Endpoints, Network security groups
@@ -43,12 +43,13 @@ module "vnet-spoke1" {
 }
 
 module "container_app_environment" {
-  source = "../modules/container_app_environment"
-
+  source                     = "../modules/container_app_environment"
+  name                       = "acaenvdemo-${var.env}"
   env                        = var.env
   location                   = var.location
   resource_group_name        = azurerm_resource_group.rg.name
   infrastructure_subnet_id   = module.vnet-spoke1.subnet_ids["ACASubnet"]
+  logs_destination           = "azure-monitor"
   log_analytics_workspace_id = var.log_analytics_workspace_id != "" ? var.log_analytics_workspace_id : azurerm_log_analytics_workspace.this[0].id
 
   # @see https://learn.microsoft.com/en-us/azure/container-apps/workload-profiles-overview
@@ -161,6 +162,10 @@ module "container_app" {
       }
     ]
   }
+
+  depends_on = [
+    azurerm_role_assignment.kv_secrets_user
+  ]
 }
 
 

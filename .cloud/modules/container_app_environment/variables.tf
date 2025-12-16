@@ -1,5 +1,10 @@
 variable "env" { type = string }
 
+variable "name" {
+  type        = string
+  description = "Name of the Container App Environment"
+}
+
 variable "location" {
   type        = string
   description = "Azure region for the environment (must be Switzerland North/West)."
@@ -12,7 +17,8 @@ variable "location" {
 variable "resource_group_name" { type = string }
 variable "infrastructure_subnet_id" { type = string }
 variable "log_analytics_workspace_id" {
-  type = string
+  type    = string
+  default = null
 }
 variable "lb_internal_only" {
   type    = bool
@@ -51,4 +57,15 @@ variable "certificate_config" {
     certificate_password    = optional(string, "")
   })
   default = null
+}
+
+variable "logs_destination" {
+  type        = string
+  description = "Where Container Apps Env sends logs: log-analytics (direct) or azure-monitor (via diagnostic settings) or none."
+  default     = "log-analytics"
+
+  validation {
+    condition     = contains(["log-analytics", "azure-monitor", "none"], var.logs_destination)
+    error_message = "logs_destination must be one of: log-analytics, azure-monitor, none."
+  }
 }

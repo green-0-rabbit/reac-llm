@@ -48,13 +48,16 @@ module "vnet-hub" {
 
   # Hub network details to create peering and other setup
 
-  private_dns_zone_names = [
-    azurerm_private_dns_zone.sbx_zone.name,
-    azurerm_private_dns_zone.keyvault.name,
-    azurerm_private_dns_zone.blob.name,
-    azurerm_private_dns_zone.postgres.name,
-    module.acr.private_dns_zone_name,
-  ]
+  private_dns_zone_names = concat(
+    [
+      azurerm_private_dns_zone.sbx_zone.name,
+      azurerm_private_dns_zone.keyvault.name,
+      azurerm_private_dns_zone.blob.name,
+      azurerm_private_dns_zone.postgres.name,
+      module.acr.private_dns_zone_name,
+    ],
+    values(azurerm_private_dns_zone.ampls)[*].name
+  )
 
 
   # Multiple Subnets, Service delegation, Service Endpoints, Network security groups

@@ -1,5 +1,5 @@
 # Private Endpoints 
-# @see https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview?utm_source=chatgpt.com
+# @see https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview?
 # @see https://learn.microsoft.com/en-us/samples/azure/azure-quickstart-templates/key-vault-private-endpoint/
 
 # https://learn.microsoft.com/en-us/azure/container-registry/container-registry-private-link
