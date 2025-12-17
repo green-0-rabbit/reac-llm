@@ -18,6 +18,7 @@ resource "azurerm_storage_blob" "docker_context" {
   storage_container_name = azurerm_storage_container.builds.name
   type                   = "Block"
   source                 = data.archive_file.docker_context.output_path
+  content_md5            = data.archive_file.docker_context.output_md5
 }
 
 resource "azurerm_role_assignment" "vm_blob_reader" {

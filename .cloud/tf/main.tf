@@ -157,6 +157,18 @@ module "container_app" {
           {
             name  = "NODE_ENV"
             value = "prod"
+          },
+          {
+            name  = "AZURE_STORAGE_SERVICE_URI"
+            value = azurerm_storage_account.this.primary_blob_endpoint
+          },
+          {
+            name  = "AZURE_STORAGE_CONTAINER_NAME"
+            value = "attachments"
+          },
+          {
+            name  = "AZURE_CLIENT_ID"
+            value = azurerm_user_assigned_identity.containerapp.client_id
           }
         ]
       }

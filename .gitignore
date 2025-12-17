@@ -34,3 +34,7 @@ temp
 azurite
 
 certs
+
+test.sh
+test.txt
+create_response.json

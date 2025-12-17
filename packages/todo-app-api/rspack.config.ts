@@ -49,6 +49,11 @@ export default defineConfig({
       },
     ],
   },
+  plugins: [
+    new rspack.optimize.LimitChunkCountPlugin({
+      maxChunks: 1,
+    }),
+  ],
   optimization: {
     minimizer: [
       new rspack.SwcJsMinimizerRspackPlugin({

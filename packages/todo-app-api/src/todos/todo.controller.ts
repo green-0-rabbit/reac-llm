@@ -11,6 +11,7 @@ import {
   UploadedFile,
   UseFilters,
   UseInterceptors,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -35,6 +36,8 @@ import { Todo } from './entities/todo.entity';
 @ApiBadRequestResponse({ type: ValidationRequestException })
 @UseFilters(HttpExceptionFilter, ORMExceptionFilter)
 export class TodoController {
+  private readonly logger = new Logger(TodoController.name);
+
   constructor(private todoService: TodoService) {}
 
   @Post()
@@ -42,6 +45,7 @@ export class TodoController {
   @ApiOkResponse({ type: Todo })
   @HttpCode(200)
   async createTodo(@Body(new HMValidationPipe()) dto: CreateTodoDto) {
+    this.logger.log(`Creating todo with title: ${dto.title}`);
     return this.todoService.create(dto);
   }
 
@@ -65,6 +69,12 @@ export class TodoController {
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    this.logger.log(`Uploading attachment for todo ${id}`);
+    if (file) {
+      this.logger.log(`File received: ${file.originalname}, size: ${file.size}`);
+    } else {
+      this.logger.warn(`No file received for todo ${id}`);
+    }
     return this.todoService.addAttachment(id, file);
   }
 

@@ -23,6 +23,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - PORT=3000
       - NODE_ENV=prod
@@ -32,13 +34,21 @@ services:
       - DATABASE_PASSWORD=secretadmin
       - DATABASE_SCHEMA=todo_app
       - DATABASE_SSL=false
+      - AZURE_STORAGE_SERVICE_URI=https://host.docker.internal:10000/devstoreaccount1
+      - AZURE_STORAGE_CONTAINER_NAME=todo-attachments
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - NODE_EXTRA_CA_CERTS=/usr/src/app/certs/azurite-cert.pem
     depends_on:
       postgres:
         condition: service_healthy
 
+
     # Ensure the container restarts unless explicitly stopped
     restart: unless-stopped
     container_name: todo_app_api_container
+    volumes:
+      - ../../packages/todo-app-api/certs:/usr/src/app/certs:ro
+      - /home/blackkeno/.azure:/home/node/.azure
 
 volumes:
   postgres_data:
