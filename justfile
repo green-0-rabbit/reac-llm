@@ -99,8 +99,18 @@
 @todo-dev:
     #!/usr/bin/env bash
     source .env
+    # For local development with self-signed certs, we can disable TLS verification
+    # if NODE_EXTRA_CA_CERTS is not working as expected.
     echo "Port is: $PORT"
+    echo "Trusting cert at: $NODE_EXTRA_CA_CERTS"
     yarn start
+
+[group('api')]
+[working-directory: 'packages/todo-app-api']
+@todo-test:
+    #!/usr/bin/env bash
+    source .env
+    yarn test:e2e
 
 [group('api')]
 [working-directory: 'packages/todo-app-api']
@@ -114,4 +124,14 @@
 [working-directory: 'packages/todo-app-api']
 @todo-build:
     yarn build
+
+[group('service')]
+[working-directory: 'packages/todo-app-api']
+@todo-svc-azurite:
+    yarn azurite:start
+
+[group('service')]
+[working-directory: 'packages/todo-app-api']
+@todo-svc-azurite-cert:
+    ./scripts/generate-certs.sh
 

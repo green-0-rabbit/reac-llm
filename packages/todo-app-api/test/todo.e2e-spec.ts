@@ -7,6 +7,16 @@ import { createTestingModule } from './utils/create-testing-module';
 
 async function initApp() {
   process.env.DATABASE_SCHEMA = "dbtest.db";
+  process.env.DATABASE_HOST = process.env.DATABASE_HOST || "localhost";
+  process.env.DATABASE_PORT = process.env.DATABASE_PORT || "5432";
+  process.env.DATABASE_USERNAME = process.env.DATABASE_USERNAME || "admin";
+  process.env.DATABASE_PASSWORD = process.env.DATABASE_PASSWORD || "secretadmin";
+  
+  // Setup Azure Storage env vars for testing
+  process.env.AZURE_STORAGE_SERVICE_URI = "https://127.0.0.1:10000/devstoreaccount1";
+  process.env.AZURE_STORAGE_CONTAINER_NAME = "todo-attachments-test";
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
   let orm: MikroORM;
   // eslint-disable-next-line prefer-const
   orm = await MikroORM.init({
@@ -80,6 +90,17 @@ describe('TodoController (e2e)', () => {
 
     expect(response.body.title).toBe('Updated E2E Todo');
     expect(response.body.isCompleted).toBe(true);
+  });
+
+  it('/todos/:id/attachment (POST)', async () => {
+    const buffer = Buffer.from('test file content');
+    const response = await request(app.getHttpServer())
+      .post(`/todos/${createdTodoId}/attachment`)
+      .attach('file', buffer, 'test.txt')
+      .expect(201);
+
+    expect(response.body).toHaveProperty('attachmentUrl');
+    expect(response.body.attachmentUrl).toContain('test.txt');
   });
 
   it('/todos/:id (DELETE)', async () => {
