@@ -29,8 +29,9 @@ data "azurerm_virtual_network" "hub-vnet" {
 }
 
 data "azurerm_key_vault_secret" "containerapp_cert" {
-  name         = azurerm_key_vault_certificate.containerapp.name
+  name         = "containerapp-cert-v2"
   key_vault_id = azurerm_key_vault.this.id
+  depends_on   = [azurerm_key_vault_secret.containerapp_cert_v2]
 }
 
 data "azurerm_private_dns_zone" "postgres" {

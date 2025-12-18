@@ -37,4 +37,5 @@ certs
 
 test.sh
 test.txt
-create_response.json
+create_response.json.cloud/tf/temp/
+temp_cert.pem

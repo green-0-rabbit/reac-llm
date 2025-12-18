@@ -91,6 +91,10 @@ spoke_vnet_subnets = {
   PrivateEndpointSubnet = {
     subnet_address_prefix = ["10.1.5.0/24"]
   }
+  ApplicationGatewaySubnet = {
+    subnet_address_prefix                         = ["10.1.9.0/24"]
+    private_link_service_network_policies_enabled = false
+  }
   PostgresSubnet = {
     subnet_address_prefix = ["10.1.8.0/24"]
     delegation = {
