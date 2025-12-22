@@ -74,6 +74,8 @@
 [group('docker')]
 [working-directory: '.cloud/docker']
 @prepare-dist:
+    @echo "Building app..."
+    just todo-build
     @echo "Preparing dist folder..."
     cp -r ../../packages/todo-app-api/dist .
 
@@ -92,6 +94,16 @@
 [working-directory: '.cloud/docker']
 @docker-build: prepare-dist
     docker build -t local/todo-app-api:latest .
+
+[group('docker')]
+[working-directory: '.cloud/docker']
+@docker-push: docker-build
+    @echo "Logging into ACR..."
+    az acr login --name sbxinfraacrkag
+    @echo "Tagging image..."
+    docker tag local/todo-app-api:latest sbxinfraacrkag.azurecr.io/local/todo-app-api:latest
+    @echo "Pushing image..."
+    docker push sbxinfraacrkag.azurecr.io/local/todo-app-api:latest
 
 ### API Server Tasks ###
 [group('api')]
@@ -155,6 +167,31 @@ vm-exec +command:
     echo "Running on $IP..."
     sshpass -p "$TF_VAR_admin_password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 nexusadmin@$IP "{{command}}"
 
+[group('ops')]
+vm-scp local_file remote_path="":
+    #!/usr/bin/env bash
+    if [ -z "$TF_VAR_admin_password" ]; then
+        echo "Error: TF_VAR_admin_password is not set. Please run 'glb-var infra' first."
+        exit 1
+    fi
+
+    pushd .cloud/tf-infra > /dev/null
+    IP=$(terraform output -raw nexus_vm_public_ip)
+    popd > /dev/null
+
+    if [ -z "$IP" ]; then
+        echo "Error: Could not get Nexus VM Public IP."
+        exit 1
+    fi
+
+    DEST="{{remote_path}}"
+    if [ -z "$DEST" ]; then
+        DEST="/home/nexusadmin/$(basename {{local_file}})"
+    fi
+
+    echo "Copying {{local_file}} to $IP:$DEST..."
+    sshpass -p "$TF_VAR_admin_password" scp -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{local_file}} nexusadmin@$IP:$DEST
+
 ### Keycloak Tasks ###
 [group('keycloak-docker')]
 [working-directory: '.cloud/tools/keycloak']
@@ -168,8 +205,8 @@ vm-exec +command:
 
 [group('keycloak-docker')]
 @kc-publish-image:
-    docker tag keycloak-keycloak.test:latest humaapi0registry/sandboxhm:keycloak
-    docker push humaapi0registry/sandboxhm:keycloak
+    docker tag keycloak-keycloak.test:latest humaapi0registry/keycloak:latest
+    docker push humaapi0registry/keycloak:latest
 
 [group('keycloak-config')]
 @kc-export-realm:

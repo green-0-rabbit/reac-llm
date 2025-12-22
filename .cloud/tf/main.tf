@@ -115,6 +115,14 @@ module "keycloak" {
     {
       name  = "admin-password"
       value = var.admin_password
+    },
+    {
+      name  = "api-sso-secret"
+      value = "supersecret"
+    },
+    {
+      name  = "test-user-password"
+      value = "userpass1234#!"
     }
   ]
 
@@ -122,10 +130,10 @@ module "keycloak" {
     containers = [
       {
         name   = "keycloak"
-        image  = "quay.io/keycloak/keycloak:26.4.7"
+        image  = "humaapi0registry/keycloak:latest"
         cpu    = 1.0
         memory = "2Gi"
-        args   = ["start-dev"]
+        args   = ["start-dev", "--import-realm"]
         env = [
           {
             name  = "KC_HOSTNAME"
@@ -158,6 +166,18 @@ module "keycloak" {
           {
             name  = "KC_LOG_LEVEL"
             value = "DEBUG"
+          },
+          {
+            name        = "KC_REALM_API-SSO_SECRET"
+            secret_name = "api-sso-secret"
+          },
+          {
+            name        = "KC_TEST_USER_PASSWORD"
+            secret_name = "test-user-password"
+          },
+          {
+            name  = "KC_REALM_API-SSO_REDIRECT_URIS"
+            value = "https://${local.container_app_fqdn}/*"
           }
         ]
       }
@@ -183,31 +203,31 @@ module "container_app" {
     principal_id = azurerm_user_assigned_identity.containerapp.principal_id
   }
 
-  auth = {
-    global_validation = {
-      unauthenticated_client_action = "RedirectToLoginPage"
-      excluded_paths                = ["/health", "/favicon.ico"]
-    }
-    identity_providers = {
-      custom_open_id_connect_providers = {
-        keycloak = {
-          registration = {
-            client_id = "todo-app-api"
-            client_credential = {
-              client_secret_setting_name = "keycloak-client-secret"
-            }
-            open_id_connect_configuration = {
-              well_known_open_id_configuration = "http://${local.keycloak_fqdn}/realms/todo-app/.well-known/openid-configuration"
-            }
-          }
-          login = {
-            name_claim_type = "preferred_username"
-            scopes          = ["openid", "profile", "email"]
-          }
-        }
-      }
-    }
-  }
+  # auth = {
+  #   global_validation = {
+  #     unauthenticated_client_action = "RedirectToLoginPage"
+  #     excluded_paths                = ["/health", "/favicon.ico"]
+  #   }
+  #   identity_providers = {
+  #     custom_open_id_connect_providers = {
+  #       keycloak = {
+  #         registration = {
+  #           client_id = "todo-app-api"
+  #           client_credential = {
+  #             client_secret_setting_name = "keycloak-client-secret"
+  #           }
+  #           open_id_connect_configuration = {
+  #             well_known_open_id_configuration = "http://${local.keycloak_fqdn}/realms/todo-app/.well-known/openid-configuration"
+  #           }
+  #         }
+  #         login = {
+  #           name_claim_type = "preferred_username"
+  #           scopes          = ["openid", "profile", "email"]
+  #         }
+  #       }
+  #     }
+  #   }
+  # }
 
   registry_fqdn = local.acr_login_server
 
@@ -239,7 +259,7 @@ module "container_app" {
     },
     {
       name  = "keycloak-client-secret"
-      value = "my-super-secret-key"
+      value = "supersecret"
     }
   ]
 
@@ -291,11 +311,23 @@ module "container_app" {
           },
           {
             name  = "AZURE_STORAGE_CONTAINER_NAME"
-            value = "attachments"
+            value = "todo-attachments"
           },
           {
             name  = "AZURE_CLIENT_ID"
             value = azurerm_user_assigned_identity.containerapp.client_id
+          },
+          {
+            name  = "AUTH_ISSUER_URL"
+            value = "https://${local.keycloak_fqdn}/realms/api-realm"
+          },
+          {
+            name  = "AUTH_JWKS_URI"
+            value = "https://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/certs"
+          },
+          {
+            name  = "NODE_TLS_REJECT_UNAUTHORIZED"
+            value = "0"
           }
         ]
       }
