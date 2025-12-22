@@ -126,17 +126,20 @@ Involved components:
     - Deployed and verified Keycloak and Todo App API (from 4.4).
     - The easy-auth feature added in the container apps module.
 - **Steps**:
-    1. Comment out JWT validation @UseGuards(JwtAuthGuard) in `packages/todo-app-api/src/todos/todo.controller.ts` to disable JWT validation.
-    2. just run`just docker-up "--build -d"`(it will build, and prepare artefact run api ) to verify the api still works without jwt validation.
-    3. Try to access the api without token, it should work `curl http://localhost:3000/todos`
-    4. Update `.cloud/tf/main.tf` to enable Easy Auth for `todo-app-api`.
+    - [x] 1. Comment out JWT validation @UseGuards(JwtAuthGuard) in `packages/todo-app-api/src/todos/todo.controller.ts` to disable JWT validation.
+    - [x] 2. just run`just docker-up "--build -d"`(it will build, and prepare artefact run api ) to verify the api still works without jwt validation.
+    - [x] 3. Try to access the api without token, it should work `curl http://localhost:3000/todos`
+    - [x] 4. Update `.cloud/tf/main.tf` to enable Easy Auth for `todo-app-api`.
         - Configure `auth_config` (or equivalent in the module) to use Keycloak as an OIDC provider.
             - Client ID: `api-sso`
             - Client Secret: `supersecret` (or reference the secret)
             - Issuer URL: `https://keycloak-dev.sbx-kag.io/realms/api-realm`
-    3. Apply Terraform configuration:
+    - [x] 5. Redeploy the api image to ACR using `just docker-push-acr`.
+    - [x] 6. Plan and Apply Terraform configuration:
+        - `glb-var dev`
+        - `just tf-plan dev`
         - `just tf-apply dev`
-    4. Verify:
+    - [x] 7. Verify:
         - Accessing the API without a token should result in a 401 or redirect (depending on config).
         - Accessing with a valid token (obtained via script) should work.
 - **Output**:

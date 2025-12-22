@@ -37,7 +37,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 @Controller('todos')
 @ApiTags('todos')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @ApiBadRequestResponse({ type: ValidationRequestException })
 @UseFilters(HttpExceptionFilter, ORMExceptionFilter)
 export class TodoController {

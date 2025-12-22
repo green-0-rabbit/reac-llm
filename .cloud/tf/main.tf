@@ -203,31 +203,35 @@ module "container_app" {
     principal_id = azurerm_user_assigned_identity.containerapp.principal_id
   }
 
-  # auth = {
-  #   global_validation = {
-  #     unauthenticated_client_action = "RedirectToLoginPage"
-  #     excluded_paths                = ["/health", "/favicon.ico"]
-  #   }
-  #   identity_providers = {
-  #     custom_open_id_connect_providers = {
-  #       keycloak = {
-  #         registration = {
-  #           client_id = "todo-app-api"
-  #           client_credential = {
-  #             client_secret_setting_name = "keycloak-client-secret"
-  #           }
-  #           open_id_connect_configuration = {
-  #             well_known_open_id_configuration = "http://${local.keycloak_fqdn}/realms/todo-app/.well-known/openid-configuration"
-  #           }
-  #         }
-  #         login = {
-  #           name_claim_type = "preferred_username"
-  #           scopes          = ["openid", "profile", "email"]
-  #         }
-  #       }
-  #     }
-  #   }
-  # }
+  auth = {
+    global_validation = {
+      unauthenticated_client_action = "RedirectToLoginPage"
+      excluded_paths                = ["/health", "/favicon.ico"]
+    }
+    identity_providers = {
+      custom_open_id_connect_providers = {
+        keycloak = {
+          registration = {
+            client_id = "api-sso"
+            client_credential = {
+              client_secret_setting_name = "keycloak-client-secret"
+            }
+            open_id_connect_configuration = {
+              well_known_open_id_configuration = "http://${local.keycloak_fqdn}/realms/api-realm/.well-known/openid-configuration"
+              authorization_endpoint           = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/auth"
+              token_endpoint                   = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/token"
+              issuer                           = "http://${local.keycloak_fqdn}/realms/api-realm"
+              certification_uri                = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/certs"
+            }
+          }
+          login = {
+            name_claim_type = "preferred_username"
+            scopes          = ["openid", "profile", "email"]
+          }
+        }
+      }
+    }
+  }
 
   registry_fqdn = local.acr_login_server
 

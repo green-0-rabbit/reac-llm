@@ -97,7 +97,7 @@
 
 [group('docker')]
 [working-directory: '.cloud/docker']
-@docker-push: docker-build
+@docker-push-acr: docker-build
     @echo "Logging into ACR..."
     az acr login --name sbxinfraacrkag
     @echo "Tagging image..."
