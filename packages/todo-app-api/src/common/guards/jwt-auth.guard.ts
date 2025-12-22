@@ -27,16 +27,4 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
     const { req } = restContext.getContext();
     return super.canActivate(new ExecutionContextHost([req])); // NOTE
   }
-
-  // canActivate(context: ExecutionContext) {
-  //   const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-  //     context.getHandler(),
-  //     context.getClass()
-  //   ]);
-  //   if (isPublic) {
-  //     return true;
-  //   }
-
-  //   return super.canActivate(context);
-  // }
 }

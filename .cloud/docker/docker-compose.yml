@@ -34,21 +34,51 @@ services:
       - DATABASE_PASSWORD=secretadmin
       - DATABASE_SCHEMA=todo_app
       - DATABASE_SSL=false
-      - AZURE_STORAGE_SERVICE_URI=https://host.docker.internal:10000/devstoreaccount1
+      - AZURE_STORAGE_SERVICE_URI=https://azurite:10000/devstoreaccount1
       - AZURE_STORAGE_CONTAINER_NAME=todo-attachments
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - NODE_EXTRA_CA_CERTS=/usr/src/app/certs/azurite-cert.pem
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-
+      - AUTH_ISSUER_URL=http://localhost:8080/realms/api-realm
+      - AUTH_JWKS_URI=http://keycloak:8080/realms/api-realm/protocol/openid-connect/certs
     # Ensure the container restarts unless explicitly stopped
     restart: unless-stopped
     container_name: todo_app_api_container
     volumes:
       - ../../packages/todo-app-api/certs:/usr/src/app/certs:ro
       - /home/blackkeno/.azure:/home/node/.azure
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      azurite:
+        condition: service_started
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: "azurite"
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - ../../packages/todo-app-api/certs:/workspace/certs:ro
+    command: "azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --cert /workspace/certs/azurite-cert.pem --key /workspace/certs/azurite-key.pem --oauth basic --debug /workspace/debug.log"
+
+  keycloak:
+    image: keycloak-keycloak.test:latest
+    ports:
+      - "8080:8080"
+    environment:
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HOSTNAME_STRICT: false
+      KC_PROXY_HEADERS: xforwarded
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: dev-file
+      KC_REALM_API-SSO_REDIRECT_URIS: "*"
+      KC_TEST_USER_PASSWORD: "userpass1234#!"
+    command: start-dev --import-realm
 
 volumes:
   postgres_data:

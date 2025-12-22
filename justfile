@@ -166,6 +166,11 @@ vm-exec +command:
 @kc-dc-down profile:
     docker compose  --profile {{profile}} down
 
+[group('keycloak-docker')]
+@kc-publish-image:
+    docker tag keycloak-keycloak.test:latest humaapi0registry/sandboxhm:keycloak
+    docker push humaapi0registry/sandboxhm:keycloak
+
 [group('keycloak-config')]
 @kc-export-realm:
     yarn realm:config -s "supersecret" \

@@ -12,6 +12,7 @@ import {
   UseFilters,
   UseInterceptors,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -21,6 +22,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { OkResponse } from '../common/responses';
@@ -30,9 +32,12 @@ import { HMValidationPipe } from '../common/pipes';
 import { TodoService } from './todo.service';
 import { CreateTodoDto, UpdateTodoDto } from './dto';
 import { Todo } from './entities/todo.entity';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @Controller('todos')
 @ApiTags('todos')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @ApiBadRequestResponse({ type: ValidationRequestException })
 @UseFilters(HttpExceptionFilter, ORMExceptionFilter)
 export class TodoController {

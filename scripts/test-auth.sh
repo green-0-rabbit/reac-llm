@@ -75,5 +75,5 @@ fi
 
 echo "----------------------------------------------------------------"
 echo "✔ Successfully authenticated user!"
-echo "Access Token (truncated): ${ACCESS_TOKEN:0:50}..."
+echo "Access Token: $ACCESS_TOKEN"
 echo "----------------------------------------------------------------"
