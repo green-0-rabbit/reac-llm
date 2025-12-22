@@ -94,6 +94,28 @@ spoke_vnet_subnets = {
   ApplicationGatewaySubnet = {
     subnet_address_prefix                         = ["10.1.9.0/24"]
     private_link_service_network_policies_enabled = false
+    nsg_inbound_rules = {
+      "Allow-GatewayManager" = {
+        priority                   = 100
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "65200-65535"
+        source_address_prefix      = "GatewayManager"
+        destination_address_prefix = "*"
+      }
+      "Allow-HTTP-HTTPS" = {
+        priority                   = 110
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_ranges    = ["80", "443"]
+        source_address_prefix      = "Internet"
+        destination_address_prefix = "*"
+      }
+    }
   }
   PostgresSubnet = {
     subnet_address_prefix = ["10.1.8.0/24"]

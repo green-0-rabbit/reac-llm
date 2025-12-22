@@ -39,9 +39,6 @@ resource "azurerm_monitor_diagnostic_setting" "cae_to_law" {
   # Common categories for Container Apps Environment diagnostics
   enabled_log { category = "ContainerAppConsoleLogs" }
   enabled_log { category = "ContainerAppSystemLogs" }
-  enabled_log { category = "SessionConsoleLogs" }
-  enabled_log { category = "SessionPoolLifecycleLogs" }
-  enabled_log { category = "SessionAllocationLogs" }
 
   enabled_metric {
     category = "AllMetrics"

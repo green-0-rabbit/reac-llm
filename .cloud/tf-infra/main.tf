@@ -30,6 +30,8 @@ module "nexus_vm" {
   dockerfile_content       = file("${path.module}/../docker/Dockerfile")
   docker_build_context_url = azurerm_storage_blob.docker_context.url
   custom_image_name        = "local/todo-app-api:latest"
+
+  enable_public_ip = true
 }
 
 module "vnet-hub" {

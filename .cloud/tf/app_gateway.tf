@@ -52,6 +52,10 @@ module "application_gateway" {
       name  = "default-backend-pool"
       fqdns = [local.container_app_fqdn]
     }
+    keycloak = {
+      name  = "keycloak-backend-pool"
+      fqdns = [local.keycloak_fqdn]
+    }
   }
 
   trusted_root_certificates = {
@@ -65,12 +69,27 @@ module "application_gateway" {
     default = {
       name                                = "default-http-settings"
       cookie_based_affinity               = "Disabled"
-      path                                = "/"
       port                                = 443
       protocol                            = "Https"
       request_timeout                     = 60
       pick_host_name_from_backend_address = true
       trusted_root_certificate_names      = ["containerapp-root-cert"]
+      probe_name                          = "health-probe"
+    }
+  }
+
+  probes = {
+    health_probe = {
+      name                                      = "health-probe"
+      interval                                  = 30
+      protocol                                  = "Https"
+      path                                      = "/"
+      timeout                                   = 30
+      unhealthy_threshold                       = 3
+      pick_host_name_from_backend_http_settings = true
+      match = {
+        status_code = ["200-399", "401"]
+      }
     }
   }
 
@@ -80,6 +99,14 @@ module "application_gateway" {
       frontend_ip_configuration_name = "my-frontend-ip-configuration"
       frontend_port_name             = "port_80"
       protocol                       = "Http"
+      host_name                      = local.container_app_fqdn
+    }
+    keycloak = {
+      name                           = "keycloak-listener"
+      frontend_ip_configuration_name = "my-frontend-ip-configuration"
+      frontend_port_name             = "port_80"
+      protocol                       = "Http"
+      host_name                      = local.keycloak_fqdn
     }
   }
 
@@ -91,6 +118,15 @@ module "application_gateway" {
       backend_address_pool_name  = "default-backend-pool"
       backend_http_settings_name = "default-http-settings"
       priority                   = 100
+      rewrite_rule_set_name      = "x-forwarded-host-rewrite"
+    }
+    keycloak = {
+      name                       = "keycloak-routing-rule"
+      rule_type                  = "Basic"
+      http_listener_name         = "keycloak-listener"
+      backend_address_pool_name  = "keycloak-backend-pool"
+      backend_http_settings_name = "default-http-settings"
+      priority                   = 110
       rewrite_rule_set_name      = "x-forwarded-host-rewrite"
     }
   }

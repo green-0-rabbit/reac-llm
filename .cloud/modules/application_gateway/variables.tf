@@ -214,6 +214,25 @@ variable "rewrite_rule_sets" {
   description = "Map of rewrite rule sets."
 }
 
+variable "probes" {
+  type = map(object({
+    name                                      = string
+    host                                      = optional(string)
+    interval                                  = number
+    protocol                                  = string
+    path                                      = string
+    timeout                                   = number
+    unhealthy_threshold                       = number
+    pick_host_name_from_backend_http_settings = optional(bool)
+    match = optional(object({
+      body        = optional(string)
+      status_code = list(string)
+    }))
+  }))
+  default     = {}
+  description = "Map of health probes."
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}

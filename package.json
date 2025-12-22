@@ -7,16 +7,18 @@
   "scripts": {
     "tdapi": "yarn workspace @hm/todo-app-api",
     "dev:td": "yarn tdapi dev",
-    "codegen:schema": "tsx scripts/generate_schema.ts openapi ts-schema"
+    "codegen:schema": "tsx scripts/generate_schema.ts openapi ts-schema",
+    "realm:config": "node ./scripts/prepare-realm.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "@keycloak/keycloak-admin-client": "^26.4.7",
     "@types/node": "^22.5.1",
     "@typescript-eslint/eslint-plugin": "^8.3.0",
     "@typescript-eslint/parser": "^8.3.0",
     "axios": "^1.8.3",
     "change-case": "^5.4.4",
-    "commander": "^11.1.0",
+    "commander": "^14.0.2",
     "cross-env": "^7.0.3",
     "eslint": "^9.22.0",
     "eslint-config-airbnb": "^19.0.4",

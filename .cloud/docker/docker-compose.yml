@@ -20,7 +20,7 @@ services:
     image: local/todo-app-api:latest # Use as the image name for the built image
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     extra_hosts:

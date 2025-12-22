@@ -17,3 +17,7 @@ output "principal_id" {
   value       = var.enable_managed_identity ? azurerm_linux_virtual_machine.nexus.identity[0].principal_id : null
   description = "Principal ID of the System Assigned Identity of the VM."
 }
+
+output "vm_public_ip" {
+  value = var.enable_public_ip ? azurerm_public_ip.nexus_pip[0].ip_address : null
+}

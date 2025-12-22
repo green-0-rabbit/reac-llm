@@ -14,6 +14,12 @@ variable "allowed_cidrs" {
   description = "CIDRs allowed to reach HTTPS; pass ACA subnets here."
 }
 
+variable "enable_public_ip" {
+  type        = bool
+  default     = false
+  description = "Enable public IP for the VM."
+}
+
 variable "resource_group_name" {
   type        = string
   description = "Resource group where the Nexus VM and related resources (NIC/NSG/disks) will be created."

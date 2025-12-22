@@ -58,6 +58,28 @@ resource "azurerm_application_gateway" "agw" {
     }
   }
 
+  dynamic "probe" {
+    for_each = var.probes
+    content {
+      name                                      = probe.value.name
+      host                                      = probe.value.host
+      interval                                  = probe.value.interval
+      protocol                                  = probe.value.protocol
+      path                                      = probe.value.path
+      timeout                                   = probe.value.timeout
+      unhealthy_threshold                       = probe.value.unhealthy_threshold
+      pick_host_name_from_backend_http_settings = probe.value.pick_host_name_from_backend_http_settings
+
+      dynamic "match" {
+        for_each = probe.value.match != null ? [probe.value.match] : []
+        content {
+          body        = match.value.body
+          status_code = match.value.status_code
+        }
+      }
+    }
+  }
+
   dynamic "backend_http_settings" {
     for_each = var.backend_http_settings
     content {

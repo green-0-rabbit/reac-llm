@@ -135,3 +135,66 @@
 @todo-svc-azurite-cert:
     ./scripts/generate-certs.sh
 
+[group('ops')]
+vm-exec +command:
+    #!/usr/bin/env bash
+    if [ -z "$TF_VAR_admin_password" ]; then
+        echo "Error: TF_VAR_admin_password is not set. Please run 'glb-var infra' first."
+        exit 1
+    fi
+
+    pushd .cloud/tf-infra > /dev/null
+    IP=$(terraform output -raw nexus_vm_public_ip)
+    popd > /dev/null
+
+    if [ -z "$IP" ]; then
+        echo "Error: Could not get Nexus VM Public IP."
+        exit 1
+    fi
+
+    echo "Running on $IP..."
+    sshpass -p "$TF_VAR_admin_password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 nexusadmin@$IP "{{command}}"
+
+### Keycloak Tasks ###
+[group('keycloak-docker')]
+[working-directory: '.cloud/tools/keycloak']
+@kc-dc-up profile args="":
+    docker compose --profile {{profile}} up {{args}}
+
+[group('keycloak-docker')]
+[working-directory: '.cloud/tools/keycloak']
+@kc-dc-down profile:
+    docker compose  --profile {{profile}} down
+
+[group('keycloak-config')]
+@kc-export-realm:
+    yarn realm:config  \
+    -s "supersecret" \ 
+    -r "api-realm" -f '.cloud/tools/keycloak/realms/sso-realm.json'
+
+[group('keycloak-config')]
+@kc-test-realm:
+    ./scripts/test-auth.sh
+
+[group('keycloak-tf')]
+[working-directory: '.cloud/tools/keycloak/tf']
+@kc-tf-init args="":
+    terraform init {{args}}
+
+[group('keycloak-tf')]
+[working-directory: '.cloud/tools/keycloak/tf']
+@kc-tf-plan:
+    terraform plan -out "keycloak.tfplan"
+
+[group('keycloak-tf')]
+[working-directory: '.cloud/tools/keycloak/tf']
+@kc-tf-apply:
+    terraform apply "keycloak.tfplan"
+
+[group('keycloak-tf')]
+[working-directory: '.cloud/tools/keycloak/tf']
+@kc-tf-destroy:
+    terraform destroy
+
+
+

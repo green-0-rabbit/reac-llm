@@ -2079,6 +2079,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@keycloak/keycloak-admin-client@npm:^26.4.7":
+  version: 26.4.7
+  resolution: "@keycloak/keycloak-admin-client@npm:26.4.7"
+  dependencies:
+    camelize-ts: "npm:^3.0.0"
+    url-template: "npm:^3.1.1"
+  checksum: 10c0/d9ee3a41db092716410b280bfe68ba942a82b2e3cf6aa3126e9375ee207e05a782eecb2706419bcd3c3cad5867a11ce580b6135a90990f30c6755bcd32f84220
+  languageName: node
+  linkType: hard
+
 "@leichtgewicht/ip-codec@npm:^2.0.1":
   version: 2.0.5
   resolution: "@leichtgewicht/ip-codec@npm:2.0.5"
@@ -5840,6 +5850,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"camelize-ts@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "camelize-ts@npm:3.0.0"
+  checksum: 10c0/879a7a84a1c889eb71b46ad5933107324eeeda0b713367aebe22356e25039636b5ce2f460ff4f302621e3d3ed8b6b0f2bcd8baee5218a8a38ff2b71d2c2a0522
+  languageName: node
+  linkType: hard
+
 "caniuse-lite@npm:^1.0.30001759":
   version: 1.0.30001759
   resolution: "caniuse-lite@npm:1.0.30001759"
@@ -6220,14 +6237,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^11.1.0":
-  version: 11.1.0
-  resolution: "commander@npm:11.1.0"
-  checksum: 10c0/13cc6ac875e48780250f723fb81c1c1178d35c5decb1abb1b628b3177af08a8554e76b2c0f29de72d69eef7c864d12613272a71fabef8047922bc622ab75a179
-  languageName: node
-  linkType: hard
-
-"commander@npm:^14.0.0":
+"commander@npm:^14.0.0, commander@npm:^14.0.2":
   version: 14.0.2
   resolution: "commander@npm:14.0.2"
   checksum: 10c0/245abd1349dbad5414cb6517b7b5c584895c02c4f7836ff5395f301192b8566f9796c82d7bd6c92d07eba8775fe4df86602fca5d86d8d10bcc2aded1e21c2aeb
@@ -8867,13 +8877,14 @@ __metadata:
   resolution: "hm@workspace:."
   dependencies:
     "@eslint/js": "npm:^9.22.0"
+    "@keycloak/keycloak-admin-client": "npm:^26.4.7"
     "@types/node": "npm:^22.5.1"
     "@typescript-eslint/eslint-plugin": "npm:^8.3.0"
     "@typescript-eslint/parser": "npm:^8.3.0"
     "@xyflow/react": "npm:^12.3.6"
     axios: "npm:^1.8.3"
     change-case: "npm:^5.4.4"
-    commander: "npm:^11.1.0"
+    commander: "npm:^14.0.2"
     cross-env: "npm:^7.0.3"
     eslint: "npm:^9.22.0"
     eslint-config-airbnb: "npm:^19.0.4"
@@ -14968,6 +14979,13 @@ __metadata:
   version: 0.2.0
   resolution: "uri-templates@npm:0.2.0"
   checksum: 10c0/f19a90875c3027fa356a0f62ef0d710c4dfb48ace42ef1cec2c039ba8cd2045f76e9d04c7d575a5c03d73d4ff179f523ed8bb0f95c5c1d3c311237048e41bd59
+  languageName: node
+  linkType: hard
+
+"url-template@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "url-template@npm:3.1.1"
+  checksum: 10c0/0947f4978665ced04bb0fe456f8a60ca4e1db283ce36da15193ee52c4a5461633dc9b5116ef8cf34bae4a31285ac6e7079f309badf211fe8bd1428d6ac56d28a
   languageName: node
   linkType: hard
 
