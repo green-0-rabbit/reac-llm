@@ -1,0 +1,51 @@
+services:
+  keycloak.dev:
+    profiles:
+      - dev
+    image: quay.io/keycloak/keycloak:26.4.7
+    container_name: sso.keycloak.dev
+    hostname: local.dev
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_LOG_LEVEL: DEBUG
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HOSTNAME_STRICT: false
+      KC_PROXY_HEADERS: xforwarded
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_CI_SECRET: supersecret
+    # volumes:
+    #   - ./realms/setup-realm.json:/opt/keycloak/data/import/api-realm-realm.json
+    command:
+      - start-dev
+      - --import-realm
+      
+  keycloak.test:
+    profiles:
+      - test
+    build: 
+      context: .
+    container_name: sso.keycloak
+    hostname: local.test
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_LOG_LEVEL: DEBUG
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HOSTNAME_STRICT: false
+      KC_PROXY_HEADERS: xforwarded
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_REALM_API-SSO_SECRET: supersecret
+      KC_REALM_API-SSO_REDIRECT_URIS: http://localhost:3002/*
+      KC_TEST_USER_PASSWORD: userpass1234#!
+    command:
+      - start-dev
+      - --import-realm

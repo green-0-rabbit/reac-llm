@@ -168,9 +168,9 @@ vm-exec +command:
 
 [group('keycloak-config')]
 @kc-export-realm:
-    yarn realm:config  \
-    -s "supersecret" \ 
-    -r "api-realm" -f '.cloud/tools/keycloak/realms/sso-realm.json'
+    yarn realm:config -s "supersecret" \
+    -r "api-realm" \
+     -f '.cloud/tools/keycloak/realms/sso-realm.json'
 
 [group('keycloak-config')]
 @kc-test-realm:
