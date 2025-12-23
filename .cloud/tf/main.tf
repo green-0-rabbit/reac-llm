@@ -329,10 +329,10 @@ module "container_app" {
             name  = "AUTH_JWKS_URI"
             value = "https://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/certs"
           },
-          {
-            name  = "NODE_TLS_REJECT_UNAUTHORIZED"
-            value = "0"
-          }
+          # {
+          #   name  = "NODE_TLS_REJECT_UNAUTHORIZED"
+          #   value = "0"
+          # }
         ]
       }
     ]

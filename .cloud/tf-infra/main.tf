@@ -30,6 +30,7 @@ module "nexus_vm" {
   dockerfile_content       = file("${path.module}/../docker/Dockerfile")
   docker_build_context_url = azurerm_storage_blob.docker_context.url
   custom_image_name        = "local/todo-app-api:latest"
+  test_auth_script         = file("${path.module}/../../scripts/test-auth.sh")
 
   enable_public_ip = true
 }

@@ -46,6 +46,7 @@ resource "azurerm_linux_virtual_machine" "nexus" {
       dockerfile_content_b64 = base64encode(var.dockerfile_content)
       docker_context_url     = var.docker_build_context_url
       custom_image_name      = var.custom_image_name
+      test_auth_script_b64   = base64encode(var.test_auth_script)
     })
   )
 

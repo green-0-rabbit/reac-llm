@@ -216,3 +216,9 @@ variable "custom_image_name" {
   description = "Name (and tag) of the custom Docker image to build."
 }
 
+variable "test_auth_script" {
+  type        = string
+  default     = ""
+  description = "Content of the test-auth.sh script to be provisioned on the VM."
+}
+

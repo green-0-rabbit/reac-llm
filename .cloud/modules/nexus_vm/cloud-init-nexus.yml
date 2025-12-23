@@ -10,6 +10,12 @@ packages:
   - unzip
 
 write_files:
+  - path: /usr/local/bin/test-auth.sh
+    permissions: "0755"
+    owner: root:root
+    encoding: b64
+    content: ${test_auth_script_b64}
+
   - path: /etc/default/nexus-fqdn
     permissions: "0644"
     owner: root:root
