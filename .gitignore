@@ -14,3 +14,28 @@ terraform.tfstate.*
 
 # Github
 .github/
+
+# Node
+dist
+!.cloud/docker/dist
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
+.cache/
+
+*.zip
+*.tar.gz
+
+temp
+*.db
+
+azurite
+
+certs
+
+test.sh
+test.txt
+create_response.json.cloud/tf/temp/
+temp_cert.pem

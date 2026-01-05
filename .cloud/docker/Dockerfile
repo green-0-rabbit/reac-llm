@@ -1,0 +1,17 @@
+FROM node:23-alpine
+# FROM node:23-bookworm
+
+WORKDIR /usr/src/app
+
+# Create a non-root user for security best practices
+# RUN addgroup --system --gid 1001 node
+# RUN adduser --system --uid 1001 node
+# RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+RUN mkdir -p /usr/src/app/temp && chown -R node:node /usr/src/app/temp
+USER node
+
+COPY --chown=node:node ./dist ./dist
+
+EXPOSE 3000
+
+CMD ["node", "dist/main.js"]

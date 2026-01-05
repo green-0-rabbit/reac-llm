@@ -1,0 +1,52 @@
+{
+  "name": "hm",
+  "packageManager": "yarn@4.12.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "tdapi": "yarn workspace @hm/todo-app-api",
+    "dev:td": "yarn tdapi dev",
+    "codegen:schema": "tsx scripts/generate_schema.ts openapi ts-schema",
+    "realm:config": "node ./scripts/prepare-realm.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@keycloak/keycloak-admin-client": "^26.4.7",
+    "@types/node": "^22.5.1",
+    "@typescript-eslint/eslint-plugin": "^8.3.0",
+    "@typescript-eslint/parser": "^8.3.0",
+    "axios": "^1.8.3",
+    "change-case": "^5.4.4",
+    "commander": "^14.0.2",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.22.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.9.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-tailwindcss": "^3.17.4",
+    "globals": "^16.0.0",
+    "lefthook": "^1.11.3",
+    "openapi-typescript": "^7.3.3",
+    "ora": "^8.1.0",
+    "prettier": "^3.7.4",
+    "tsx": "^4.19.3",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.26.1",
+    "zod": "^3.24.2"
+  },
+  "engines": {
+    "node": ">=18",
+    "npm": "please-use-yarn",
+    "yarn": ">=3.2.4"
+  },
+  "dependencies": {
+    "@xyflow/react": "^12.3.6",
+    "uuid": "^11.0.3"
+  }
+}

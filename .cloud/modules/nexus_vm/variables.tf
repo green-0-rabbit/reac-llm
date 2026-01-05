@@ -14,6 +14,12 @@ variable "allowed_cidrs" {
   description = "CIDRs allowed to reach HTTPS; pass ACA subnets here."
 }
 
+variable "enable_public_ip" {
+  type        = bool
+  default     = false
+  description = "Enable public IP for the VM."
+}
+
 variable "resource_group_name" {
   type        = string
   description = "Resource group where the Nexus VM and related resources (NIC/NSG/disks) will be created."
@@ -190,5 +196,29 @@ variable "sync_config" {
     enable      = true
     timer_every = "2min"
   }
+}
+
+variable "dockerfile_content" {
+  type        = string
+  default     = ""
+  description = "Content of the Dockerfile to build on the Nexus VM."
+}
+
+variable "docker_build_context_url" {
+  type        = string
+  default     = ""
+  description = "URL of the zip file containing the build context (e.g. dist folder) for the Docker build."
+}
+
+variable "custom_image_name" {
+  type        = string
+  default     = "local/todo-app-api:latest"
+  description = "Name (and tag) of the custom Docker image to build."
+}
+
+variable "test_auth_script" {
+  type        = string
+  default     = ""
+  description = "Content of the test-auth.sh script to be provisioned on the VM."
 }
 

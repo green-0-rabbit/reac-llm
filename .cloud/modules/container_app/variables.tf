@@ -37,7 +37,7 @@ variable "ingress" {
       latest_revision = optional(bool, true)
       percentage      = optional(number, 100)
       label           = optional(string)
-    })), [{
+      })), [{
       latest_revision = true
       percentage      = 100
     }])
@@ -98,8 +98,54 @@ variable "user_assigned_identity" {
     id           = string
     principal_id = string
   })
-  description = "The user assigned identity object to be used by the Container App."
-  default     = null
+  default = null
+}
+
+variable "create_acr_role_assignment" {
+  type        = bool
+  description = "Whether to create the AcrPull role assignment for the User Assigned Identity."
+  default     = true
+}
+
+variable "auth" {
+  description = "Authentication configuration for the Container App."
+  type = object({
+    identity_providers = optional(object({
+      azure_active_directory = optional(object({
+        registration = object({
+          client_id                  = string
+          client_secret_setting_name = optional(string)
+        })
+        tenant_id = optional(string)
+      }))
+      custom_open_id_connect_providers = optional(map(object({
+        enabled = optional(bool, true)
+        registration = object({
+          client_id = string
+          client_credential = optional(object({
+            method                     = optional(string)
+            client_secret_setting_name = optional(string)
+          }))
+          open_id_connect_configuration = optional(object({
+            authorization_endpoint           = optional(string)
+            token_endpoint                   = optional(string)
+            issuer                           = optional(string)
+            certification_uri                = optional(string)
+            well_known_open_id_configuration = optional(string)
+          }))
+        })
+        login = optional(object({
+          name_claim_type = optional(string)
+          scopes          = optional(list(string))
+        }))
+      })))
+    }))
+    global_validation = optional(object({
+      unauthenticated_client_action = optional(string, "RedirectToLoginPage")
+      excluded_paths                = optional(list(string), [])
+    }))
+  })
+  default = null
 }
 
 variable "secrets" {

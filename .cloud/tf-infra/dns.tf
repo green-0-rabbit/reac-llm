@@ -16,3 +16,26 @@ resource "azurerm_private_dns_zone" "blob" {
   resource_group_name = azurerm_resource_group.main.name
 }
 
+# Private DNS zone for PostgreSQL Flexible Server
+resource "azurerm_private_dns_zone" "postgres" {
+  name                = "sbx-kag.postgres.database.azure.com"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+# Azure Monitor / AMPLS required zones
+locals {
+  azure_monitor_private_dns_zones = toset([
+    "privatelink.monitor.azure.com",
+    "privatelink.oms.opinsights.azure.com",
+    "privatelink.ods.opinsights.azure.com",
+    "privatelink.agentsvc.azure-automation.net",
+  ])
+}
+
+resource "azurerm_private_dns_zone" "ampls" {
+  for_each            = local.azure_monitor_private_dns_zones
+  name                = each.value
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+
