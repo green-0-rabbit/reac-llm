@@ -51,8 +51,8 @@
 
 [group('terraform')]
 [working-directory: '.cloud/examples']
-@tf-plan env:
-    terraform plan -var-file="{{env}}.tfvars" \
+@tf-plan env dir:
+    terraform -chdir={{dir}} plan -var-file="{{env}}.tfvars" \
         -out "{{env}}.tfplan" \
         -var="env={{env}}" \
         -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
@@ -60,8 +60,8 @@
 
 [group('terraform')]
 [working-directory: '.cloud/examples']
-@tf-apply env:
-    terraform apply "{{env}}.tfplan"
+@tf-apply env dir:
+    terraform -chdir={{dir}} apply "{{env}}.tfplan"
 
 [group('terraform')]
 [working-directory: '.cloud/examples']
