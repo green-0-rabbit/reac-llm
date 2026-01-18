@@ -5,7 +5,7 @@ locals {
 }
 
 module "vnet-spoke1" {
-  source = "../modules/vnet"
+  source = "../../modules/vnet"
 
   # By default, this module will create a resource group, proivde the name here
   # to use an existing resource group, specify the existing resource group name,
@@ -44,7 +44,7 @@ module "vnet-spoke1" {
 }
 
 module "container_app_environment" {
-  source                     = "../modules/container_app_environment"
+  source                     = "../../modules/container_app_environment"
   name                       = "acaenvdemo-${var.env}"
   env                        = var.env
   location                   = var.location
@@ -70,7 +70,7 @@ module "container_app_environment" {
 #  Example https://github.com/Azure/terraform-azure-container-apps/blob/v0.4.0/examples/acr/main.tf
 # Check this https://github.com/thomast1906/thomasthorntoncloud-examples/tree/master/Azure-Container-App-Terraform/Terraform
 module "keycloak" {
-  source = "../modules/container_app"
+  source = "../../modules/container_app"
 
   app_config = {
     name                  = "keycloak"
@@ -186,7 +186,7 @@ module "keycloak" {
 }
 
 module "container_app" {
-  source = "../modules/container_app"
+  source = "../../modules/container_app"
 
   app_config = {
     name                  = "containerappdemo"

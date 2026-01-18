@@ -38,19 +38,19 @@
 [group('terraform')]
 @tf-fmt-all:
     just tf-fmt .cloud/tf-infra
-    just tf-fmt .cloud/tf
+    just tf-fmt .cloud/examples
     just tf-fmt .cloud/modules
 
 [group('terraform')]
-[working-directory: '.cloud/tf']
-@tf-init env:
-    terraform init -var-file="{{env}}.tfvars" \
+[working-directory: '.cloud/examples']
+@tf-init env dir:
+    terraform -chdir={{dir}} init -var-file="{{env}}.tfvars" \
         -var="env={{env}}" \
         -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
         -var="tenant_id=${ARM_TENANT_ID}"
 
 [group('terraform')]
-[working-directory: '.cloud/tf']
+[working-directory: '.cloud/examples']
 @tf-plan env:
     terraform plan -var-file="{{env}}.tfvars" \
         -out "{{env}}.tfplan" \
@@ -59,12 +59,12 @@
         -var="tenant_id=${ARM_TENANT_ID}"
 
 [group('terraform')]
-[working-directory: '.cloud/tf']
+[working-directory: '.cloud/examples']
 @tf-apply env:
     terraform apply "{{env}}.tfplan"
 
 [group('terraform')]
-[working-directory: '.cloud/tf']
+[working-directory: '.cloud/examples']
 @tf-destroy env:
     terraform destroy -var-file="{{env}}.tfvars" \
         -var="env={{env}}" \

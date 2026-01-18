@@ -49,8 +49,8 @@ variable "custom_domain" {
   description = "Custom domain configuration for the container app"
   type = object({
     name                     = string
-    certificate_id           = string
-    certificate_binding_type = string
+    certificate_id           = optional(string)
+    certificate_binding_type = optional(string)
   })
   default = null
 }

@@ -22,7 +22,7 @@ resource "azurerm_web_application_firewall_policy" "waf_policy" {
 }
 
 module "application_gateway" {
-  source = "../modules/application_gateway"
+  source = "../../modules/application_gateway"
 
   name                = "agw-${var.env}"
   resource_group_name = azurerm_resource_group.rg.name

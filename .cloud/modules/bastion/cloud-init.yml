@@ -1,0 +1,37 @@
+#cloud-config
+package_update: true
+packages:
+  - docker.io
+  - jq
+  - openssl
+  - curl
+  - unzip
+
+write_files:
+  - path: /usr/local/bin/sync_remote_acr_acr.sh
+    permissions: "0755"
+    owner: root:root
+    encoding: b64
+    content: ${sync_remote_acr_acr_b64}
+
+  - path: /etc/remote_acr_images.list
+    permissions: "0644"
+    owner: root:root
+    content: |
+      %{ for img in remote_acr_images ~}
+      ${img}
+      %{ endfor ~}
+
+  - path: /etc/sbx.env
+    permissions: "0600"
+    owner: root:root
+    content: |
+      ACR_NAME=${acr_name}
+      REMOTE_ACR_USERNAME=${remote_acr_username}
+      REMOTE_ACR_PASSWORD=${remote_acr_password}
+      REMOTE_ACR_FQDN=${remote_acr_fqdn}
+
+runcmd:
+  - [ bash, -lc, 'mkfs.ext4 -F /dev/disk/azure/scsi1/lun0 || true' ]
+  - [ systemctl, daemon-reload ]
+  - [ systemctl, enable, --now, docker ]
