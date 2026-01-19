@@ -8,4 +8,16 @@ resource "keycloak_realm" "default" {
   login_with_email_allowed       = var.realm_config.login_with_email_allowed
   registration_email_as_username = var.realm_config.registration_email_as_username
   verify_email                   = var.realm_config.verify_email
+  ssl_required                   = var.realm_config.ssl_required
+}
+resource "keycloak_realm_keystore_rsa" "realm_rsa" {
+  count     = var.realm_private_key != null && var.realm_certificate != null ? 1 : 0
+  realm_id  = keycloak_realm.default.id
+  name      = "${var.default_realm_name}-rsa-generated"
+  enabled   = true
+  algorithm = "RS256"
+  priority  = 200
+
+  private_key = var.realm_private_key
+  certificate = var.realm_certificate
 }

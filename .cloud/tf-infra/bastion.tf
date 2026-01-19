@@ -11,9 +11,9 @@ module "bastion_vm" {
   subnet_id           = module.vnet-hub.subnet_ids["BastionSubnet"]
 
   # VM basics
-  vm_name          = "vm-bastion-${var.env}"
-  admin_username   = var.admin_username
-  admin_password   = var.admin_password
+  vm_name             = "vm-bastion-${var.env}"
+  admin_username      = var.admin_username
+  admin_password      = var.admin_password
   enable_public_ip    = true
   enable_bastion_host = false
 

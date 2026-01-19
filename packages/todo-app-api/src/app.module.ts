@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { TodoModule } from './todos/todo.module';
 import { StorageModule } from './storage/storage.module';
 import { AuthModule } from './auth/auth.module';
+import { AuthModule as AuthSamlModule } from './auth_saml/auth.module';
 
 @Module({
   imports: [
@@ -13,7 +14,9 @@ import { AuthModule } from './auth/auth.module';
     DatabaseModule.registerAsync(),
     TodoModule,
     StorageModule,
+    // Conditionally load auth module based on requirements, or keep both if clear separation
     AuthModule,
+    AuthSamlModule,
   ],
   controllers: [AppController],
   providers: [AppService],

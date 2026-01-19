@@ -1279,6 +1279,7 @@ __metadata:
     "@types/node": "npm:^22.10.7"
     "@types/passport": "npm:^0"
     "@types/passport-jwt": "npm:^4.0.1"
+    "@types/passport-saml": "npm:^1.1.7"
     "@types/supertest": "npm:^6.0.2"
     azurite: "npm:^3.35.0"
     class-transformer: "npm:^0.5.1"
@@ -1294,6 +1295,7 @@ __metadata:
     jwks-rsa: "npm:^3.2.0"
     passport: "npm:^0.7.0"
     passport-jwt: "npm:^4.0.1"
+    passport-saml: "npm:^3.2.4"
     prettier: "npm:^3.4.2"
     reflect-metadata: "npm:^0.2.2"
     rxjs: "npm:^7.8.1"
@@ -3933,6 +3935,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/passport-saml@npm:^1.1.7":
+  version: 1.1.7
+  resolution: "@types/passport-saml@npm:1.1.7"
+  dependencies:
+    "@types/express": "npm:*"
+    "@types/passport": "npm:*"
+  checksum: 10c0/fa74c9a049afef60be36c35916f371ce0f29b2520f0fc0c00d6316f611f8fdc2546826cc5028f8b835f4c8e3f1a16b8839ec0350fe81860b45f19ca22b679890
+  languageName: node
+  linkType: hard
+
 "@types/passport-strategy@npm:*":
   version: 0.2.38
   resolution: "@types/passport-strategy@npm:0.2.38"
@@ -4678,6 +4690,13 @@ __metadata:
   dependencies:
     arch: "npm:^3.0.0"
   checksum: 10c0/e4f774ef8d36144b53749f02b602494653442379582756546415c05a5094f79931521cc0c430ab9f824a83a500ca64b8dd560e9f9b31e967bb608d2418050592
+  languageName: node
+  linkType: hard
+
+"@xmldom/xmldom@npm:^0.7.0, @xmldom/xmldom@npm:^0.7.6, @xmldom/xmldom@npm:^0.7.9":
+  version: 0.7.13
+  resolution: "@xmldom/xmldom@npm:0.7.13"
+  checksum: 10c0/cb02e4e8d986acf18578a5f25d1bce5e18d08718f40d8a0cdd922a4c112c8e00daf94de4e43f9556ed147c696b135f2ab81fa9a2a8a0416f60af15d156b60e40
   languageName: node
   linkType: hard
 
@@ -12217,6 +12236,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"passport-saml@npm:^3.2.4":
+  version: 3.2.4
+  resolution: "passport-saml@npm:3.2.4"
+  dependencies:
+    "@xmldom/xmldom": "npm:^0.7.6"
+    debug: "npm:^4.3.2"
+    passport-strategy: "npm:^1.0.0"
+    xml-crypto: "npm:^2.1.3"
+    xml-encryption: "npm:^2.0.0"
+    xml2js: "npm:^0.4.23"
+    xmlbuilder: "npm:^15.1.1"
+  checksum: 10c0/29fef9eeae11d7f526a8e8b840df8134b111513cfa7ee855084d4f39751573f50dd2b11a65820ef11be72e50bea30ee36a5fae256c295f5c86051ac31df35803
+  languageName: node
+  linkType: hard
+
 "passport-strategy@npm:1.x.x, passport-strategy@npm:^1.0.0":
   version: 1.0.0
   resolution: "passport-strategy@npm:1.0.0"
@@ -15644,7 +15678,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml2js@npm:^0.4.19":
+"xml-crypto@npm:^2.1.3":
+  version: 2.1.6
+  resolution: "xml-crypto@npm:2.1.6"
+  dependencies:
+    "@xmldom/xmldom": "npm:^0.7.9"
+    xpath: "npm:0.0.32"
+  checksum: 10c0/4857298fedfa67f292f005f163637f06673812c700d5ef1e5b2d4fa449cfdf687fba402411815f3425145c217eccca96a5354c4d4b822cedd1e47de879b9d330
+  languageName: node
+  linkType: hard
+
+"xml-encryption@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "xml-encryption@npm:2.0.0"
+  dependencies:
+    "@xmldom/xmldom": "npm:^0.7.0"
+    escape-html: "npm:^1.0.3"
+    xpath: "npm:0.0.32"
+  checksum: 10c0/74546bb558e49ba3a19cc3e5622975b0b10631812825e1fb45e0b30fae4a4c82a6322de6addcd74cff53cb4b6084f8e37457c362112f687e7a69accd97b4acb5
+  languageName: node
+  linkType: hard
+
+"xml2js@npm:^0.4.19, xml2js@npm:^0.4.23":
   version: 0.4.23
   resolution: "xml2js@npm:0.4.23"
   dependencies:
@@ -15664,10 +15719,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"xmlbuilder@npm:^15.1.1":
+  version: 15.1.1
+  resolution: "xmlbuilder@npm:15.1.1"
+  checksum: 10c0/665266a8916498ff8d82b3d46d3993913477a254b98149ff7cff060d9b7cc0db7cf5a3dae99aed92355254a808c0e2e3ec74ad1b04aa1061bdb8dfbea26c18b8
+  languageName: node
+  linkType: hard
+
 "xmlbuilder@npm:~11.0.0":
   version: 11.0.1
   resolution: "xmlbuilder@npm:11.0.1"
   checksum: 10c0/74b979f89a0a129926bc786b913459bdbcefa809afaa551c5ab83f89b1915bdaea14c11c759284bb9b931e3b53004dbc2181e21d3ca9553eeb0b2a7b4e40c35b
+  languageName: node
+  linkType: hard
+
+"xpath@npm:0.0.32":
+  version: 0.0.32
+  resolution: "xpath@npm:0.0.32"
+  checksum: 10c0/3743ab91a8ec1b5eac1f27ddf2fbf696fcde8ce487215becde1502b85a309dcd1b0baeaac1ee7a730aea4787d049b67ae89e8aedbe03a5a07a71e62ec296d9de
   languageName: node
   linkType: hard
 

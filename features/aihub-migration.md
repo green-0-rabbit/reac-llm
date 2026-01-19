@@ -155,14 +155,40 @@
 
 ### 3.3 Build Custom Keycloak Image
 - **Pre-requisites**:
-	- Keycloak realm/clients config for AIHub.
-	- Build pipeline or local build process.
+	- Local Keycloak setup available in [.cloud/tools/keycloak](.cloud/tools/keycloak) (Dockerfile + compose).
+	- Terraform configuration in [.cloud/tools/keycloak/tf](.cloud/tools/keycloak/tf) acting as the source of truth for Clients, Users, and Roles.
+	- Realm export script [scripts/prepare-realm.js](scripts/prepare-realm.js) updated to explicitly export User Realm Roles (via `listRealmRoleMappings`).
+	- Automated test script [scripts/test-auth-saml.sh](scripts/test-auth-saml.sh) available for verifying SAML flow and RBAC enforcement.
+	- Backend authentication logic in [packages/todo-app-api/src/auth_saml](packages/todo-app-api/src/auth_saml) configured to map SAML attributes (specifically `Role`) to local User entities.
+	- Keycloak admin access (default `admin/admin` in compose).
 - **Steps**:
-	1. Build Keycloak custom image with required realm/clients.
-	2. Publish image to target ACR.
-	3. Validate Keycloak can issue SAML tokens for `aihub-prod` and `aihub-preprod`.
+	1. Start local Keycloak in dev mode using `just kc-dc-up dev`.
+	2. Apply Terraform configuration to provision the "api-realm", clients, and assign the `ADMIN` role to the test user:
+		```bash
+		just kc-tf-init && just kc-tf-plan && just kc-tf-apply
+		```
+	3. Export the Realm configuration to JSON:
+		```bash
+		just kc-export-realm
+		```
+		*Verification:* Ensure [.cloud/tools/keycloak/realms/sso-realm.json](.cloud/tools/keycloak/realms/sso-realm.json) contains `"realmRoles": ["ADMIN"]` for `test@domain.com`.
+	4. Build and start the custom Keycloak image (using the `test` profile to emulate the final container artifact):
+		```bash
+		just kc-dc-up test "--build -d"
+		```
+	5. Verify the image functions correctly by running the end-to-end SAML test:
+		```bash
+		./scripts/test-auth-saml.sh
+		```
+		*Success Criteria:* Script returns `API Response: Hello World!` (confirming both AuthN and AuthZ/RBAC).
+	6. Publish the validated image to the container registry:
+		```bash
+		just kc-publish-image
+		```
 - **Output**:
-	- Custom Keycloak image available in target ACR.
+	- Custom Keycloak image `humaapi0registry/keycloak:latest` published to ACR.
+	- `sso-realm.json` finalized with correct Role assignments.
+- **Status:** Completed on 2026-01-19
 
 ### 3.4 Backend Migration
 - **Pre-requisites**:

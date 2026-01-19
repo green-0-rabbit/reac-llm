@@ -206,8 +206,8 @@ module "container_app" {
   template = {
     containers = [
       {
-        name  = "todo-app-api"
-        image = "${local.acr_login_server}/ai-hub-backend:21274"
+        name   = "todo-app-api"
+        image  = "${local.acr_login_server}/ai-hub-backend:21274"
         cpu    = 0.5
         memory = "1Gi"
         env = [

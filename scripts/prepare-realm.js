@@ -121,6 +121,27 @@ async function main(clientSecret = '', realmName = '', outputFilePath = '') {
         updatedClient.redirectUris = [mask.replace('CHANGEME', upperClientId)];
       }
 
+      // Add dynamic replacement for SAML URLs
+      if (client.clientId === 'aihub-prod') {
+        // We assume keys are constructed like KC_REALM_<CLIENT>_<KEY>
+        // Replace known URL attributes with ENV vars format
+        const samlAttributes = [
+            'saml_assertion_consumer_url_redirect',
+            'saml_single_logout_service_url_post', 
+            'saml_assertion_consumer_url_post', 
+            'saml_single_logout_service_url_redirect',
+            'saml.signing.private.key',
+            'saml.signing.certificate'
+        ];
+        
+        samlAttributes.forEach(attr => {
+            if (updatedClient.attributes && updatedClient.attributes[attr]) {
+                 const envVarName = `KC_REALM_AIHUB-PROD_${attr.replace(/\./g, '_').toUpperCase()}`;
+                 updatedClient.attributes[attr] = `\${${envVarName}}`;
+            }
+        });
+      }
+
       return updatedClient;
     });
     const clients = [...modifiedClients];
@@ -133,10 +154,22 @@ async function main(clientSecret = '', realmName = '', outputFilePath = '') {
     
     const roles = { realm: filteredRealmRoles };
 
-    const users = oldUsers.map((user) => {
+    const users = await Promise.all(oldUsers.map(async (user) => {
+      let realmRoles = user.realmRoles || [];
+      try {
+           const roleMappings = await kcAdminClient.users.listRealmRoleMappings({
+              realm: realmName,
+              id: user.id
+          });
+          realmRoles = roleMappings.map(r => r.name);
+      } catch (e) {
+          console.warn(`Could not fetch roles for user ${user.username}`, e.message);
+      }
+
       if (user.email === 'test@domain.com') {
         return {
           ...user,
+          realmRoles,
           credentials: [
             {
               type: 'password',
@@ -146,10 +179,29 @@ async function main(clientSecret = '', realmName = '', outputFilePath = '') {
           ],
         };
       }
-      return user;
-    });
+      return { ...user, realmRoles };
+    }));
 
-    const finalRealm = { ...compactedRealm, roles, clients, users };
+    const components = {
+      'org.keycloak.keys.KeyProvider': [
+        {
+          id: 'e4566c71-c045-4299-a0c5-555555555555',
+          name: 'terraform-injected-key',
+          providerId: 'rsa',
+          subComponents: {},
+          config: {
+            priority: ['200'],
+            enabled: ['true'],
+            active: ['true'],
+            privateKey: ['${KC_REALM_AIHUB-PROD_SAML_SIGNING_PRIVATE_KEY}'],
+            certificate: ['${KC_REALM_AIHUB-PROD_SAML_SIGNING_CERTIFICATE}'],
+            algorithm: ['RS256'],
+          },
+        },
+      ],
+    };
+
+    const finalRealm = { ...compactedRealm, roles, clients, users, components };
 
     await fs.writeFile(outputFilePath, JSON.stringify(finalRealm, null, 2));
   } catch (error) {
