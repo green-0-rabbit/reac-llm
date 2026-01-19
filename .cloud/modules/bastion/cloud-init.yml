@@ -1,15 +1,14 @@
 #cloud-config
-package_update: true
+# Optimized: Skip package_update, install azure-cli via InstallAzureCLIDeb script
+package_update: false
+package_upgrade: false
+
 packages:
   - docker.io
   - jq
   - openssl
   - curl
   - unzip
-  - apt-transport-https
-  - ca-certificates
-  - gnupg
-  - lsb-release
 
 write_files:
   - path: /usr/local/bin/sync_remote_acr_acr.sh
@@ -36,9 +35,10 @@ write_files:
       REMOTE_ACR_FQDN=${remote_acr_fqdn}
 
 runcmd:
-  - [ bash, -lc, 'curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg >/dev/null' ]
-  - [ bash, -lc, 'AZ_REPO=$(lsb_release -cs) && echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" > /etc/apt/sources.list.d/azure-cli.list' ]
-  - [ bash, -lc, 'apt-get update && apt-get install -y azure-cli' ]
-  - [ bash, -lc, 'mkfs.ext4 -F /dev/disk/azure/scsi1/lun0 || true' ]
+  # Format data disk if needed
+  - [ bash, -c, 'mkfs.ext4 -F /dev/disk/azure/scsi1/lun0 2>/dev/null || true' ]
+  # Enable docker
   - [ systemctl, daemon-reload ]
   - [ systemctl, enable, --now, docker ]
+  # Install Azure CLI (fast one-liner)
+  - [ bash, -c, 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash' ]

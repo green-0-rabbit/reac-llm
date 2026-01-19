@@ -65,8 +65,8 @@
 
 [group('terraform')]
 [working-directory: '.cloud/examples']
-@tf-destroy env:
-    terraform destroy -var-file="{{env}}.tfvars" \
+@tf-destroy env dir:
+    terraform -chdir={{dir}} destroy -var-file="{{env}}.tfvars" \
         -var="env={{env}}" \
         -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
         -var="tenant_id=${ARM_TENANT_ID}"

@@ -85,13 +85,11 @@ resource "azurerm_virtual_machine_extension" "bastion_provision" {
     commandToExecute = <<-EOT
       bash -lc '
       until [ -f /var/lib/cloud/instance/boot-finished ]; do echo waiting-cloud-init; sleep 5; done
-      systemctl enable --now docker || true
-      until systemctl is-active --quiet docker; do echo wait-docker; sleep 2; done
-      until [ -S /var/run/docker.sock ]; do echo wait-docker-sock; sleep 2; done
-      /usr/local/bin/sync_remote_acr_acr.sh \
+      nohup /usr/local/bin/sync_remote_acr_acr.sh \
       ${var.remote_acr_config.username} \
       ${var.remote_acr_password} \
-      ${var.remote_acr_config.fqdn}
+      ${var.remote_acr_config.fqdn} \
+      >/var/log/sync_remote_acr_acr.log 2>&1 &
       '
     EOT
   })
