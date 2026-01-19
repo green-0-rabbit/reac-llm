@@ -16,13 +16,13 @@ output "log_analytics_workspace_id" {
   description = "Log Analytics Workspace ID."
 }
 
-output "container_app_fqdn" {
-  value       = module.container_app.app_fqdn
+output "backend_aihub_fqdn" {
+  value       = module.backend_aihub.app_fqdn
   description = "FQDN of the Container App."
 }
 
-output "container_app_name" {
-  value       = module.container_app.app_name
+output "backend_aihub_name" {
+  value       = module.backend_aihub.app_name
   description = "Name of the Container App."
 }
 

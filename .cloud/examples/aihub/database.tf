@@ -15,7 +15,7 @@ module "postgres" {
   delegated_subnet_id = module.vnet-spoke1.subnet_ids["PostgresSubnet"]
   private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
 
-  database_name = "todo_app"
+  database_name = "aihub"
 
   tags = var.tags
 }

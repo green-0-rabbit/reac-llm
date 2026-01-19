@@ -185,6 +185,12 @@
 		```bash
 		just kc-publish-image
 		```
+	7. Configure and deploy Keycloak to Azure Container Apps (ACA):
+		- Verify [.cloud/examples/aihub/aca.tf](.cloud/examples/aihub/aca.tf) references the published image `humaapi0registry/keycloak:latest` and configures the `keycloak` module.
+		- Apply the infrastructure configuration:
+		```bash
+		glb-var dev && just tf-apply dev aihub
+		```
 - **Output**:
 	- Custom Keycloak image `humaapi0registry/keycloak:latest` published to ACR.
 	- `sso-realm.json` finalized with correct Role assignments.
@@ -192,16 +198,58 @@
 
 ### 3.4 Backend Migration
 - **Pre-requisites**:
-	- Backend image available in target ACR.
-	- Keycloak ready for SAML authentication.
-	- Required env vars from variable groups.
+	- Infrastructure foundational layer [.cloud/tf-infra](config/.cloud/tf-infra) is fully deployed and up-to-date.
+		*Verification command:* `glb-var infra && just tf-plan-infra` (Expect no changes).
+	- AIHub project infrastructure [.cloud/examples/aihub](config/.cloud/examples/aihub) is fully deployed.
+		*Verification command:* `glb-var dev && just tf-plan dev aihub` (Expect no changes).
+	- Keycloak is deployed to ACA and reachable (via step 3.3).
+	- Backend image `ai-hub-backend:21274` is present in the target ACR (provisioned in `tf-infra/acr.tf`).
+	- Required Environment Variables are identified for mapping in `aca.tf`:
+		```bash
+		# App
+		APP_NAME=ai-hub-backend
+		APP_PORT=3000
+		ENABLE_CORS=true
+		CORS_ALLOWED_ORIGINS=* # Update with Frontend URL later
+		NODE_ENV=production
+		FRONTEND_URL=https://<frontend-fqdn>
+
+		# Database
+		DATABASE_URL=postgres://<admin>:<pass>@<postgres-fqdn>:5432/aihub?ssl=true
+
+		# AI
+		API_KEY=<Use Managed Identity/Key Vault>
+		API_ENDPOINT=<outputs from module.ai_foundry>
+		API_MODEL_NAME=gpt-4.1
+		API_VERSION=2025-04-14
+
+		# SSO Login (Matches Keycloak ACA FQDN)
+		SAML_ENTRYPOINT=https://<keycloak-fqdn>/realms/api-realm/protocol/saml
+		SAML_ISSUER="aihub-prod"
+		SAML_CERT=<Content of KC_REALM_AIHUB-PROD_SAML_SIGNING_CERTIFICATE>
+		SAML_PATH=/auth/saml/callback
+
+		# JWT
+		JWT_SECRET=<Generate Strong Secret>
+		JWT_EXPIRES_IN=3600s
+		JWT_COOKIE_NAME=Authentication
+		JWT_REFRESH_COOKIE=rt
+		JWT_REFRESH_EXPIRES_IN=604800
+		```
 - **Steps**:
-	1. Deploy backend container to target ACA/App Service.
-	2. Configure env vars (from variable groups).
-	3. Validate DB migrations via `entrypoint.sh`.
-	4. Validate SAML login flow with Keycloak.
+	1. Update [.cloud/examples/aihub/aca.tf](.cloud/examples/aihub/aca.tf) `backend_aihub` module to include the environment variables listed above.
+	2. Map sensitive values (DB pass, API Key, JWT Secret) to Secrets/KeyVault.
+	3. Apply the configuration:
+		```bash
+		glb-var dev && just tf-apply dev aihub
+		```
+	4. Validate Backend health and DB connection via logs:
+		```bash
+		az containerapp logs show -n containerappdemo -g <resource-group> --follow
+		```
+	5. Validate SAML login flow (redirection to Keycloak and back).
 - **Output**:
-	- Backend running in target tenant with SSO validated.
+	- Backend running in target tenant with correct configuration and verified SSO.
 
 ### 3.5 Frontend Migration
 - **Pre-requisites**:
