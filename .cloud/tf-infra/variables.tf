@@ -164,3 +164,16 @@ variable "hub_firewall" {
   })
 }
 
+variable "remote_acr_config" {
+  type = object({
+    username = string
+    fqdn     = string
+    images   = list(string)
+  })
+}
+
+variable "remote_acr_password" {
+  type      = string
+  sensitive = true
+}
+

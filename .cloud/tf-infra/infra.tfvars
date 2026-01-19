@@ -24,6 +24,7 @@ hub_subnets = {
   MainSubnet = {
     subnet_address_prefix = ["10.0.1.0/24"]
   }
+
   WorkloadSubnet = {
     subnet_address_prefix = ["10.0.4.0/24"]
     nsg_inbound_rules = {
@@ -62,6 +63,10 @@ hub_subnets = {
   PrivateEndpointSubnet = {
     subnet_address_prefix = ["10.0.5.0/24"]
   }
+
+  BastionSubnet = {
+    subnet_address_prefix = ["10.0.7.0/27"]
+  }
   # Only needed if Azure Bastion is sku 'Standard' or higher
   # AzureBastionSubnet = {
   #   subnet_address_prefix = ["10.0.3.0/26"]
@@ -75,19 +80,14 @@ hub_firewall = {
   subnet_address_prefix = ["10.0.14.0/23"]
 }
 
-seed_config = {
-  images = [
-    "library/busybox:latest",
-    # "node:alpine3.22",
-    "wbitt/network-multitool:alpine-extra",
-    "local/todo-app-api:latest"
-  ]
-  batch_size  = 1
-  timer_every = "2min"
-}
+#### Remote acr config for bastion vm to pull images
 
-sync_config = {
-  enable      = true
-  timer_every = "2min"
+remote_acr_config = {
+  username = "aihubazqsbx"
+  fqdn     = "aiportalregistry.azurecr.io"
+  images = [
+    "ai-hub-backend:21274",
+    "ai-hub-frontend:21624",
+  ]
 }
 

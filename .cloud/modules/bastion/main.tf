@@ -88,7 +88,8 @@ resource "azurerm_virtual_machine_extension" "bastion_provision" {
       systemctl enable --now docker || true
       until systemctl is-active --quiet docker; do echo wait-docker; sleep 2; done
       until [ -S /var/run/docker.sock ]; do echo wait-docker-sock; sleep 2; done
-      /usr/local/bin/sync_remote_acr_acr.sh && ${var.remote_acr_config.username} \
+      /usr/local/bin/sync_remote_acr_acr.sh \
+      ${var.remote_acr_config.username} \
       ${var.remote_acr_password} \
       ${var.remote_acr_config.fqdn}
       '

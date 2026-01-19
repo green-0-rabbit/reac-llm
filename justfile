@@ -156,7 +156,7 @@ vm-exec +command:
     fi
 
     pushd .cloud/tf-infra > /dev/null
-    IP=$(terraform output -raw nexus_vm_public_ip)
+    IP=$(terraform output -raw bastion_public_ip)
     popd > /dev/null
 
     if [ -z "$IP" ]; then
@@ -165,7 +165,7 @@ vm-exec +command:
     fi
 
     echo "Running on $IP..."
-    sshpass -p "$TF_VAR_admin_password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 nexusadmin@$IP "{{command}}"
+    sshpass -p "$TF_VAR_admin_password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 bastionadmin@$IP "{{command}}"
 
 [group('ops')]
 vm-scp local_file remote_path="":
@@ -176,21 +176,21 @@ vm-scp local_file remote_path="":
     fi
 
     pushd .cloud/tf-infra > /dev/null
-    IP=$(terraform output -raw nexus_vm_public_ip)
+    IP=$(terraform output -raw bastion_public_ip)
     popd > /dev/null
 
     if [ -z "$IP" ]; then
-        echo "Error: Could not get Nexus VM Public IP."
+        echo "Error: Could not get Bastion VM Public IP."
         exit 1
     fi
 
     DEST="{{remote_path}}"
     if [ -z "$DEST" ]; then
-        DEST="/home/nexusadmin/$(basename {{local_file}})"
+        DEST="/home/bastionadmin/$(basename {{local_file}})"
     fi
 
     echo "Copying {{local_file}} to $IP:$DEST..."
-    sshpass -p "$TF_VAR_admin_password" scp -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{local_file}} nexusadmin@$IP:$DEST
+    sshpass -p "$TF_VAR_admin_password" scp -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{local_file}} bastionadmin@$IP:$DEST
 
 ### Keycloak Tasks ###
 [group('keycloak-docker')]

@@ -2,17 +2,6 @@ location            = "westeurope"
 resource_group_name = "sbx-aihub-rg"
 project             = "sbx-aihub"
 
-#### Remote acr config for bastion vm to pull images
-
-remote_acr_config = {
-  username = "aihubazqsbx"
-  fqdn     = "aiportalregistry.azurecr.io"
-  images = [
-    "ai-hub-backend:21274",
-    "ai-hub-frontend:21624",
-  ]
-}
-
 #### container apps
 create_log_analytics = true
 
@@ -38,6 +27,12 @@ private_dns_azure_monitor_names = [
   "privatelink.oms.opinsights.azure.com",
   "privatelink.ods.opinsights.azure.com",
   "privatelink.agentsvc.azure-automation.net",
+]
+private_dns_azure_ai_names = [
+  "privatelink.services.ai.azure.com",       # AI Services Private DNS Zone
+  "privatelink.search.windows.net",          # AI Search Private DNS Zone
+  "privatelink.openai.azure.com",            # Cognitive Services Private DNS Zone
+  "privatelink.cognitiveservices.azure.com", # Cognitive Services General Private DNS Zone
 ]
 
 postgres_administrator_login = "psqladmin"
@@ -125,9 +120,6 @@ spoke_vnet_subnets = {
         destination_address_prefix = "*"
       }
     }
-  }
-  BastionSubnet = {
-    subnet_address_prefix = ["10.0.4.0/27"]
   }
   PostgresSubnet = {
     subnet_address_prefix = ["10.1.8.0/24"]

@@ -38,3 +38,9 @@ data "azurerm_private_dns_zone" "monitor" {
   name                = each.value
   resource_group_name = var.main_rg_name
 }
+
+data "azurerm_private_dns_zone" "ai_services" {
+  for_each            = toset(var.private_dns_azure_ai_names)
+  name                = each.value
+  resource_group_name = var.main_rg_name
+}

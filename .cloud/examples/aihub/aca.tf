@@ -207,9 +207,7 @@ module "container_app" {
     containers = [
       {
         name  = "todo-app-api"
-        image = "humaapi0registry/todo-app-api:latest"
-        # image = "${local.acr_login_server}/wbitt/network-multitool:alpine-extra"
-        # image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
+        image = "${local.acr_login_server}/ai-hub-backend:21274"
         cpu    = 0.5
         memory = "1Gi"
         env = [

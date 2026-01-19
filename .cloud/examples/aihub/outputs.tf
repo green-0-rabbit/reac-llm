@@ -31,13 +31,20 @@ output "container_app_environment_id" {
   description = "ID of the Container App Environment."
 }
 
-### Bastion Outputs
-
-output "bastion_public_ip" {
-  value = module.bastion_vm.vm_public_ip
+### AI foundry Outputs
+output "ai_foundry_id" {
+  value       = module.ai_foundry.ai_foundry_id
+  description = "AI Foundry ID."
 }
-
-output "bastion_private_ip" {
-  value = module.bastion_vm.bastion_private_ip
+output "ai_foundry_name" {
+  value       = module.ai_foundry.ai_foundry_name
+  description = "AI Foundry Name."
 }
-
+output "cognitive_deployment_id" {
+  value       = module.ai_foundry.cognitive_deployment_id
+  description = "Cognitive Deployment ID."
+}
+output "private_endpoint_network_interface" {
+  value       = module.ai_foundry.private_endpoint_network_interface
+  description = "AI Foundry Private Endpoint Network Interface."
+}

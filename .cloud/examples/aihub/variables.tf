@@ -186,15 +186,7 @@ variable "private_dns_azure_monitor_names" {
   description = "List of Private DNS zone names for Azure Monitor"
 }
 
-variable "remote_acr_config" {
-  type = object({
-    username = string
-    fqdn     = string
-    images   = list(string)
-  })
-}
-
-variable "remote_acr_password" {
-  type      = string
-  sensitive = true
+variable "private_dns_azure_ai_names" {
+  type        = list(string)
+  description = "List of Private DNS zone names for Azure AI services"
 }

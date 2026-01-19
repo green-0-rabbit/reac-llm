@@ -22,7 +22,8 @@ module "vnet-hub" {
       azurerm_private_dns_zone.postgres.name,
       module.acr.private_dns_zone_name,
     ],
-    values(azurerm_private_dns_zone.ampls)[*].name
+    values(azurerm_private_dns_zone.ampls)[*].name,
+    values(azurerm_private_dns_zone.aifoundry)[*].name,
   )
 
 
