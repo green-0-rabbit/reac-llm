@@ -80,22 +80,11 @@ variable "admin_password" {
   type      = string
   sensitive = true
 }
-
-variable "api_key" {
-  description = "API key for AI Foundry access."
-  type        = string
-  sensitive   = true
-}
-
+# 
 variable "jwt_secret" {
   description = "JWT signing secret for backend authentication."
   type        = string
   sensitive   = true
-}
-
-variable "frontend_url" {
-  description = "Frontend base URL used by the backend for redirects and CORS."
-  type        = string
 }
 
 variable "cors_allowed_origins" {

@@ -10,7 +10,6 @@ admin_username = "bastionadmin"
 
 #### Aihub backend variables
 jwt_secret                        = "7f8a9d0b-1c2e-4f5a-8b9d-0e1f2a3b4c5d"
-frontend_url                      = "https://ai-hub-frontend-dev.proudbay-31b5d54e.westeurope.azurecontainerapps.io"
 app_port                          = "8080"
 saml_issuer                       = "aihub-prod"
 storage_container_name            = "ai-hub-prod-container"

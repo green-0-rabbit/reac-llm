@@ -46,6 +46,14 @@ resource "azapi_resource" "ai_foundry" {
   }
 }
 
+data "azapi_resource_action" "keys" {
+  type                   = "Microsoft.CognitiveServices/accounts@2025-09-01"
+  resource_id            = azapi_resource.ai_foundry.id
+  action                 = "listKeys"
+  method                 = "POST"
+  response_export_values = ["*"]
+}
+
 #########################################################
 # Create a deployment for OpenAI's GPT-4o in the AI Foundry resource
 #########################################################

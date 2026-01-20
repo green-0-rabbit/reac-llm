@@ -84,6 +84,7 @@ variable "saml_clients" {
     signing_certificate                 = optional(string)
     signing_private_key                 = optional(string)
     signature_algorithm                 = optional(string, "RSA_SHA256")
+    idp_initiated_sso_url_name          = optional(string)
     protocol_mappers = optional(list(object({
       name                       = string
       user_property              = string

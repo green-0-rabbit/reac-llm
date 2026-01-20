@@ -131,7 +131,8 @@ async function main(clientSecret = '', realmName = '', outputFilePath = '') {
             'saml_assertion_consumer_url_post', 
             'saml_single_logout_service_url_redirect',
             'saml.signing.private.key',
-            'saml.signing.certificate'
+            'saml.signing.certificate',
+            'saml_idp_initiated_sso_url_name',
         ];
         
         samlAttributes.forEach(attr => {
@@ -140,6 +141,9 @@ async function main(clientSecret = '', realmName = '', outputFilePath = '') {
                  updatedClient.attributes[attr] = `\${${envVarName}}`;
             }
         });
+
+        updatedClient.redirectUris = ['${KC_REALM_AIHUB-PROD_REDIRECT_URIS}'];
+        updatedClient.webOrigins = ['${KC_REALM_AIHUB-PROD_WEB_ORIGINS}'];
       }
 
       return updatedClient;

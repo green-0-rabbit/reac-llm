@@ -2,8 +2,9 @@ locals {
   acr_login_server = data.azurerm_container_registry.acr.login_server
   #  backend_aihub_fqdn = "containerappdemo-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
   # keycloak_fqdn      = "keycloak-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
-  backend_aihub_fqdn = "containerappdemo-${var.env}.${module.container_app_environment.default_domain}"
-  keycloak_fqdn      = "keycloak-${var.env}.${module.container_app_environment.default_domain}"
+  backend_aihub_fqdn  = "containerappdemo-${var.env}.${module.container_app_environment.default_domain}"
+  keycloak_fqdn       = "keycloak-${var.env}.${module.container_app_environment.default_domain}"
+  frontend_aihub_fqdn = "ai-hub-frontend-${var.env}.${module.container_app_environment.default_domain}"
 }
 
 
@@ -68,6 +69,7 @@ module "keycloak" {
 
   template = {
     min_replicas = 1
+    max_replicas = 1
     containers = [
       {
         name   = "keycloak"
@@ -118,7 +120,19 @@ module "keycloak" {
           },
           {
             name  = "KC_REALM_API-SSO_REDIRECT_URIS"
+            value = "https://${local.frontend_aihub_fqdn}/*"
+          },
+          {
+            name  = "KC_REALM_AIHUB-PROD_REDIRECT_URIS"
             value = "https://${local.backend_aihub_fqdn}/*"
+          },
+          {
+            name  = "KC_REALM_AIHUB-PROD_WEB_ORIGINS"
+            value = ""
+          },
+          {
+            name  = "KC_REALM_AIHUB-PROD_SAML_IDP_INITIATED_SSO_URL_NAME"
+            value = "aihub-prod"
           },
           {
             name  = "KC_HEALTH_ENABLED"
@@ -255,6 +269,7 @@ module "backend_aihub" {
 
   template = {
     min_replicas = 1
+    max_replicas = 1
     containers = [
       {
         name   = "aihub-backend"
@@ -276,7 +291,7 @@ module "backend_aihub" {
           },
           {
             name  = "CORS_ALLOWED_ORIGINS"
-            value = var.cors_allowed_origins
+            value = "https://${local.frontend_aihub_fqdn}"
           },
           {
             name  = "NODE_ENV"
@@ -284,7 +299,7 @@ module "backend_aihub" {
           },
           {
             name  = "FRONTEND_URL"
-            value = var.frontend_url
+            value = "https://${local.frontend_aihub_fqdn}"
           },
           {
             name        = "DATABASE_URL"
@@ -324,7 +339,7 @@ module "backend_aihub" {
           },
           {
             name  = "SAML_ENTRYPOINT"
-            value = "https://${local.keycloak_fqdn}/realms/api-realm/protocol/saml"
+            value = "https://${local.keycloak_fqdn}/realms/api-realm/protocol/saml/clients/aihub-prod"
           },
           {
             name  = "SAML_ISSUER"
@@ -344,7 +359,7 @@ module "backend_aihub" {
           },
           {
             name  = "JWT_EXPIRES_IN"
-            value = "3600s"
+            value = "3600"
           },
           {
             name  = "JWT_COOKIE_NAME"
@@ -378,4 +393,130 @@ module "backend_aihub" {
   depends_on = [
     azurerm_role_assignment.kv_secrets_user
   ]
+}
+
+module "frontend_aihub" {
+  source = "../../modules/container_app"
+
+  app_config = {
+    name                  = "ai-hub-frontend"
+    revision_mode         = "Single"
+    workload_profile_name = module.container_app_environment.workload_profile_name
+  }
+  environment                  = var.env
+  location                     = var.location
+  resource_group_name          = azurerm_resource_group.rg.name
+  container_app_environment_id = module.container_app_environment.id
+
+  user_assigned_identity = {
+    id           = azurerm_user_assigned_identity.containerapp.id
+    principal_id = azurerm_user_assigned_identity.containerapp.principal_id
+  }
+
+  registry_fqdn = local.acr_login_server
+  acr_id        = data.azurerm_container_registry.acr.id
+  kv_id         = azurerm_key_vault.this.id
+
+  ingress = {
+    external_enabled = true
+    target_port      = 8080
+    traffic_weight = [
+      {
+        latest_revision = true
+        percentage      = 100
+      }
+    ]
+  }
+
+  secrets                    = []
+  create_acr_role_assignment = false
+
+  template = {
+    min_replicas = 1
+    max_replicas = 1
+    volumes = [
+      {
+        name         = "nginx-conf"
+        storage_type = "EmptyDir"
+      },
+      {
+        name         = "nginx-run"
+        storage_type = "EmptyDir"
+      },
+      {
+        name         = "nginx-cache"
+        storage_type = "EmptyDir"
+      }
+    ]
+    containers = [
+      {
+        name   = "ai-hub-frontend"
+        image  = "${local.acr_login_server}/ai-hub-frontend:21624"
+        cpu    = 0.5
+        memory = "1Gi"
+        command = [
+          "/bin/sh",
+          "-c",
+          <<-EOF
+          cp -r /usr/share/nginx/html /tmp/html
+          find /tmp/html -type f -print0 | xargs -0 sed -i 's|api-aihub.lab-iwm.com|'$API_DOMAIN'|g'
+          cat <<NGINX > /etc/nginx/conf.d/default.conf
+          server {
+              listen 8080;
+              listen [::]:8080;
+              server_tokens off;
+              root /tmp/html;
+              index index.html index.htm;
+              location = /index.html {
+                  internal;
+                  add_header Cache-Control 'no-store';
+                  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+              }
+              location / {
+                  try_files \$uri \$uri/ /index.html;
+              }
+              error_page 500 502 503 504 /50x.html;
+              location = /50x.html {
+                  root /tmp/html;
+              }
+          }
+          NGINX
+          nginx -g 'daemon off;'
+          EOF
+        ]
+        env = [
+          {
+            name  = "API_URL"
+            value = "https://${local.backend_aihub_fqdn}"
+          },
+          {
+            name  = "API_DOMAIN"
+            value = local.backend_aihub_fqdn
+          },
+          {
+            name  = "PORT"
+            value = "8080"
+          },
+          {
+            name  = "NGINX_PORT"
+            value = "8080"
+          }
+        ]
+        volume_mounts = [
+          {
+            name = "nginx-conf"
+            path = "/etc/nginx/conf.d"
+          },
+          {
+            name = "nginx-run"
+            path = "/var/run"
+          },
+          {
+            name = "nginx-cache"
+            path = "/var/cache/nginx"
+          }
+        ]
+      }
+    ]
+  }
 }

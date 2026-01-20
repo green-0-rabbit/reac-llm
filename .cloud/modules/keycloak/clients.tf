@@ -35,4 +35,6 @@ resource "keycloak_saml_client" "saml_client" {
   signing_private_key = each.value.signing_private_key
   signature_algorithm = each.value.signature_algorithm
 
+  idp_initiated_sso_url_name = each.value.idp_initiated_sso_url_name
+
 }

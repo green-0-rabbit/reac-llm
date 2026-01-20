@@ -110,6 +110,7 @@ module "local_keycloak" {
       signing_certificate                 = var.aihub_saml_certificate
       signing_private_key                 = var.aihub_saml_private_key
       signature_algorithm                 = "RSA_SHA256"
+      idp_initiated_sso_url_name          = "aihub-prod"
     }
   ]
 

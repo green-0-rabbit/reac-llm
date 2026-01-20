@@ -68,9 +68,18 @@ variable "template" {
         value       = optional(string)
         secret_name = optional(string)
       })), [])
+      volume_mounts = optional(list(object({
+        name = string
+        path = string
+      })), [])
     }))
     min_replicas = optional(number, 0)
     max_replicas = optional(number, 10)
+    volumes = optional(list(object({
+      name         = string
+      storage_type = optional(string, "EmptyDir")
+      storage_name = optional(string)
+    })), [])
   })
   validation {
     condition     = var.template != null && length(var.template.containers) > 0

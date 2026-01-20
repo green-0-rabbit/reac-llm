@@ -69,6 +69,22 @@ resource "azurerm_container_app" "app" {
             secret_name = env.value.secret_name
           }
         }
+        dynamic "volume_mounts" {
+          for_each = container.value.volume_mounts
+          content {
+            name = volume_mounts.value.name
+            path = volume_mounts.value.path
+          }
+        }
+      }
+    }
+
+    dynamic "volume" {
+      for_each = var.template.volumes
+      content {
+        name         = volume.value.name
+        storage_type = volume.value.storage_type
+        storage_name = volume.value.storage_name
       }
     }
 

@@ -13,6 +13,12 @@ output "openai_endpoint" {
   value       = "https://sbx-aif-${local.resource_name}.openai.azure.com"
 }
 
+output "primary_access_key" {
+  description = "The primary access key for the AI Foundry account."
+  value       = data.azapi_resource_action.keys.output.key1
+  sensitive   = true
+}
+
 output "cognitive_deployment_id" {
   value = { for k, v in azurerm_cognitive_deployment.aifoundry_deployment : k => v.id }
 }

@@ -45,6 +45,9 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_REALM_API-SSO_SECRET: supersecret
       KC_REALM_API-SSO_REDIRECT_URIS: http://localhost:3002/*
+      KC_REALM_AIHUB-PROD_REDIRECT_URIS: http://localhost:3002/auth/saml/callback
+      KC_REALM_AIHUB-PROD_WEB_ORIGINS: http://localhost:3002
+      KC_REALM_AIHUB-PROD_SAML_IDP_INITIATED_SSO_URL_NAME: aihub-prod
       KC_TEST_USER_PASSWORD: userpass1234#!
       KC_REALM_AIHUB-PROD_SAML_ASSERTION_CONSUMER_URL_REDIRECT: http://localhost:3002/auth/saml/callback
       KC_REALM_AIHUB-PROD_SAML_SINGLE_LOGOUT_SERVICE_URL_POST: http://localhost:3002/auth/logout
