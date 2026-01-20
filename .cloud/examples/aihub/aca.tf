@@ -1,9 +1,9 @@
 locals {
-  acr_login_server   = data.azurerm_container_registry.acr.login_server
+  acr_login_server = data.azurerm_container_registry.acr.login_server
   #  backend_aihub_fqdn = "containerappdemo-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
   # keycloak_fqdn      = "keycloak-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
-  backend_aihub_fqdn = "containerappdemo.${module.container_app_environment.default_domain}"
-  keycloak_fqdn      = "keycloak.${module.container_app_environment.default_domain}"
+  backend_aihub_fqdn = "containerappdemo-${var.env}.${module.container_app_environment.default_domain}"
+  keycloak_fqdn      = "keycloak-${var.env}.${module.container_app_environment.default_domain}"
 }
 
 
@@ -67,6 +67,7 @@ module "keycloak" {
   ]
 
   template = {
+    min_replicas = 1
     containers = [
       {
         name   = "keycloak"
@@ -145,11 +146,11 @@ module "keycloak" {
           },
           {
             name  = "KC_REALM_AIHUB-PROD_SAML_SIGNING_CERTIFICATE"
-            value = "MIIDCTCCAfGgAwIBAgIURK6kIm/e1o7c5dwTKuNB2BToNYYwDQYJKoZIhvcNAQELBQAwFDESMBAGA1UEAwwJbG9jYWxob3N0MB4XDTI2MDExOTE5MjUxOVoXDTI3MDExOTE5MjUxOVowFDESMBAGA1UEAwwJbG9jYWxob3N0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuQlFxVQrFXtYU3TtyKVoqhJrrcvFMWxGUZ5IoxK6WCfjMDr4J8DIkTL20TjKUJm7sTBoYNA7dsZXhBUJUqipBhB4LDzF9MmJhZX5PXLIYNhTwzKo6FF05ETroWfTMLohC0SpXsKc4+kjsXFymyoLeO0/5woskCAE7DLIp7Mg1copxS+ZaHZJjo7iFiJe/EJxuHzAVQihOTWZtptUPIz3ZynzfP/DhW4hhlLBW5IibcVe0GTzRU6OFmPqo+HJMPv8xXIfvA95RiK2fjJXhdxV5wN8KhDfCh2/39uk++drapiT9A00D5KAsPWZDq5Qq11eEEiLT3B7O5FSPPabqR4U7wIDAQABo1MwUTAdBgNVHQ4EFgQUJ58wvgxovtA2hQ7wPPX4nap/wvUwHwYDVR0jBBgwFoAUJ58wvgxovtA2hQ7wPPX4nap/wvUwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEALE5jz4y4L1u2Ibdn8ql49OXqPUNnfRZNDvaMtu2V/+npZu29QcdQqjfz/LmszR9oaMmJ7t8QzTvhfRZneOPwyvESjsQPPWGe3VDXXIFuwsOOQMEQWwUKSbfVWl94FrQkuiskshSGrU3MKrrZ6D6qBnYISQ1Azt9fDd7QXsqYttKaDWAMfC5xAUW+0zionlqFSva4MsL9SKLYZhu58rGnLwXad3UEbwCODKZrqsbvf4N0mI2Hwgm7u6bmBk/CmVPzr2/GPNjSkKjNsNz1Zt9AlyatKwKfLb9NKprZ9116rtYm/taIT/34ZbHGSfMHhEtEjMcKlSLxZg59MUj/9Qdmaw=="
+            value = var.keycloak_saml_signing_cert
           },
           {
             name  = "KC_REALM_AIHUB-PROD_SAML_SIGNING_PRIVATE_KEY"
-            value = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC5CUXFVCsVe1hTdO3IpWiqEmuty8UxbEZRnkijErpYJ+MwOvgnwMiRMvbROMpQmbuxMGhg0Dt2xleEFQlSqKkGEHgsPMX0yYmFlfk9cshg2FPDMqjoUXTkROuhZ9MwuiELRKlewpzj6SOxcXKbKgt47T/nCiyQIATsMsinsyDVyinFL5lodkmOjuIWIl78QnG4fMBVCKE5NZm2m1Q8jPdnKfN8/8OFbiGGUsFbkiJtxV7QZPNFTo4WY+qj4ckw+/zFch+8D3lGIrZ+MleF3FXnA3wqEN8KHb/f26T752tqmJP0DTQPkoCw9ZkOrlCrXV4QSItPcHs7kVI89pupHhTvAgMBAAECggEAAxERG8r1fIF9qRhu2RygsPI64E0DGNAYvuvhe/kTUeMLWWEeJsPZBHW0myrBSPewoX2nZTSzn5gm8Cn3FxceLLBjhXwrsw8PXUGV5BD9xYPK/kOzLUfYU5uEJOSByV90V773aE96ZoPr0wTfJ4zZVtORHmT6mxg6F1NkzvQMOcQniNAhuBlU8fDqC/Jsqp/cUN7ykWiTggRDznRiulMorlLe9GxJ2WUNjamElSbVgctvza35o5QrfYGGQ6ighSDr29C8aXREat6RgkhEZpaxa2cOdLoknhBmvU5vxof1gplpucYKs2FR7RK3ZSki8ILvoxhsT6EdwSdHCORhtHAxFQKBgQD4o8JfiC0yhTdMLs0N84y573RGUL5HBKFEnG+u3F34rTAe6ao4E8fOc2gRZXV5hxx0ZNX2tht642KUGZ5UESkvVFDjpVcoPo1xcLIgLVAU20IPsNfWyOwYorJh0sHvQm6X2cDYfJnzAqngaaY8UOKoUUeR/U9aruijHIhat+f42wKBgQC+g4N9x4aiYjENjLd+ludiXwcdvP/GmfrwaQrhlaI1GMA3fyAOpDqCCylS0sclHogrt+93YY9K5hZ8j6GnEeRnXv+iaZoPeak23i3+0F/xM942Hn9iKU5gFvoa02rY2S+uwIPyl4/fpeUp7FwojHmnUn46AXYpFrAaca9wUcBWfQKBgFqb+vqreqUdjQBTUeDSr6cWz03MoPrqggap571Wi1xTaOTrDGAxPTBMOFGWos/t3/2+vYaR6MPI16TXDS7frh2UYYIEQBXnbc444XoGBYdyn5pQnQxD/2aJEsDMcBha2I+1sqm16QvQfNV8VwUHbzC3AqQ9Xu7J1aUv/2uUMfhnfAoGAC8vk5nLmWUOvOeGOsx3w8dxkemjrhYafTSeT7ufvBU6lCEqs13s/zDGYu3IltpyvXdWj1EaMMt0QY2IZZljrRaNSPOJBEdg8rBMR0gdhCXRmu/8jcBaSrcx+bA7PPOIl27I7+Vd9JyIEkJX8Ft6r4bpv6nOQt3aaLOkBLflB6ZkCgYBFfXA39C8ihpBlfWoNeMd7INSNuTBUM+N7UI4laTvk44jRK45YxIapcY98SWfdJkZOmo76v2fSsc90dn0r0jar30NQCMPQB3Af2AOFtDWQtQ8ENi3MfUXRLh8YZ2MRqwlSyRMUTFX0zEciLWd53Q2BSyfnKFw5hoUA4RtL9wAbIA=="
+            value = var.keycloak_saml_signing_private_key
           }
         ]
       }
@@ -175,35 +176,35 @@ module "backend_aihub" {
     principal_id = azurerm_user_assigned_identity.containerapp.principal_id
   }
 
-  auth = {
-    global_validation = {
-      unauthenticated_client_action = "RedirectToLoginPage"
-      excluded_paths                = ["/health", "/favicon.ico"]
-    }
-    identity_providers = {
-      custom_open_id_connect_providers = {
-        keycloak = {
-          registration = {
-            client_id = "api-sso"
-            client_credential = {
-              client_secret_setting_name = "keycloak-client-secret"
-            }
-            open_id_connect_configuration = {
-              well_known_open_id_configuration = "http://${local.keycloak_fqdn}/realms/api-realm/.well-known/openid-configuration"
-              authorization_endpoint           = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/auth"
-              token_endpoint                   = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/token"
-              issuer                           = "http://${local.keycloak_fqdn}/realms/api-realm"
-              certification_uri                = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/certs"
-            }
-          }
-          login = {
-            name_claim_type = "preferred_username"
-            scopes          = ["openid", "profile", "email"]
-          }
-        }
-      }
-    }
-  }
+  # auth = {
+  #   global_validation = {
+  #     unauthenticated_client_action = "RedirectToLoginPage"
+  #     excluded_paths                = ["/health", "/favicon.ico"]
+  #   }
+  #   identity_providers = {
+  #     custom_open_id_connect_providers = {
+  #       keycloak = {
+  #         registration = {
+  #           client_id = "api-sso"
+  #           client_credential = {
+  #             client_secret_setting_name = "keycloak-client-secret"
+  #           }
+  #           open_id_connect_configuration = {
+  #             well_known_open_id_configuration = "http://${local.keycloak_fqdn}/realms/api-realm/.well-known/openid-configuration"
+  #             authorization_endpoint           = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/auth"
+  #             token_endpoint                   = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/token"
+  #             issuer                           = "http://${local.keycloak_fqdn}/realms/api-realm"
+  #             certification_uri                = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/certs"
+  #           }
+  #         }
+  #         login = {
+  #           name_claim_type = "preferred_username"
+  #           scopes          = ["openid", "profile", "email"]
+  #         }
+  #       }
+  #     }
+  #   }
+  # }
 
   registry_fqdn = local.acr_login_server
 
@@ -212,7 +213,7 @@ module "backend_aihub" {
 
   ingress = {
     external_enabled = true
-    target_port      = 3000
+    target_port      = var.app_port
     traffic_weight = [
       {
         latest_revision = true
@@ -227,55 +228,71 @@ module "backend_aihub" {
 
   secrets = [
     {
-      name                = "database-password"
-      value               = var.admin_password
-      key_vault_secret_id = azurerm_key_vault_secret.database_password.id
+      name  = "database-password"
+      value = var.admin_password
+    },
+    {
+      name  = "database-url"
+      value = format("postgresql://%s:%s@%s:5432/%s?ssl=true", urlencode(var.postgres_administrator_login), urlencode(var.admin_password), module.postgres.fqdn, module.postgres.database_name)
+    },
+    {
+      name  = "api-key"
+      value = module.ai_foundry.primary_access_key
+    },
+    {
+      name  = "jwt-secret"
+      value = var.jwt_secret
     },
     {
       name  = "keycloak-client-secret"
       value = "supersecret"
+    },
+    {
+      name  = "storage-connection-string"
+      value = azurerm_storage_account.this.primary_connection_string
     }
   ]
 
   template = {
+    min_replicas = 1
     containers = [
       {
-        name   = "todo-app-api"
+        name   = "aihub-backend"
         image  = "${local.acr_login_server}/ai-hub-backend:21274"
         cpu    = 0.5
         memory = "1Gi"
         env = [
           {
-            name        = "DATABASE_PASSWORD"
-            secret_name = "database-password"
+            name  = "APP_NAME"
+            value = var.app_name
           },
           {
-            name  = "PORT"
-            value = "3000"
+            name  = "APP_PORT"
+            value = var.app_port
           },
           {
-            name  = "DATABASE_HOST"
-            value = module.postgres.fqdn
-          },
-          {
-            name  = "DATABASE_PORT"
-            value = "5432"
-          },
-          {
-            name  = "DATABASE_USERNAME"
-            value = module.postgres.administrator_login
-          },
-          {
-            name  = "DATABASE_SCHEMA"
-            value = module.postgres.database_name
-          },
-          {
-            name  = "DATABASE_SSL"
+            name  = "ENABLE_CORS"
             value = "true"
           },
           {
+            name  = "CORS_ALLOWED_ORIGINS"
+            value = var.cors_allowed_origins
+          },
+          {
             name  = "NODE_ENV"
-            value = "prod"
+            value = "production"
+          },
+          {
+            name  = "FRONTEND_URL"
+            value = var.frontend_url
+          },
+          {
+            name        = "DATABASE_URL"
+            secret_name = "database-url"
+          },
+          {
+            name        = "AZURE_STORAGE_CONNECTION_STRING"
+            secret_name = "storage-connection-string"
           },
           {
             name  = "AZURE_STORAGE_SERVICE_URI"
@@ -283,11 +300,63 @@ module "backend_aihub" {
           },
           {
             name  = "AZURE_STORAGE_CONTAINER_NAME"
-            value = "todo-attachments"
+            value = var.storage_container_name
           },
           {
             name  = "AZURE_CLIENT_ID"
             value = azurerm_user_assigned_identity.containerapp.client_id
+          },
+          {
+            name        = "API_KEY"
+            secret_name = "api-key"
+          },
+          {
+            name  = "API_ENDPOINT"
+            value = module.ai_foundry.openai_endpoint
+          },
+          {
+            name  = "API_MODEL_NAME"
+            value = "gpt-4.1"
+          },
+          {
+            name  = "API_VERSION"
+            value = "2025-04-14"
+          },
+          {
+            name  = "SAML_ENTRYPOINT"
+            value = "https://${local.keycloak_fqdn}/realms/api-realm/protocol/saml"
+          },
+          {
+            name  = "SAML_ISSUER"
+            value = var.saml_issuer
+          },
+          {
+            name  = "SAML_CERT"
+            value = var.keycloak_saml_signing_cert
+          },
+          {
+            name  = "SAML_PATH"
+            value = "/auth/saml/callback"
+          },
+          {
+            name        = "JWT_SECRET"
+            secret_name = "jwt-secret"
+          },
+          {
+            name  = "JWT_EXPIRES_IN"
+            value = "3600s"
+          },
+          {
+            name  = "JWT_COOKIE_NAME"
+            value = "Authentication"
+          },
+          {
+            name  = "JWT_REFRESH_COOKIE"
+            value = "rt"
+          },
+          {
+            name  = "JWT_REFRESH_EXPIRES_IN"
+            value = "604800"
           },
           {
             name  = "AUTH_ISSUER_URL"

@@ -8,7 +8,7 @@ resource "azurerm_storage_account" "this" {
 
   # Security settings
   public_network_access_enabled = true
-  shared_access_key_enabled     = false # Enforce RBAC
+  shared_access_key_enabled     = true # Enforce RBAC
 
   tags = {
     env = var.env

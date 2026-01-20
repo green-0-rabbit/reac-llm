@@ -8,6 +8,11 @@ output "ai_foundry_name" {
   value       = azapi_resource.ai_foundry.name
 }
 
+output "openai_endpoint" {
+  description = "OpenAI endpoint for the AI Foundry account."
+  value       = "https://sbx-aif-${local.resource_name}.openai.azure.com"
+}
+
 output "cognitive_deployment_id" {
   value = { for k, v in azurerm_cognitive_deployment.aifoundry_deployment : k => v.id }
 }

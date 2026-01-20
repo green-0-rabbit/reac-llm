@@ -208,7 +208,7 @@
 		```bash
 		# App
 		APP_NAME=ai-hub-backend
-		APP_PORT=3000
+		APP_PORT=8080
 		ENABLE_CORS=true
 		CORS_ALLOWED_ORIGINS=* # Update with Frontend URL later
 		NODE_ENV=production
@@ -218,7 +218,7 @@
 		DATABASE_URL=postgres://<admin>:<pass>@<postgres-fqdn>:5432/aihub?ssl=true
 
 		# AI
-		API_KEY=<Use Managed Identity/Key Vault>
+		API_KEY=<outputs from module.ai_foundry>
 		API_ENDPOINT=<outputs from module.ai_foundry>
 		API_MODEL_NAME=gpt-4.1
 		API_VERSION=2025-04-14
@@ -238,7 +238,7 @@
 		```
 - **Steps**:
 	1. Update [.cloud/examples/aihub/aca.tf](.cloud/examples/aihub/aca.tf) `backend_aihub` module to include the environment variables listed above.
-	2. Map sensitive values (DB pass, API Key, JWT Secret) to Secrets/KeyVault.
+	2. Map sensitive values (DB pass, JWT Secret) to Secrets/KeyVault. Use dynamic retrieval for `API_KEY` from `module.ai_foundry`.
 	3. Apply the configuration:
 		```bash
 		glb-var dev && just tf-apply dev aihub
@@ -250,15 +250,28 @@
 	5. Validate SAML login flow (redirection to Keycloak and back).
 - **Output**:
 	- Backend running in target tenant with correct configuration and verified SSO.
+- **Status:** Completed on 2026-01-20
 
 ### 3.5 Frontend Migration
 - **Pre-requisites**:
-	- Frontend image available in target ACR.
-	- Backend deployed and reachable.
+	- Infrastructure foundational layer [.cloud/tf-infra](config/.cloud/tf-infra) is fully deployed.
+	- AIHub project infrastructure [.cloud/examples/aihub](config/.cloud/examples/aihub) is fully deployed.
+	- Backend module (`backend_aihub`) and Keycloak module (`keycloak`) are deployed and reachable (Task 3.4).
+	- Frontend image `ai-hub-frontend:21624` is present in the target ACR.
+	- Required Environment Variables:
+		- `API_URL=https://<backend-fqdn>` (Backend API Endpoint such as `https://containerappdemo-dev...`)
 - **Steps**:
-	1. Deploy frontend container to target ACA/App Service.
-	2. Update Front Door to new target endpoints.
-	3. Validate auth-related frontend behavior (useAuth hook, protected routes, router).
+	1. Update [.cloud/examples/aihub/aca.tf](.cloud/examples/aihub/aca.tf) to include the `frontend_aihub` module. Use `backend_aihub` as a template but configure for:
+		- **Image**: `ai-hub-frontend:21624`
+		- **Port**: `80` (Nginx default)
+		- **Environment**: Pass `API_URL` using the output FQDN from the backend module.
+	2. Apply the configuration:
+		```bash
+		glb-var dev && just tf-apply dev aihub
+		```
+	3. Validate Frontend health:
+		- Check accessibility via the generated ACA FQDN.
+		- Verify API calls to the backend (check browser network tab or logs).
 - **Output**:
-	- Frontend live in target tenant with routing and auth checks working.
+	- Frontend running in ACA, serving the React app via Nginx, and successfully communicating with the Backend.
 

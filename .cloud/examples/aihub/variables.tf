@@ -81,6 +81,61 @@ variable "admin_password" {
   sensitive = true
 }
 
+variable "api_key" {
+  description = "API key for AI Foundry access."
+  type        = string
+  sensitive   = true
+}
+
+variable "jwt_secret" {
+  description = "JWT signing secret for backend authentication."
+  type        = string
+  sensitive   = true
+}
+
+variable "frontend_url" {
+  description = "Frontend base URL used by the backend for redirects and CORS."
+  type        = string
+}
+
+variable "cors_allowed_origins" {
+  description = "Allowed CORS origins for backend."
+  type        = string
+  default     = "*"
+}
+
+variable "keycloak_saml_signing_cert" {
+  description = "Keycloak SAML signing certificate (base64 or PEM content)."
+  type        = string
+  sensitive   = true
+}
+
+variable "keycloak_saml_signing_private_key" {
+  description = "Keycloak SAML signing private key (base64 or PEM content)."
+  type        = string
+  sensitive   = true
+}
+
+variable "saml_issuer" {
+  description = "SAML issuer value used by the backend."
+  type        = string
+}
+
+variable "app_port" {
+  description = "Backend application port."
+  type        = string
+}
+
+variable "storage_container_name" {
+  description = "Storage container name for backend assets."
+  type        = string
+}
+
+variable "app_name" {
+  description = "Backend application name."
+  type        = string
+}
+
 # ACR variables
 variable "acr_name" {
   type        = string
