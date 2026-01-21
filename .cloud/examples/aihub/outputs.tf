@@ -48,3 +48,24 @@ output "private_endpoint_network_interface" {
   value       = module.ai_foundry.private_endpoint_network_interface
   description = "AI Foundry Private Endpoint Network Interface."
 }
+
+### Postgres Outputs
+output "postgres_fqdn" {
+  value       = module.postgres.fqdn
+  description = "FQDN of the PostgreSQL Flexible Server."
+}
+
+output "postgres_server_name" {
+  value       = module.postgres.server_name
+  description = "Name of the PostgreSQL Flexible Server."
+}
+
+output "postgres_database_name" {
+  value       = "aihub"
+  description = "Name of the PostgreSQL database."
+}
+
+output "postgres_administrator_login" {
+  value       = module.postgres.administrator_login
+  description = "Administrator login for PostgreSQL."
+}

@@ -9,6 +9,7 @@ packages:
   - openssl
   - curl
   - unzip
+  - postgresql-client
 
 write_files:
   - path: /usr/local/bin/sync_remote_acr_acr.sh

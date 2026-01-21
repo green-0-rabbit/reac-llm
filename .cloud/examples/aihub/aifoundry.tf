@@ -13,7 +13,8 @@ module "ai_foundry" {
     static_ip_address_allocation = false
   }
   dns = {
-    register_pe_to_dns = false
+    register_pe_to_dns = true
+    ai_foundry_dns_ids = values(data.azurerm_private_dns_zone.ai_services)[*].id
   }
   models = {
     "gpt-4.1" = {
@@ -21,6 +22,4 @@ module "ai_foundry" {
       sku     = "GlobalStandard"
     }
   }
-
-  depends_on = [module.vnet-spoke1]
 }

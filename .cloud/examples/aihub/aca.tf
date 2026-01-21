@@ -247,7 +247,7 @@ module "backend_aihub" {
     },
     {
       name  = "database-url"
-      value = format("postgresql://%s:%s@%s:5432/%s?ssl=true", urlencode(var.postgres_administrator_login), urlencode(var.admin_password), module.postgres.fqdn, module.postgres.database_name)
+      value = format("postgresql://%s:%s@%s:5432/%s?schema=aihub", urlencode(var.postgres_administrator_login), urlencode(var.admin_password), module.postgres.fqdn, module.postgres.database_name)
     },
     {
       name  = "api-key"
@@ -276,6 +276,15 @@ module "backend_aihub" {
         image  = "${local.acr_login_server}/ai-hub-backend:21274"
         cpu    = 0.5
         memory = "1Gi"
+        command = [
+          "/bin/sh",
+          "-c",
+          <<-EOF
+          echo "Patching: Creating unaccent extension..."
+          echo "CREATE EXTENSION IF NOT EXISTS unaccent SCHEMA aihub;" | npx prisma db execute --stdin --url "$DATABASE_URL"
+          ./entrypoint.sh
+          EOF
+        ]
         env = [
           {
             name  = "APP_NAME"
@@ -331,11 +340,11 @@ module "backend_aihub" {
           },
           {
             name  = "API_MODEL_NAME"
-            value = "gpt-4.1"
+            value = "gpt-4.1-GlobalStandard"
           },
           {
             name  = "API_VERSION"
-            value = "2025-04-14"
+            value = "2024-10-21"
           },
           {
             name  = "SAML_ENTRYPOINT"
@@ -359,11 +368,11 @@ module "backend_aihub" {
           },
           {
             name  = "JWT_EXPIRES_IN"
-            value = "3600"
+            value = "7200"
           },
           {
             name  = "JWT_COOKIE_NAME"
-            value = "Authentication"
+            value = "at"
           },
           {
             name  = "JWT_REFRESH_COOKIE"

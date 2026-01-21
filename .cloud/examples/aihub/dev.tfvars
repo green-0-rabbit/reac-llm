@@ -132,11 +132,36 @@ spoke_vnet_subnets = {
   }
   PostgresSubnet = {
     subnet_address_prefix = ["10.1.8.0/24"]
+    service_endpoints = [ "Microsoft.Storage" ]
     delegation = {
       name = "fs-delegation"
       service_delegation = {
         name    = "Microsoft.DBforPostgreSQL/flexibleServers"
         actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+      }
+
+
+    }
+    nsg_inbound_rules = {
+      "Allow-HTTP-HTTPS" = {
+        priority                   = 100
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_ranges    = ["80", "443"]
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "*"
+      }
+      "Allow-Postgres" = {
+        priority                   = 110
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "5432"
+        source_address_prefix      = "Internet"
+        destination_address_prefix = "*"
       }
     }
   }
