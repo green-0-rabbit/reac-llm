@@ -23,13 +23,13 @@
 ### 1.4 Tracking & Status
 | Area | Status | Notes |
 | --- | --- | --- |
-| Inventory current Azure resources | Not started | |
-| Frontend migration | Not started | |
-| Backend migration | Not started | |
-| Keycloak SSO migration | Not started | |
-| Networking + DNS | Not started | |
-| Secrets & configuration | Not started | |
-| Validation & smoke tests | Not started | |
+| Inventory current Azure resources | Completed | Source tenant analysis documented in Chapter 2 |
+| Frontend migration | Completed | Deployed to ACA on 2026-01-20 (Task 3.5) |
+| Backend migration | Completed | Deployed to ACA on 2026-01-20 (Task 3.4) |
+| Keycloak SSO migration | Completed | Custom image built & deployed on 2026-01-19 (Task 3.3) |
+| Networking + DNS | Completed | VNET, subnets, private endpoints provisioned (Task 3.1) |
+| Secrets & configuration | Completed | KeyVault integration & env vars configured (Tasks 3.4 & 3.5) |
+| Validation & smoke tests | Completed | Full stack validated on 2026-01-21 (Task 3.6) |
 
 ---
 
@@ -274,4 +274,22 @@
 		- Verify API calls to the backend (check browser network tab or logs).
 - **Output**:
 	- Frontend running in ACA, serving the React app via Nginx, and successfully communicating with the Backend.
+- **Status:** Completed on 2026-01-20
+
+### 3.6 Validation & Smoke Tests
+- **Pre-requisites**:
+	- Full stack (Frontend, Backend, Keycloak, Storage, DB) is deployed and running.
+	- User has access to the Frontend URL.
+- **Steps**:
+	1. **Image Upload Validation**:
+		- Verify Backend can write to Storage Account (`ContainerNotFound` fix applied).
+		- Verify Backend constructs correct image URLs (`AZURE_STORAGE_DOWNLOAD_URL` fix applied).
+		- Verify Storage Container allows public read access (`container_access_type = "blob"` fix applied).
+	2. **End-to-End Functional Test**:
+		- Log in via SSO.
+		- Upload a new image to a use case.
+		- Verify the image loads correctly in the browser.
+- **Output**:
+	- Confirmed functional application with working persistence layers.
+- **Status:** Completed on 2026-01-21 (Storage & Image Upload verified).
 

@@ -319,12 +319,16 @@ module "backend_aihub" {
             secret_name = "storage-connection-string"
           },
           {
+            name  = "AZURE_STORAGE_CONTAINER_NAME"
+            value = azurerm_storage_container.this.name
+          },
+          {
             name  = "AZURE_STORAGE_SERVICE_URI"
             value = azurerm_storage_account.this.primary_blob_endpoint
           },
           {
-            name  = "AZURE_STORAGE_CONTAINER_NAME"
-            value = var.storage_container_name
+            name  = "AZURE_STORAGE_DOWNLOAD_URL"
+            value = trimsuffix(azurerm_storage_account.this.primary_blob_endpoint, "/")
           },
           {
             name  = "AZURE_CLIENT_ID"

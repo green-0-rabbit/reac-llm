@@ -18,8 +18,9 @@ module "ai_foundry" {
   }
   models = {
     "gpt-4.1" = {
-      version = "2025-04-14"
-      sku     = "GlobalStandard"
+      version  = "2025-04-14"
+      sku      = "GlobalStandard"
+      capacity = 50
     }
   }
 }
