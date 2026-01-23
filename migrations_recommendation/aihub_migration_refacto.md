@@ -78,62 +78,127 @@ Once the container image is updated to listen on port 8080 natively, the Terrafo
 Azure Container Apps supports exposing HTTP/HTTPS on standard ports (80/443) externally while targeting a custom port (e.g., 8080) on the container.
 *   [ACA Ingress Documentation](https://learn.microsoft.com/en-us/azure/container-apps/ingress-how-to)
 
-### 3. Environment Variable Injection (Long-term)
-**Problem:** `VITE_` variables are replaced at build time, baking environment-specific configurations into the artifacts.
-**Solution:** Implement the "Runtime Configuration" pattern.
+### 3. Environment Variable Injection (NGINX Native Envsubst)
+This approach leverages the official NGINX image's built-in templating capability to generate `config.js` at runtime.
 
-**Step 1: Container Entrypoint Script**
-Add a script to generate a `config.js` file from environment variables at container startup.
-Create a file `/docker-entrypoint.d/40-generate-config.sh` (or add to your custom entrypoint):
+**Reference Implementation:**
+A working example of this implementation (Proof of Concept) is available in this workspace:
+*   **Source Code**: [packages/frontend-demo-fix/src](../packages/frontend-demo-fix/src) (Contains `env.ts` helper and usage examples)
+*   **Dockerfile**: [packages/frontend-demo-fix/Dockerfile](../packages/frontend-demo-fix/Dockerfile) (Updated with Envsubst and non-root user)
+*   **Terraform Module**: See `module "frontend_aihub_fix"` in [.cloud/examples/aihub/aca.tf](../.cloud/examples/aihub/aca.tf)
 
-```bash
-#!/bin/sh
-cat <<EOF > /usr/share/nginx/html/config.js
+**Step 1: Create Template File**
+Create `config.js.template` in the root of your project (alongside `Dockerfile` and `nginx.conf`):
+```javascript
 window.RUNTIME_CONFIG = {
-  API_URL: "${API_URL:-https://default-api.com}",
+  API_URL: "${API_URL}",
   SESSION_REPLAY_KEY: "${SESSION_REPLAY_KEY}",
   PIANO_ANALYTICS_SITE_ID: "${PIANO_ANALYTICS_SITE_ID}",
   PIANO_ANALYTICS_COLLECTION_DOMAIN: "${PIANO_ANALYTICS_COLLECTION_DOMAIN}"
 };
-EOF
 ```
+*Note: These correspond to the VITE variables used in your code.*
 
 **Step 2: Update HTML**
-Include this script in your `index.html` (in the `public` folder of your React project) so it loads before your app bundle.
+In `index.html` (project root), add the script tag inside `<head>` before your main script:
 
 ```html
 <head>
-  <!-- ... -->
-  <script src="/config.js"></script>
+    <!-- ... existing tags ... -->
+    <script src="/config.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
 </head>
 ```
 
-**Step 3: Update React Code**
-Create a utility function to access these variables, preferring the runtime config over the build-time env vars.
-
+**Step 3: Create Runtime Config Configuration Helper**
+Create `src/lib/env.ts` to centralize environment variable access:
 ```typescript
-// src/config.ts
-export const getEnv = (key: string) => {
-  // @ts-ignore
-  const runtimeValue = window.RUNTIME_CONFIG?.[key];
-  const buildTimeValue = import.meta.env[`VITE_${key}`];
-  return runtimeValue || buildTimeValue;
-};
+interface RuntimeConfig {
+  API_URL?: string;
+  SESSION_REPLAY_KEY?: string;
+  PIANO_ANALYTICS_SITE_ID?: string;
+  PIANO_ANALYTICS_COLLECTION_DOMAIN?: string;
+}
 
-// Usage
-const apiUrl = getEnv('API_URL');
+export const getEnv = (key: keyof RuntimeConfig) => {
+  const runtime = (window as any).RUNTIME_CONFIG as RuntimeConfig;
+  return runtime?.[key] || import.meta.env[`VITE_${key}`];
+};
 ```
 
-**Step 4: Update Terraform**
-In `aca.tf`, you can now pass standard environment variables like `API_URL` instead of relying on `sed` hacks.
+**Step 4: Update Application Code**
+Replace `import.meta.env` usages in your application files:
 
+*   **`src/lib/api-client.ts`**:
+    ```typescript
+    import { getEnv } from './env';
+    // ...
+    baseURL: getEnv('API_URL'),
+    ```
+*   **`src/lib/piano-analytics.ts`**:
+    ```typescript
+    import { getEnv } from './env';
+    const PIANO_ANALYTICS_SITE_ID = getEnv('PIANO_ANALYTICS_SITE_ID');
+    const PIANO_ANALYTICS_COLLECTION_DOMAIN = getEnv('PIANO_ANALYTICS_COLLECTION_DOMAIN');
+    ```
+*   **`src/app/routes/login/page.tsx`**:
+    ```typescript
+    import { getEnv } from '@/lib/env'; // assuming @ alias
+    window.location.href = `${getEnv('API_URL')}/auth/login`;
+    ```
+*   **`src/main.tsx`**:
+    ```typescript
+    import { getEnv } from './lib/env';
+    // ...
+    key: getEnv('SESSION_REPLAY_KEY'),
+    ```
+
+**Step 5: Update Dockerfile**
+Update `Dockerfile` to copy the template and set the output directory:
+
+```dockerfile
+FROM nginx:stable-alpine
+
+RUN addgroup -S nginxgroup \
+ && adduser -S nginxuser -G nginxgroup \
+ && mkdir -p /run \
+ && chown -R nginxuser:nginxgroup /run \
+ && chown -R nginxuser:nginxgroup /usr/share/nginx/html \
+ && chown -R nginxuser:nginxgroup /var/cache/nginx
+
+COPY --chown=nginxuser:nginxgroup dist/ /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# --- NEW: Copy template for runtime config ---
+COPY config.js.template /etc/nginx/templates/config.js.template
+ENV NGINX_ENVSUBST_OUTPUT_DIR=/usr/share/nginx/html
+# ---------------------------------------------
+
+EXPOSE 8080
+USER nginxuser
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+**Step 6: Update Terraform**
+In `aca.tf`, pass standard environment variables.
 ```terraform
         env = [
           {
             name  = "API_URL"
             value = "https://${local.backend_aihub_fqdn}"
           },
-          # ...
+          {
+            name  = "SESSION_REPLAY_KEY"
+            value = var.session_replay_key
+          },
+          {
+            name  = "PIANO_ANALYTICS_SITE_ID"
+            value = var.piano_analytics_site_id
+          },
+          {
+            name  = "PIANO_ANALYTICS_COLLECTION_DOMAIN"
+            value = var.piano_analytics_collection_domain
+          }
         ]
 ```
 

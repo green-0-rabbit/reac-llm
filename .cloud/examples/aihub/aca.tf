@@ -533,3 +533,71 @@ module "frontend_aihub" {
     ]
   }
 }
+
+module "frontend_aihub_fix" {
+  source = "../../modules/container_app"
+
+  app_config = {
+    name                  = "ai-hub-frontend-fix"
+    revision_mode         = "Single"
+    workload_profile_name = module.container_app_environment.workload_profile_name
+  }
+  environment                  = var.env
+  location                     = var.location
+  resource_group_name          = azurerm_resource_group.rg.name
+  container_app_environment_id = module.container_app_environment.id
+
+  user_assigned_identity = {
+    id           = azurerm_user_assigned_identity.containerapp.id
+    principal_id = azurerm_user_assigned_identity.containerapp.principal_id
+  }
+
+  registry_fqdn = local.acr_login_server
+  acr_id        = data.azurerm_container_registry.acr.id
+  kv_id         = azurerm_key_vault.this.id
+
+  ingress = {
+    external_enabled = true
+    target_port      = 8080
+    traffic_weight = [
+      {
+        latest_revision = true
+        percentage      = 100
+      }
+    ]
+  }
+
+  secrets                    = []
+  create_acr_role_assignment = false
+
+  template = {
+    min_replicas = 1
+    max_replicas = 1
+    containers = [
+      {
+        name   = "ai-hub-frontend-fix"
+        image  = "humaapi0registry/frontend-demo-fix:latest"
+        cpu    = 0.5
+        memory = "1Gi"
+        env = [
+          {
+            name  = "API_URL"
+            value = "https://${local.backend_aihub_fqdn}"
+          },
+          {
+            name  = "SESSION_REPLAY_KEY"
+            value = ""
+          },
+          {
+            name  = "PIANO_ANALYTICS_SITE_ID"
+            value = ""
+          },
+          {
+            name  = "PIANO_ANALYTICS_COLLECTION_DOMAIN"
+            value = ""
+          }
+        ]
+      }
+    ]
+  }
+}
