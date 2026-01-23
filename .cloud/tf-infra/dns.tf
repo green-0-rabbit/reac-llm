@@ -1,3 +1,20 @@
+locals {
+  azure_monitor_private_dns_zones = toset([
+    "privatelink.monitor.azure.com",
+    "privatelink.oms.opinsights.azure.com",
+    "privatelink.ods.opinsights.azure.com",
+    "privatelink.agentsvc.azure-automation.net",
+  ])
+
+  azure_ai_private_dns_zones = toset([
+    "privatelink.services.ai.azure.com",       # AI Services Private DNS Zone
+    "privatelink.search.windows.net",          # AI Search Private DNS Zone
+    "privatelink.openai.azure.com",            # Cognitive Services Private DNS Zone
+    "privatelink.cognitiveservices.azure.com", # Cognitive Services General Private DNS Zone
+  ])
+}
+
+
 # Private DNS zone lives in the backbone RG
 resource "azurerm_private_dns_zone" "sbx_zone" {
   name                = var.private_dns_zone_name
@@ -23,14 +40,6 @@ resource "azurerm_private_dns_zone" "postgres" {
 }
 
 # Azure Monitor / AMPLS required zones
-locals {
-  azure_monitor_private_dns_zones = toset([
-    "privatelink.monitor.azure.com",
-    "privatelink.oms.opinsights.azure.com",
-    "privatelink.ods.opinsights.azure.com",
-    "privatelink.agentsvc.azure-automation.net",
-  ])
-}
 
 resource "azurerm_private_dns_zone" "ampls" {
   for_each            = local.azure_monitor_private_dns_zones
@@ -38,4 +47,13 @@ resource "azurerm_private_dns_zone" "ampls" {
   resource_group_name = azurerm_resource_group.main.name
 }
 
+
+# Azure AI services AIfoundry DNS
+
+# see @https://github.com/Azure/terraform-azurerm-avm-ptn-aiml-ai-foundry/tree/v0.10.0/examples/private
+resource "azurerm_private_dns_zone" "aifoundry" {
+  for_each            = local.azure_ai_private_dns_zones
+  name                = each.value
+  resource_group_name = azurerm_resource_group.main.name
+}
 

@@ -138,6 +138,12 @@ variable "enable_public_ip" {
   default = false
 }
 
+variable "enable_bastion_host" {
+  type        = bool
+  default     = true
+  description = "Enable Azure Bastion host creation."
+}
+
 variable "vnet_id" {
 
 }

@@ -13,7 +13,7 @@ acr_settings = {
 storage_account_name = "sbxinfrastoragekag"
 
 #### nexus vm variables
-admin_username = "nexusadmin"
+admin_username = "bastionadmin"
 
 private_dns_zone_name = "sbx-kag.io"
 
@@ -24,8 +24,13 @@ hub_subnets = {
   MainSubnet = {
     subnet_address_prefix = ["10.0.1.0/24"]
   }
-  WorkloadSubnet = {
-    subnet_address_prefix = ["10.0.4.0/24"]
+
+  PrivateEndpointSubnet = {
+    subnet_address_prefix = ["10.0.5.0/24"]
+  }
+
+  BastionSubnet = {
+    subnet_address_prefix = ["10.0.7.0/27"]
     nsg_inbound_rules = {
       "Allow-SSH-Trusted" = {
         priority                   = 200
@@ -34,33 +39,10 @@ hub_subnets = {
         protocol                   = "Tcp"
         source_port_range          = "*"
         destination_port_range     = "22"
-        source_address_prefixes    = ["81.65.88.13"]
-        destination_address_prefix = "*"
-      }
-      "Allow-Bastion-Dev" = {
-        priority                   = 150
-        direction                  = "Inbound"
-        access                     = "Allow"
-        protocol                   = "Tcp"
-        source_port_range          = "*"
-        destination_port_ranges    = ["22", "3389"]
-        source_address_prefix      = "VirtualNetwork"
-        destination_address_prefix = "*"
-      }
-      "Allow-Nexus-UI-VNet" = {
-        priority                   = 210
-        direction                  = "Inbound"
-        access                     = "Allow"
-        protocol                   = "Tcp"
-        source_port_range          = "*"
-        destination_port_range     = "8081"
-        source_address_prefix      = "VirtualNetwork"
+        source_address_prefixes    = ["0.0.0.0/0"]
         destination_address_prefix = "*"
       }
     }
-  }
-  PrivateEndpointSubnet = {
-    subnet_address_prefix = ["10.0.5.0/24"]
   }
   # Only needed if Azure Bastion is sku 'Standard' or higher
   # AzureBastionSubnet = {
@@ -75,19 +57,14 @@ hub_firewall = {
   subnet_address_prefix = ["10.0.14.0/23"]
 }
 
-seed_config = {
-  images = [
-    "library/busybox:latest",
-    # "node:alpine3.22",
-    "wbitt/network-multitool:alpine-extra",
-    "local/todo-app-api:latest"
-  ]
-  batch_size  = 1
-  timer_every = "2min"
-}
+#### Remote acr config for bastion vm to pull images
 
-sync_config = {
-  enable      = true
-  timer_every = "2min"
+remote_acr_config = {
+  username = "aihubazqsbx"
+  fqdn     = "aiportalregistry.azurecr.io"
+  images = [
+    "ai-hub-backend:21274",
+    "ai-hub-frontend:21624",
+  ]
 }
 

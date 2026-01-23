@@ -90,28 +90,28 @@
   "defaultLocale": "",
   "authenticatorConfig": [
     {
-      "id": "5ae47562-3a54-492b-8f1e-b97470e6e23a",
+      "id": "6f2f66d0-cc0b-4d1f-b6e1-8c8b8950db5c",
       "alias": "browser-conditional-credential",
       "config": {
         "credentials": "webauthn-passwordless"
       }
     },
     {
-      "id": "f601e993-6d1d-4d0b-a3eb-241b595a17b6",
+      "id": "79a6c964-b19b-4463-ad68-d542e2cf912c",
       "alias": "create unique user config",
       "config": {
         "require.password.update.after.registration": "false"
       }
     },
     {
-      "id": "7e2297b0-efea-40a7-9118-9e8656fea341",
+      "id": "9c282884-791c-4673-aab7-1e42fe282c72",
       "alias": "first-broker-login-conditional-credential",
       "config": {
         "credentials": "webauthn-passwordless"
       }
     },
     {
-      "id": "67ba1c50-39ce-4385-8f16-7a2f474302dc",
+      "id": "26fe2be6-1d0c-461f-9958-b503725131c6",
       "alias": "review profile config",
       "config": {
         "update.profile.on.first.login": "missing"
@@ -143,26 +143,7 @@
   "roles": {
     "realm": [
       {
-        "id": "a59d14a7-c9d2-4964-82b5-f820c3e457bd",
-        "name": "developer",
-        "description": "",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "api-realm",
-        "attributes": {
-          "api:access": [
-            "READ"
-          ],
-          "api:billing": [
-            "READ"
-          ],
-          "api:user-management": [
-            "READ"
-          ]
-        }
-      },
-      {
-        "id": "0eabfdc2-b490-4903-8547-43300a7bdf7c",
+        "id": "ab7f7759-c53d-4b8f-9561-f13f078bf9e7",
         "name": "techlead",
         "description": "",
         "composite": false,
@@ -179,12 +160,49 @@
             "WRITE"
           ]
         }
+      },
+      {
+        "id": "092e2791-67a7-481d-a3c1-d6d672dc9434",
+        "name": "VIEWER",
+        "description": "",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "api-realm",
+        "attributes": {}
+      },
+      {
+        "id": "5768331f-1370-462c-841a-400409a63cba",
+        "name": "ADMIN",
+        "description": "",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "api-realm",
+        "attributes": {}
+      },
+      {
+        "id": "9976d5cd-4ecd-40dd-a082-4a9f7d3ed49e",
+        "name": "developer",
+        "description": "",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "api-realm",
+        "attributes": {
+          "api:access": [
+            "READ"
+          ],
+          "api:billing": [
+            "READ"
+          ],
+          "api:user-management": [
+            "READ"
+          ]
+        }
       }
     ]
   },
   "clients": [
     {
-      "id": "a1add813-59d8-4440-9541-ebaac92fce62",
+      "id": "4c75e93f-2917-44f6-a050-68d6e141febb",
       "clientId": "account",
       "name": "${client_account}",
       "rootUrl": "${authBaseUrl}",
@@ -217,21 +235,21 @@
       "defaultClientScopes": [
         "web-origins",
         "acr",
-        "profile",
         "roles",
+        "profile",
         "basic",
         "email"
       ],
       "optionalClientScopes": [
         "address",
         "phone",
-        "offline_access",
         "organization",
+        "offline_access",
         "microprofile-jwt"
       ]
     },
     {
-      "id": "9849b83b-cf63-479d-8b92-5d1de593005d",
+      "id": "9144abdf-cf67-4e00-9f35-97303314663f",
       "clientId": "account-console",
       "name": "${client_account-console}",
       "rootUrl": "${authBaseUrl}",
@@ -264,7 +282,7 @@
       "nodeReRegistrationTimeout": 0,
       "protocolMappers": [
         {
-          "id": "95b326b5-76cd-4a17-8b78-c7c863bebd03",
+          "id": "714c8e9c-3dfd-4d5a-be10-89f9294c416d",
           "name": "audience resolve",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-resolve-mapper",
@@ -275,21 +293,121 @@
       "defaultClientScopes": [
         "web-origins",
         "acr",
-        "profile",
         "roles",
+        "profile",
         "basic",
         "email"
       ],
       "optionalClientScopes": [
         "address",
         "phone",
-        "offline_access",
         "organization",
+        "offline_access",
         "microprofile-jwt"
       ]
     },
     {
-      "id": "3d23bbd0-ae70-4655-aae5-abe7698dd81e",
+      "id": "58538e0c-2bc2-473a-924e-9f31be7b30f8",
+      "clientId": "aihub-prod",
+      "name": "aihub-prod",
+      "description": "",
+      "rootUrl": "",
+      "adminUrl": "",
+      "baseUrl": "",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KC_REALM_AIHUB-PROD_SECRET}",
+      "redirectUris": [
+        "${KC_REALM_AIHUB-PROD_REDIRECT_URIS}"
+      ],
+      "webOrigins": [
+        "${KC_REALM_AIHUB-PROD_WEB_ORIGINS}"
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "publicClient": false,
+      "frontchannelLogout": true,
+      "protocol": "saml",
+      "attributes": {
+        "saml.assertion.signature": "true",
+        "client.secret.creation.time": "1768888299",
+        "saml_assertion_consumer_url_redirect": "${KC_REALM_AIHUB-PROD_SAML_ASSERTION_CONSUMER_URL_REDIRECT}",
+        "saml.force.post.binding": "false",
+        "saml_single_logout_service_url_post": "${KC_REALM_AIHUB-PROD_SAML_SINGLE_LOGOUT_SERVICE_URL_POST}",
+        "saml.encrypt": "false",
+        "saml_assertion_consumer_url_post": "${KC_REALM_AIHUB-PROD_SAML_ASSERTION_CONSUMER_URL_POST}",
+        "saml.server.signature": "true",
+        "saml_idp_initiated_sso_url_name": "${KC_REALM_AIHUB-PROD_SAML_IDP_INITIATED_SSO_URL_NAME}",
+        "saml.signing.certificate": "${KC_REALM_AIHUB-PROD_SAML_SIGNING_CERTIFICATE}",
+        "realm_client": "false",
+        "saml.artifact.binding.identifier": "erUVnqPCoIZh31Z7+NBAqs1cpgw=",
+        "saml_single_logout_service_url_redirect": "${KC_REALM_AIHUB-PROD_SAML_SINGLE_LOGOUT_SERVICE_URL_REDIRECT}",
+        "saml.signature.algorithm": "RSA_SHA256",
+        "saml_force_name_id_format": "false",
+        "saml.client.signature": "false",
+        "saml.authnstatement": "true",
+        "saml.signing.private.key": "${KC_REALM_AIHUB-PROD_SAML_SIGNING_PRIVATE_KEY}",
+        "saml_name_id_format": "email",
+        "saml.allow.ecp.flow": "false",
+        "saml.server.signature.keyinfo.xmlSigKeyInfoKeyNameTransformer": "KEY_ID",
+        "saml_signature_canonicalization_method": "http://www.w3.org/2001/10/xml-exc-c14n#"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "protocolMappers": [
+        {
+          "id": "d3cab57f-f12c-405c-8554-74bd0d6e4ffd",
+          "name": "lastName",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.nameformat": "Basic",
+            "user.attribute": "lastName",
+            "attribute.name": "lastName"
+          }
+        },
+        {
+          "id": "90e9174b-2b4b-4526-8ad0-2f169bd233bc",
+          "name": "email",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.nameformat": "Basic",
+            "user.attribute": "email",
+            "attribute.name": "email"
+          }
+        },
+        {
+          "id": "064826cf-5a4a-4c27-9aee-98677723fb80",
+          "name": "firstName",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.nameformat": "Basic",
+            "user.attribute": "firstName",
+            "attribute.name": "firstName"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "saml_organization",
+        "role_list"
+      ],
+      "optionalClientScopes": []
+    },
+    {
+      "id": "7a91fd69-0f98-4700-b4ee-2bd673451f9a",
       "clientId": "api-sso",
       "name": "",
       "description": "",
@@ -316,7 +434,7 @@
       "protocol": "openid-connect",
       "attributes": {
         "realm_client": "false",
-        "client.secret.creation.time": "1766420450",
+        "client.secret.creation.time": "1768888299",
         "exclude.issuer.from.auth.response": "false",
         "backchannel.logout.session.required": "true",
         "client_credentials.use_refresh_token": "false",
@@ -333,7 +451,7 @@
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [
         {
-          "id": "8391211e-d0ef-48e6-928b-aea62bad97f3",
+          "id": "35a1bdf2-5a25-4829-97cb-86bfcf2e6721",
           "name": "audience-mapper",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
@@ -348,23 +466,23 @@
       "defaultClientScopes": [
         "web-origins",
         "acr",
-        "profile",
         "roles",
+        "profile",
         "basic",
         "email"
       ],
       "optionalClientScopes": [
         "address",
         "phone",
-        "offline_access",
         "organization",
+        "offline_access",
         "microprofile-jwt"
       ]
     }
   ],
   "users": [
     {
-      "id": "006f4853-0c8e-4712-a24c-8c3843868b6f",
+      "id": "a47a5f9f-b1da-4f3a-ab77-320ec87be9d1",
       "username": "test@domain.com",
       "firstName": "Test",
       "lastName": "User",
@@ -462,7 +580,7 @@
         ]
       },
       "enabled": true,
-      "createdTimestamp": 1766420449984,
+      "createdTimestamp": 1768888298968,
       "totp": false,
       "disableableCredentialTypes": [],
       "requiredActions": [],
@@ -470,6 +588,9 @@
       "access": {
         "manage": true
       },
+      "realmRoles": [
+        "ADMIN"
+      ],
       "credentials": [
         {
           "type": "password",
@@ -478,5 +599,35 @@
         }
       ]
     }
-  ]
+  ],
+  "components": {
+    "org.keycloak.keys.KeyProvider": [
+      {
+        "id": "e4566c71-c045-4299-a0c5-555555555555",
+        "name": "terraform-injected-key",
+        "providerId": "rsa",
+        "subComponents": {},
+        "config": {
+          "priority": [
+            "200"
+          ],
+          "enabled": [
+            "true"
+          ],
+          "active": [
+            "true"
+          ],
+          "privateKey": [
+            "${KC_REALM_AIHUB-PROD_SAML_SIGNING_PRIVATE_KEY}"
+          ],
+          "certificate": [
+            "${KC_REALM_AIHUB-PROD_SAML_SIGNING_CERTIFICATE}"
+          ],
+          "algorithm": [
+            "RS256"
+          ]
+        }
+      }
+    ]
+  }
 }

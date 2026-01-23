@@ -1,0 +1,169 @@
+location            = "westeurope"
+resource_group_name = "sbx-aihub-rg"
+project             = "sbx-aihub"
+
+#### container apps
+create_log_analytics = true
+
+#### bastion vm variables
+admin_username = "bastionadmin"
+
+#### Aihub backend variables
+jwt_secret                        = "7f8a9d0b-1c2e-4f5a-8b9d-0e1f2a3b4c5d"
+app_port                          = "8080"
+saml_issuer                       = "aihub-prod"
+storage_container_name            = "ai-hub-prod-container"
+app_name                          = "ai-hub-backend"
+keycloak_saml_signing_cert        = "MIIDCTCCAfGgAwIBAgIURK6kIm/e1o7c5dwTKuNB2BToNYYwDQYJKoZIhvcNAQELBQAwFDESMBAGA1UEAwwJbG9jYWxob3N0MB4XDTI2MDExOTE5MjUxOVoXDTI3MDExOTE5MjUxOVowFDESMBAGA1UEAwwJbG9jYWxob3N0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuQlFxVQrFXtYU3TtyKVoqhJrrcvFMWxGUZ5IoxK6WCfjMDr4J8DIkTL20TjKUJm7sTBoYNA7dsZXhBUJUqipBhB4LDzF9MmJhZX5PXLIYNhTwzKo6FF05ETroWfTMLohC0SpXsKc4+kjsXFymyoLeO0/5woskCAE7DLIp7Mg1copxS+ZaHZJjo7iFiJe/EJxuHzAVQihOTWZtptUPIz3ZynzfP/DhW4hhlLBW5IibcVe0GTzRU6OFmPqo+HJMPv8xXIfvA95RiK2fjJXhdxV5wN8KhDfCh2/39uk++drapiT9A00D5KAsPWZDq5Qq11eEEiLT3B7O5FSPPabqR4U7wIDAQABo1MwUTAdBgNVHQ4EFgQUJ58wvgxovtA2hQ7wPPX4nap/wvUwHwYDVR0jBBgwFoAUJ58wvgxovtA2hQ7wPPX4nap/wvUwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEALE5jz4y4L1u2Ibdn8ql49OXqPUNnfRZNDvaMtu2V/+npZu29QcdQqjfz/LmszR9oaMmJ7t8QzTvhfRZneOPwyvESjsQPPWGe3VDXXIFuwsOOQMEQWwUKSbfVWl94FrQkuiskshSGrU3MKrrZ6D6qBnYISQ1Azt9fDd7QXsqYttKaDWAMfC5xAUW+0zionlqFSva4MsL9SKLYZhu58rGnLwXad3UEbwCODKZrqsbvf4N0mI2Hwgm7u6bmBk/CmVPzr2/GPNjSkKjNsNz1Zt9AlyatKwKfLb9NKprZ9116rtYm/taIT/34ZbHGSfMHhEtEjMcKlSLxZg59MUj/9Qdmaw=="
+keycloak_saml_signing_private_key = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC5CUXFVCsVe1hTdO3IpWiqEmuty8UxbEZRnkijErpYJ+MwOvgnwMiRMvbROMpQmbuxMGhg0Dt2xleEFQlSqKkGEHgsPMX0yYmFlfk9cshg2FPDMqjoUXTkROuhZ9MwuiELRKlewpzj6SOxcXKbKgt47T/nCiyQIATsMsinsyDVyinFL5lodkmOjuIWIl78QnG4fMBVCKE5NZm2m1Q8jPdnKfN8/8OFbiGGUsFbkiJtxV7QZPNFTo4WY+qj4ckw+/zFch+8D3lGIrZ+MleF3FXnA3wqEN8KHb/f26T752tqmJP0DTQPkoCw9ZkOrlCrXV4QSItPcHs7kVI89pupHhTvAgMBAAECggEAAxERG8r1fIF9qRhu2RygsPI64E0DGNAYvuvhe/kTUeMLWWEeJsPZBHW0myrBSPewoX2nZTSzn5gm8Cn3FxceLLBjhXwrsw8PXUGV5BD9xYPK/kOzLUfYU5uEJOSByV90V773aE96ZoPr0wTfJ4zZVtORHmT6mxg6F1NkzvQMOcQniNAhuBlU8fDqC/Jsqp/cUN7ykWiTggRDznRiulMorlLe9GxJ2WUNjamElSbVgctvza35o5QrfYGGQ6ighSDr29C8aXREat6RgkhEZpaxa2cOdLoknhBmvU5vxof1gplpucYKs2FR7RK3ZSki8ILvoxhsT6EdwSdHCORhtHAxFQKBgQD4o8JfiC0yhTdMLs0N84y573RGUL5HBKFEnG+u3F34rTAe6ao4E8fOc2gRZXV5hxx0ZNX2tht642KUGZ5UESkvVFDjpVcoPo1xcLIgLVAU20IPsNfWyOwYorJh0sHvQm6X2cDYfJnzAqngaaY8UOKoUUeR/U9aruijHIhat+f42wKBgQC+g4N9x4aiYjENjLd+ludiXwcdvP/GmfrwaQrhlaI1GMA3fyAOpDqCCylS0sclHogrt+93YY9K5hZ8j6GnEeRnXv+iaZoPeak23i3+0F/xM942Hn9iKU5gFvoa02rY2S+uwIPyl4/fpeUp7FwojHmnUn46AXYpFrAaca9wUcBWfQKBgFqb+vqreqUdjQBTUeDSr6cWz03MoPrqggap571Wi1xTaOTrDGAxPTBMOFGWos/t3/2+vYaR6MPI16TXDS7frh2UYYIEQBXnbc44XoGBYdyn5pQnQxD/2aJEsDMcBha2I+1sqm16QvQfNV8VwUHbzC3AqQ9Xu7J1aUv/2uUMfhnfAoGAC8vk5nLmWUOvOeGOsx3w8dxkemjrhYafTSeT7ufvBU6lCEqs13s/zDGYu3IltpyvXdWj1EaMMt0QY2IZZljrRaNSPOJBEdg8rBMR0gdhCXRmu/8jcBaSrcx+bA7PPOIl27I7+Vd9JyIEkJX8Ft6r4bpv6nOQt3aaLOkBLflB6ZkCgYBFfXA39C8ihpBlfWoNeMd7INSNuTBUM+N7UI4laTvk44jRK45YxIapcY98SWfdJkZOmo76v2fSsc90dn0r0jar30NQCMPQB3Af2AOFtDWQtQ8ENi3MfUXRLh8YZ2MRqwlSyRMUTFX0zEciLWd53Q2BSyfnKFw5hoUA4RtL9wAbIA=="
+cors_allowed_origins              = "*"
+### VNet and subnet names
+acr_name = "sbxinfraacrkag"
+
+main_vnet_name = "sbx-main-vnet"
+main_rg_name   = "sbx-main-rg"
+
+
+### Private DNS zone RG (backbone)
+private_dns_zone_name = "sbx-kag.io"
+
+private_dns_zone_kv_name       = "privatelink.vaultcore.azure.net"
+private_dns_zone_storage_name  = "privatelink.blob.core.windows.net"
+private_dns_zone_acr_name      = "privatelink.azurecr.io"
+private_dns_zone_postgres_name = "sbx-kag.postgres.database.azure.com"
+private_dns_azure_monitor_names = [
+  "privatelink.monitor.azure.com",
+  "privatelink.oms.opinsights.azure.com",
+  "privatelink.ods.opinsights.azure.com",
+  "privatelink.agentsvc.azure-automation.net",
+]
+private_dns_azure_ai_names = [
+  "privatelink.services.ai.azure.com",       # AI Services Private DNS Zone
+  "privatelink.search.windows.net",          # AI Search Private DNS Zone
+  "privatelink.openai.azure.com",            # Cognitive Services Private DNS Zone
+  "privatelink.cognitiveservices.azure.com", # Cognitive Services General Private DNS Zone
+]
+
+postgres_administrator_login = "psqladmin"
+
+key_vault_name = "sbx-aihub-kv-dev-aihub"
+
+storage_account_name = "sbxaihubinfrastsa"
+
+##### Hub vNet variables
+hub_vnet_name = "vnet-main-hub"
+
+
+###### Spoke vNet variables
+spoke_vnet_name          = "spoke1"
+spoke_vnet_address_space = ["10.1.0.0/16"]
+spoke_vnet_subnets = {
+  ACASubnet = {
+    # firewall_enabled      = true
+    subnet_address_prefix = ["10.1.6.0/23"]
+    delegation = {
+      name = "aca-delegation"
+      service_delegation = {
+        name    = "Microsoft.App/environments"
+        actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+      }
+    }
+    nsg_inbound_rules = {
+      "Allow-HTTP-HTTPS" = {
+        priority                   = 100
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_ranges    = ["80", "443"]
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "*"
+      }
+      "Allow-ACA-Ports" = {
+        priority                   = 110
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "30000-32767"
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "*"
+      }
+      "Deny-Internet-Inbound" = {
+        priority                   = 4000
+        direction                  = "Inbound"
+        access                     = "Deny"
+        protocol                   = "*"
+        destination_port_range     = "*"
+        source_port_range          = "*"
+        source_address_prefix      = "Internet"
+        destination_address_prefix = "*"
+      }
+    }
+  }
+  PrivateEndpointSubnet = {
+    subnet_address_prefix = ["10.1.5.0/24"]
+  }
+  ApplicationGatewaySubnet = {
+    subnet_address_prefix                         = ["10.1.9.0/24"]
+    private_link_service_network_policies_enabled = false
+    nsg_inbound_rules = {
+      "Allow-GatewayManager" = {
+        priority                   = 100
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "65200-65535"
+        source_address_prefix      = "GatewayManager"
+        destination_address_prefix = "*"
+      }
+      "Allow-HTTP-HTTPS" = {
+        priority                   = 110
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_ranges    = ["80", "443"]
+        source_address_prefix      = "Internet"
+        destination_address_prefix = "*"
+      }
+    }
+  }
+  PostgresSubnet = {
+    subnet_address_prefix = ["10.1.8.0/24"]
+    service_endpoints = [ "Microsoft.Storage" ]
+    delegation = {
+      name = "fs-delegation"
+      service_delegation = {
+        name    = "Microsoft.DBforPostgreSQL/flexibleServers"
+        actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+      }
+
+
+    }
+    nsg_inbound_rules = {
+      "Allow-HTTP-HTTPS" = {
+        priority                   = 100
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_ranges    = ["80", "443"]
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "*"
+      }
+      "Allow-Postgres" = {
+        priority                   = 110
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "5432"
+        source_address_prefix      = "Internet"
+        destination_address_prefix = "*"
+      }
+    }
+  }
+}
+

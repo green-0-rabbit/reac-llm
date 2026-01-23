@@ -1,11 +1,15 @@
 #cloud-config
-package_update: true
+# Optimized: Skip package_update, install azure-cli via InstallAzureCLIDeb script
+package_update: false
+package_upgrade: false
+
 packages:
   - docker.io
   - jq
   - openssl
   - curl
   - unzip
+  - postgresql-client
 
 write_files:
   - path: /usr/local/bin/sync_remote_acr_acr.sh
@@ -32,6 +36,10 @@ write_files:
       REMOTE_ACR_FQDN=${remote_acr_fqdn}
 
 runcmd:
-  - [ bash, -lc, 'mkfs.ext4 -F /dev/disk/azure/scsi1/lun0 || true' ]
+  # Format data disk if needed
+  - [ bash, -c, 'mkfs.ext4 -F /dev/disk/azure/scsi1/lun0 2>/dev/null || true' ]
+  # Enable docker
   - [ systemctl, daemon-reload ]
   - [ systemctl, enable, --now, docker ]
+  # Install Azure CLI (fast one-liner)
+  - [ bash, -c, 'curl -sL https://aka.ms/InstallAzureCLIDeb | bash' ]
