@@ -9,7 +9,7 @@ export const configurationSchema = Joi.object({
   ...commonSchema,
   ...databaseSchema,
   ...azureSchema,
-  ...authSchema,
-  ...authSamlSchema,
+  // ...authSchema,
+  // ...authSamlSchema,
 });
 

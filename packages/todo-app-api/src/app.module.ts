@@ -1,12 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { AIModule } from './ai/ai.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigurationModule } from './configuration/configuration.module';
 import { DatabaseModule } from './database/database.module';
-import { TodoModule } from './todos/todo.module';
 import { StorageModule } from './storage/storage.module';
-import { AuthModule } from './auth/auth.module';
-import { AuthModule as AuthSamlModule } from './auth_saml/auth.module';
+import { TodoModule } from './todos/todo.module';
 
 @Module({
   imports: [
@@ -14,9 +13,10 @@ import { AuthModule as AuthSamlModule } from './auth_saml/auth.module';
     DatabaseModule.registerAsync(),
     TodoModule,
     StorageModule,
+    AIModule,
     // Conditionally load auth module based on requirements, or keep both if clear separation
-    AuthModule,
-    AuthSamlModule,
+    // AuthModule,
+    // AuthSamlModule,
   ],
   controllers: [AppController],
   providers: [AppService],

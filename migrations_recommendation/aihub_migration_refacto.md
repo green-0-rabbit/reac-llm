@@ -202,6 +202,59 @@ In `aca.tf`, pass standard environment variables.
         ]
 ```
 
+### 4. Backend Service Connection Security
+
+### Problem: Security Risks with Static Keys
+The current backend implementation relies on static keys and connection strings to authenticate with Azure services. This practice presents several security risks and operational challenges:
+
+*   **Azure Storage**: Relies on `AZURE_STORAGE_CONNECTION_STRING`, which often contains the broad-access account key.
+*   **AI Foundry / Azure OpenAI**: Uses a static `API_KEY` injected via environment variables.
+*   **PostgreSQL**: Uses a password embedded in the `DATABASE_URL`.
+
+**Risks:**
+*   **Credential Leakage**: Keys accidentally committed to source control or exposed in logs.
+*   **Rotation Complexity**: Rotating keys requires restarting services and updating configuration across multiple environments.
+*   **Lack of Granularity**: Keys often provide broad access permissions rather than least-privileged access.
+
+### Solution: Managed Identity (Keyless Authentication)
+We strongly recommend transitioning to **Microsoft Entra ID (formerly Azure AD) Managed Identities**. This approach allows the application to authenticate using the identity assigned to the Azure Container App, eliminating the need to manage secrets within the application code or configuration.
+
+#### Implementation Reference
+We have successfully implemented and validated this pattern in the `todo-app-api` package.
+
+**1. Azure Storage Implementation (Keyless)**
+*   **Codebase**: [packages/todo-app-api/src/storage/storage.service.ts](../packages/todo-app-api/src/storage/storage.service.ts)
+*   **Mechanism**: The service uses `DefaultAzureCredential` which automatically detects the managed identity environment.
+*   **Configuration**: Only the Service URI is required.
+    ```typescript
+    // src/storage/storage.service.ts
+    this.blobServiceClient = new BlobServiceClient(
+      serviceUri,
+      new DefaultAzureCredential(),
+    );
+    ```
+
+**2. Azure AI Foundry / OpenAI Implementation (Keyless)**
+*   **Codebase**: [packages/todo-app-api/src/ai/ai.client.ts](../packages/todo-app-api/src/ai/ai.client.ts)
+*   **Mechanism**: The client explicitly requests an Entra ID token for the Cognitive Services scope.
+*   **Configuration**: Only the Endpoint URL and Model Deployment name are required.
+    ```typescript
+    // src/ai/ai.client.ts
+    const tokenResponse = await this.credential.getToken(
+      'https://cognitiveservices.azure.com/.default',
+    );
+    // Use token in Authorization header: `Bearer ${tokenResponse.token}`
+    ```
+
+**3. Infrastructure Configuration**
+*   **File**: [.cloud/examples/aihub/aca.tf](../.cloud/examples/aihub/aca.tf)
+*   **Setup**:
+    *   **Identity**: A User Assigned Identity (`acami-dev`) is assigned to the Container App.
+    *   **RBAC**: Role Assignments are created to grant specific permissions to that identity:
+        *   `Storage Blob Data Contributor` on the Storage Account.
+        *   `Cognitive Services OpenAI User` on the AI Foundry account.
+    *   **Env Vars**: No secrets are passed to the container, only resource Identifiers (URIs).
+
 ## Summary of Benefits
 *   **Security**: Runs as non-root without hacks.
 *   **Simplicity**: Removes complex shell scripts from Terraform `command`.

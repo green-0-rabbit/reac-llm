@@ -106,6 +106,14 @@
     @echo "Pushing image..."
     docker push sbxinfraacrkag.azurecr.io/local/todo-app-api:latest
 
+[group('docker')]
+[working-directory: '.cloud/docker']
+@todo-docker-publish-hub: docker-build
+    @echo "Tagging image for Docker Hub..."
+    docker tag local/todo-app-api:latest humaapi0registry/todo-app-api:latest
+    @echo "Pushing image to Docker Hub..."
+    docker push humaapi0registry/todo-app-api:latest
+
 ### API Server Tasks ###
 [group('api')]
 [working-directory: 'packages/todo-app-api']
