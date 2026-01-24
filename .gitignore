@@ -41,3 +41,4 @@ create_response.json.cloud/tf/temp/
 temp_cert.pem
 
 *.sql
+!packages/**/*.sql
