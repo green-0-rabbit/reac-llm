@@ -268,6 +268,126 @@ We have successfully implemented and validated this pattern in the `todo-app-api
     *   **Postgres**: The identity is added as an AD Administrator.
     *   **Env Vars**: No secrets are passed to the container, only resource Identifiers (URIs) and the Identity Name.
 
+### 5. Database Schema & Query Compatibility (No Unaccent Extension)
+
+### Problem: Unsupported Extension
+The existing codebase utilizes the PostgreSQL \`unaccent\` extension for accent-insensitive search queries. However, enabling extensions often requires superuser privileges or specific allow-lists which might not be available or configured in the target Azure Database for PostgreSQL Flexible Server environment.
+
+### Solution: Node-side Filtering & Optimized SQL
+**Note: This is a temporary workaround until the `unaccent` extension is validated and enabled on the target environment.**
+
+Instead of relying on the database extension, we recommend fetching relevant records using an optimized SQL query and performing the accent-insensitive filtering within the Node.js application layer.
+
+**Refactoring Strategy:**
+1.  **Optimize SQL**: Replace expensive \`GROUP BY\` + \`DISTINCT\` \`json_agg\` patterns with \`LATERAL\` subqueries for better performance and cleaner syntax.
+2.  **Remove unaccent**: Drop the \`WHERE unaccent(...)\` clause from the SQL.
+3.  **In-Memory Search**: Implement a simple helper to normalize strings (fold accents) and filter the result set in JavaScript/TypeScript.
+
+**Implementation Example:**
+
+\`\`\`typescript
+// Helper function for accent folding (if not already available)
+function foldForSearch(str: string): string {
+  return str.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
+}
+
+// Repository Method Implementation
+async findAll(
+  language: string = this.defaultLanguage,
+  latest: boolean = this.defaultLatest,
+  search?: string,
+  category?: string,
+  businessLine?: string,
+): Promise<any> {
+  const take = latest ? this.defaultTake : undefined;
+
+  const tagIds: string[] = [];
+  if (category) tagIds.push(category);
+  if (businessLine) tagIds.push(businessLine);
+
+  // OPTIMIZED QUERY: Uses LATERAL joins instead of GROUP BY + DISTINCT
+  const query = \`
+    SELECT
+      u.*,
+      COALESCE(t.translations, '[]') AS translations,
+      COALESCE(kb.keyBenefits, '[]') AS "keyBenefits",
+      COALESCE(tags.tags, '[]') AS tags
+    FROM "Usecase" u
+
+    LEFT JOIN LATERAL (
+      SELECT json_agg(t.*) AS translations
+      FROM "UsecaseTranslation" t
+      WHERE t."usecaseId" = u.id AND t.language = $1
+    ) t ON true
+
+    LEFT JOIN LATERAL (
+      SELECT json_agg(kb.*) AS keyBenefits
+      FROM "UsecaseKeyBenefit" kb
+      WHERE kb."usecaseId" = u.id AND kb.language = $1
+    ) kb ON true
+
+    LEFT JOIN LATERAL (
+      SELECT json_agg(
+        jsonb_build_object(
+          'id', tag.id,
+          'type', tag.type,
+          'label', tagt.label
+        )
+      ) AS tags
+      FROM "UsecaseTags" ut
+      JOIN "Tag" tag ON tag.id = ut."tagId"
+      LEFT JOIN "TagTranslation" tagt
+        ON tagt."tagId" = tag.id AND tagt.language = $1
+      WHERE ut."usecaseId" = u.id
+    ) tags ON true
+
+    WHERE (
+      $2::uuid[] IS NULL
+      OR EXISTS (
+        SELECT 1
+        FROM "UsecaseTags" ut2
+        WHERE ut2."usecaseId" = u.id
+          AND ut2."tagId" = ANY($2::uuid[])
+      )
+    )
+    ORDER BY u."createdAt" DESC
+    \${take ? \`LIMIT \${take}\` : ''}
+  \`;
+
+  const params = [language, tagIds.length ? tagIds : null];
+
+  const rows = (await this.prismaService.$queryRawUnsafe(query, ...params)) as any[];
+
+  // In-memory “unaccent ILIKE %search%”
+  if (!search?.trim()) return rows;
+
+  const needle = foldForSearch(search.trim());
+
+  return rows.filter((u) => {
+    const tr = Array.isArray(u.translations) ? u.translations[0] : undefined;
+
+    const haystack = foldForSearch(
+      [
+        tr?.title,
+        tr?.shortDescription,
+        tr?.fullDescription,
+        // optional: tag labels too
+        ...(Array.isArray(u.tags) ? u.tags.map((x: any) => x?.label) : []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+    );
+
+    return haystack.includes(needle);
+  });
+}
+\`\`\`
+
+**Why this is better:**
+*   **Portability**: Removes dependency on database specific extensions (\`unaccent\`).
+*   **Performance**: \`LATERAL\` joins can be more efficient than pulling the whole table or using complex aggregations, while still pushing the heavy lifting of joining and initial filtering to the DB.
+*   **Safety**: Avoiding \`unaccent\` ensures the application runs on restrictive database environments.
+
 ## Summary of Benefits
 *   **Security**: Runs as non-root without hacks.
 *   **Simplicity**: Removes complex shell scripts from Terraform `command`.

@@ -649,7 +649,7 @@ module "todo_app_api" {
     max_replicas = 1
     containers = [
       {
-        name   = "todo-app-api"
+        name = "todo-app-api"
         # Placeholder image - user needs to build this
         image  = "humaapi0registry/todo-app-api:latest"
         cpu    = 0.5
@@ -684,7 +684,7 @@ module "todo_app_api" {
           #   name        = "DATABASE_PASSWORD"
           #   secret_name = "database-password"
           # },
-           # Storage Configuration (Managed Identity)
+          # Storage Configuration (Managed Identity)
           {
             name  = "AZURE_STORAGE_SERVICE_URI"
             value = azurerm_storage_account.this.primary_blob_endpoint
@@ -694,8 +694,8 @@ module "todo_app_api" {
             value = "todo-app-container"
           },
           {
-             name = "AZURE_CLIENT_ID"
-             value = azurerm_user_assigned_identity.containerapp.client_id
+            name  = "AZURE_CLIENT_ID"
+            value = azurerm_user_assigned_identity.containerapp.client_id
           },
           # AI Foundry Configuration (Managed Identity)
           {
@@ -704,7 +704,7 @@ module "todo_app_api" {
           },
           {
             name  = "API_MODEL_NAME"
-            value = "gpt-4.1-GlobalStandard" 
+            value = "gpt-4.1-GlobalStandard"
           },
           {
             name  = "API_VERSION"

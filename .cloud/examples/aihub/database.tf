@@ -38,19 +38,19 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_all" {
 module "postgres_todoapi" {
   source = "../../modules/postgres_flexible_server"
 
-  resource_group_name    = azurerm_resource_group.rg.name
-  location               = var.location
-  server_name            = "psql-todo-${var.env}-${var.project}"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.location
+  server_name         = "psql-todo-${var.env}-${var.project}"
   # administrator_login    = var.postgres_administrator_login
   # administrator_password = var.admin_password
-  storage_mb             = 32768
-  storage_tier           = "P4"
-  sku_name               = "B_Standard_B1ms"
-  postgres_version       = "17"
-  zone                   = "1"
+  storage_mb       = 32768
+  storage_tier     = "P4"
+  sku_name         = "B_Standard_B1ms"
+  postgres_version = "17"
+  zone             = "1"
 
   public_network_access_enabled = true
-  
+
   authentication = {
     active_directory_auth_enabled = true
     password_auth_enabled         = false
