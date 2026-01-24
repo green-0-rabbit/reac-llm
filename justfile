@@ -91,6 +91,7 @@
 @docker-down:
     docker compose down
 
+# [working-directory: 'packages/todo-app-api']
 [group('docker')]
 [working-directory: '.cloud/docker']
 @docker-build: prepare-dist

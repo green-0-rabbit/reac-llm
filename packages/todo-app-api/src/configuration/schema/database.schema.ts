@@ -8,7 +8,7 @@ export const databaseSchema = {
     DATABASE_PORT: Joi.number().port().required(),
     DATABASE_SCHEMA: Joi.string().default("public"),
     DATABASE_USERNAME: Joi.string().required(),
-    DATABASE_PASSWORD: Joi.string().required(),
+    DATABASE_PASSWORD: Joi.string().optional().allow(null, ''),
     DATABASE_DEBUG_LOGGING: Joi.boolean().default(false),
     DATABASE_SSL: Joi.boolean().default(true),
     DATABASE_POOLSIZE: Joi.number().default(DEFAULT_POOLSIZE),

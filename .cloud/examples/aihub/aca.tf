@@ -666,7 +666,7 @@ module "todo_app_api" {
           # Database Configuration
           {
             name  = "DATABASE_HOST"
-            value = module.postgres.fqdn
+            value = module.postgres_todoapi.fqdn
           },
           {
             name  = "DATABASE_PORT"
@@ -674,16 +674,16 @@ module "todo_app_api" {
           },
           {
             name  = "DATABASE_SCHEMA"
-            value = "public"
+            value = "todo_db"
           },
           {
             name  = "DATABASE_USERNAME"
-            value = var.postgres_administrator_login
+            value = azurerm_user_assigned_identity.containerapp.name
           },
-          {
-            name        = "DATABASE_PASSWORD"
-            secret_name = "database-password"
-          },
+          # {
+          #   name        = "DATABASE_PASSWORD"
+          #   secret_name = "database-password"
+          # },
            # Storage Configuration (Managed Identity)
           {
             name  = "AZURE_STORAGE_SERVICE_URI"

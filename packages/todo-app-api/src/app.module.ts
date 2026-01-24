@@ -6,9 +6,11 @@ import { ConfigurationModule } from './configuration/configuration.module';
 import { DatabaseModule } from './database/database.module';
 import { StorageModule } from './storage/storage.module';
 import { TodoModule } from './todos/todo.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
+    PrismaModule,
     ConfigurationModule,
     DatabaseModule.registerAsync(),
     TodoModule,

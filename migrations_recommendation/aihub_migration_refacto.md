@@ -246,14 +246,27 @@ We have successfully implemented and validated this pattern in the `todo-app-api
     // Use token in Authorization header: `Bearer ${tokenResponse.token}`
     ```
 
-**3. Infrastructure Configuration**
+**3. Azure PostgreSQL Flexible Server Implementation (Keyless)**
+*   **Codebase**: `entrypoint.sh` and `scripts/get-token.js` in `todo-app-api`
+*   **Mechanism**: The application requests an access token for the OSS RDBMS scope (`https://ossrdbms-aad.database.windows.net/.default`) using the User Assigned Identity.
+*   **Configuration**:
+    *   **Postgres Admin**: The User Assigned Identity (`acami-dev`) is set as the `active_directory_administrator` using its **name** as the principal.
+    *   **Connection String**: The `DATABASE_URL` is constructed dynamically at startup using the identity's name as the username and the fetched token as the password.
+    *   **Terraform**: The `DATABASE_USERNAME` environment variable is set to the **name** of the identity (e.g., `acami-dev`), NOT the Client ID.
+    ```bash
+    # entrypoint.sh logic
+    export DATABASE_URL="postgresql://${DATABASE_USERNAME}:${ENCODED_TOKEN}@${DATABASE_HOST}:5432/${DATABASE_SCHEMA}?sslmode=require"
+    ```
+
+**4. Infrastructure Configuration**
 *   **File**: [.cloud/examples/aihub/aca.tf](../.cloud/examples/aihub/aca.tf)
 *   **Setup**:
     *   **Identity**: A User Assigned Identity (`acami-dev`) is assigned to the Container App.
     *   **RBAC**: Role Assignments are created to grant specific permissions to that identity:
         *   `Storage Blob Data Contributor` on the Storage Account.
         *   `Cognitive Services OpenAI User` on the AI Foundry account.
-    *   **Env Vars**: No secrets are passed to the container, only resource Identifiers (URIs).
+    *   **Postgres**: The identity is added as an AD Administrator.
+    *   **Env Vars**: No secrets are passed to the container, only resource Identifiers (URIs) and the Identity Name.
 
 ## Summary of Benefits
 *   **Security**: Runs as non-root without hacks.

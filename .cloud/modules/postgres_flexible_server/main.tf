@@ -16,6 +16,15 @@ resource "azurerm_postgresql_flexible_server" "this" {
 
   tags = var.tags
 
+  dynamic "authentication" {
+    for_each = var.authentication != null ? [var.authentication] : []
+    content {
+      active_directory_auth_enabled = authentication.value.active_directory_auth_enabled
+      password_auth_enabled         = authentication.value.password_auth_enabled
+      tenant_id                     = authentication.value.tenant_id
+    }
+  }
+
   lifecycle {
     ignore_changes = [
       zone,
