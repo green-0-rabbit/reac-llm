@@ -132,7 +132,7 @@ spoke_vnet_subnets = {
   }
   PostgresSubnet = {
     subnet_address_prefix = ["10.1.8.0/24"]
-    service_endpoints = [ "Microsoft.Storage" ]
+    service_endpoints     = ["Microsoft.Storage"]
     delegation = {
       name = "fs-delegation"
       service_delegation = {

@@ -50,11 +50,13 @@ variable "postgres_version" {
 variable "administrator_login" {
   description = "The Administrator Login for the PostgreSQL Flexible Server."
   type        = string
+  default     = null
 }
 
 variable "administrator_password" {
   description = "The Password associated with the administrator_login for the PostgreSQL Flexible Server."
   type        = string
+  default     = null
   sensitive   = true
 }
 
@@ -110,5 +112,15 @@ variable "public_network_access_enabled" {
   description = "Whether or not public network access is allowed for this server."
   type        = bool
   default     = false
+}
+
+variable "authentication" {
+  description = "Authentication configuration for the PostgreSQL Flexible Server"
+  type = object({
+    active_directory_auth_enabled = optional(bool)
+    password_auth_enabled         = optional(bool)
+    tenant_id                     = optional(string)
+  })
+  default = null
 }
 
