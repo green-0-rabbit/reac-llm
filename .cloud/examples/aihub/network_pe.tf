@@ -38,6 +38,7 @@ resource "azurerm_private_endpoint" "storage_blob" {
   }
 }
 
+/*
 # https://learn.microsoft.com/en-us/azure/azure-monitor/logs/private-link-configure
 resource "azurerm_private_endpoint" "ampls" {
   name                = "${azurerm_log_analytics_workspace.this[0].name}-pe-ampls"
@@ -66,6 +67,7 @@ resource "azurerm_private_endpoint" "ampls" {
     azurerm_monitor_private_link_scoped_service.law_link
   ]
 }
+*/
 
 
 

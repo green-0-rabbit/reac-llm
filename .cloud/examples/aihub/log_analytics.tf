@@ -6,6 +6,7 @@ resource "azurerm_log_analytics_workspace" "this" {
   sku                 = "PerGB2018"
   retention_in_days   = 30
 }
+/*
 # https://learn.microsoft.com/en-us/azure/azure-monitor/logs/private-link-configure
 resource "azurerm_monitor_private_link_scope" "ampls" {
   name                = "${var.resource_group_name}-ampls"
@@ -21,3 +22,4 @@ resource "azurerm_monitor_private_link_scoped_service" "law_link" {
   scope_name          = azurerm_monitor_private_link_scope.ampls.name
   linked_resource_id  = azurerm_log_analytics_workspace.this[0].id
 }
+*/

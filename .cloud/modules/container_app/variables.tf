@@ -72,6 +72,47 @@ variable "template" {
         name = string
         path = string
       })), [])
+      liveness_probe = optional(object({
+        failure_count_threshold = optional(number)
+        header = optional(list(object({
+          name  = string
+          value = string
+        })), [])
+        host             = optional(string)
+        initial_delay    = optional(number, 15)
+        interval_seconds = optional(number, 10)
+        path             = optional(string)
+        port             = number
+        timeout          = optional(number, 5)
+        transport        = string
+      }))
+      readiness_probe = optional(object({
+        failure_count_threshold = optional(number)
+        header = optional(list(object({
+          name  = string
+          value = string
+        })), [])
+        host             = optional(string)
+        interval_seconds = optional(number, 10)
+        path             = optional(string)
+        port             = number
+        success_count_threshold = optional(number, 3)
+        timeout          = optional(number, 5)
+        transport        = string
+      }))
+      startup_probe = optional(object({
+        failure_count_threshold = optional(number)
+        header = optional(list(object({
+          name  = string
+          value = string
+        })), [])
+        host             = optional(string)
+        interval_seconds = optional(number, 10)
+        path             = optional(string)
+        port             = number
+        timeout          = optional(number, 5)
+        transport        = string
+      }))
     }))
     min_replicas = optional(number, 0)
     max_replicas = optional(number, 10)

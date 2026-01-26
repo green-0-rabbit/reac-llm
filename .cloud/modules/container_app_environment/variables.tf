@@ -15,7 +15,14 @@ variable "location" {
 }
 
 variable "resource_group_name" { type = string }
-variable "infrastructure_subnet_id" { type = string }
+variable "infrastructure_subnet_id" {
+  type    = string
+  default = null
+}
+variable "infrastructure_resource_group_name" {
+  type    = string
+  default = null
+}
 variable "log_analytics_workspace_id" {
   type    = string
   default = null

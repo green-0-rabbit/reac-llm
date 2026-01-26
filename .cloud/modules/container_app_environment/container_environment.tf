@@ -6,7 +6,8 @@ resource "azurerm_container_app_environment" "this" {
   log_analytics_workspace_id         = var.logs_destination == "log-analytics" ? var.log_analytics_workspace_id : null
   internal_load_balancer_enabled     = var.lb_internal_only
   public_network_access              = var.public_network_access_enabled ? "Enabled" : "Disabled"
-  infrastructure_resource_group_name = "aca-${var.env}-rg"
+  infrastructure_resource_group_name = var.infrastructure_resource_group_name != null ? var.infrastructure_resource_group_name : "aca-${var.env}-rg"
+  
 
   logs_destination = var.logs_destination
 

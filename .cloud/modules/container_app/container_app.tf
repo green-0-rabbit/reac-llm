@@ -76,6 +76,68 @@ resource "azurerm_container_app" "app" {
             path = volume_mounts.value.path
           }
         }
+
+        dynamic "liveness_probe" {
+          for_each = container.value.liveness_probe != null ? [container.value.liveness_probe] : []
+          content {
+            failure_count_threshold = liveness_probe.value.failure_count_threshold
+            dynamic "header" {
+              for_each = liveness_probe.value.header
+              content {
+                name  = header.value.name
+                value = header.value.value
+              }
+            }
+            host             = liveness_probe.value.host
+            initial_delay    = liveness_probe.value.initial_delay
+            interval_seconds = liveness_probe.value.interval_seconds
+            path             = liveness_probe.value.path
+            port             = liveness_probe.value.port
+            timeout          = liveness_probe.value.timeout
+            transport        = liveness_probe.value.transport
+          }
+        }
+
+        dynamic "readiness_probe" {
+          for_each = container.value.readiness_probe != null ? [container.value.readiness_probe] : []
+          content {
+            failure_count_threshold = readiness_probe.value.failure_count_threshold
+            dynamic "header" {
+              for_each = readiness_probe.value.header
+              content {
+                name  = header.value.name
+                value = header.value.value
+              }
+            }
+            host                    = readiness_probe.value.host
+            interval_seconds        = readiness_probe.value.interval_seconds
+            path                    = readiness_probe.value.path
+            port                    = readiness_probe.value.port
+            success_count_threshold = readiness_probe.value.success_count_threshold
+            timeout                 = readiness_probe.value.timeout
+            transport               = readiness_probe.value.transport
+          }
+        }
+
+        dynamic "startup_probe" {
+          for_each = container.value.startup_probe != null ? [container.value.startup_probe] : []
+          content {
+            failure_count_threshold = startup_probe.value.failure_count_threshold
+            dynamic "header" {
+              for_each = startup_probe.value.header
+              content {
+                name  = header.value.name
+                value = header.value.value
+              }
+            }
+            host             = startup_probe.value.host
+            interval_seconds = startup_probe.value.interval_seconds
+            path             = startup_probe.value.path
+            port             = startup_probe.value.port
+            timeout          = startup_probe.value.timeout
+            transport        = startup_probe.value.transport
+          }
+        }
       }
     }
 

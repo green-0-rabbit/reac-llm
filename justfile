@@ -202,6 +202,28 @@ vm-scp local_file remote_path="":
     echo "Copying {{local_file}} to $IP:$DEST..."
     sshpass -p "$TF_VAR_admin_password" scp -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{local_file}} bastionadmin@$IP:$DEST
 
+[group('ops')]
+vm-tunnel port="8888":
+    #!/usr/bin/env bash
+    if [ -z "$TF_VAR_admin_password" ]; then
+        echo "Error: TF_VAR_admin_password is not set. Please run 'glb-var infra' first."
+        exit 1
+    fi
+
+    pushd .cloud/tf-infra > /dev/null
+    IP=$(terraform output -raw bastion_public_ip)
+    popd > /dev/null
+
+    if [ -z "$IP" ]; then
+        echo "Error: Could not get Bastion VM Public IP."
+        exit 1
+    fi
+
+    echo "Opening SOCKS5 tunnel on localhost:{{port}} via $IP..."
+    echo "You can now configure your browser to use SOCKS5 proxy at localhost:{{port}}"
+    echo "Press Ctrl+C to stop the tunnel."
+    sshpass -p "$TF_VAR_admin_password" ssh -D {{port}} -N -o StrictHostKeyChecking=no -o ConnectTimeout=5 bastionadmin@$IP
+
 ### Keycloak Tasks ###
 [group('keycloak-docker')]
 [working-directory: '.cloud/tools/keycloak']
@@ -247,6 +269,24 @@ vm-scp local_file remote_path="":
 [working-directory: '.cloud/tools/keycloak/tf']
 @kc-tf-destroy:
     terraform destroy
+
+[group('ops')]
+chrome-proxy env="dev":
+    #!/usr/bin/env bash
+    
+    echo "Getting Frontend URL for {{env}} from Terraform..."
+    pushd .cloud/examples/aihub > /dev/null
+    FQDN=$(terraform output -raw frontend_aihub_fqdn)
+    popd > /dev/null
+    
+    if [ -z "$FQDN" ]; then
+        echo "Error: Could not get frontend_aihub_fqdn from Terraform output. Please ensure 'just tf-apply {{env}} aihub' has been run."
+        exit 1
+    fi
+    
+    URL="https://$FQDN"
+    echo "Opening Chrome at $URL..."
+    google-chrome --proxy-server="socks5://localhost:8888" --host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE localhost" --user-data-dir="/tmp/chrome-proxy-test" "$URL"
 
 
 
