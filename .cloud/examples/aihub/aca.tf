@@ -1,12 +1,8 @@
 locals {
-  acr_login_server = data.azurerm_container_registry.acr.login_server
-  #  backend_aihub_fqdn = "containerappdemo-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
-  # keycloak_fqdn      = "keycloak-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
-  # backend_aihub_fqdn  = "containerappdemo-${var.env}.${module.container_app_environment.default_domain}"
-  backend_aihub_fqdn  = "backend.placeholder"
-  keycloak_fqdn       = "keycloak-${var.env}.${module.container_app_environment.default_domain}"
-  # frontend_aihub_fqdn = "ai-hub-frontend-${var.env}.${module.container_app_environment.default_domain}"
-  frontend_aihub_fqdn = "frontend.placeholder"
+  acr_login_server    = data.azurerm_container_registry.acr.login_server
+  backend_aihub_fqdn  = "aihub-backend-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
+  keycloak_fqdn       = "keycloak-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
+  frontend_aihub_fqdn = "aihub-frontend-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
 }
 
 
@@ -50,9 +46,11 @@ module "keycloak" {
     ]
   }
 
-  # custom_domain = {
-  #   name = local.keycloak_fqdn
-  # }
+  custom_domain = {
+    name                     = local.keycloak_fqdn
+    certificate_binding_type = "SniEnabled"
+    certificate_id           = module.container_app_environment.certificate_id
+  }
 
   secrets = [
     {
@@ -76,8 +74,8 @@ module "keycloak" {
       {
         name   = "keycloak"
         image  = "humaapi0registry/keycloak:latest"
-        cpu    = 2.0
-        memory = "4Gi"
+        cpu    = 1.0
+        memory = "2Gi"
         args   = ["start-dev", "--import-realm"]
         env = [
           {
@@ -171,25 +169,32 @@ module "keycloak" {
         ]
         startup_probe = {
           transport               = "HTTP"
-          port                    = 8080
-          path                    = "/health/live"
-          initial_delay           = 15
+          port                    = 9000
+          path                    = "/health/started"
+          initial_delay           = 60
           interval_seconds        = 5
-          failure_count_threshold = 24
+          failure_count_threshold = 10
         }
         readiness_probe = {
           transport               = "HTTP"
-          port                    = 8080
+          port                    = 9000
           path                    = "/health/ready"
           interval_seconds        = 10
           success_count_threshold = 3
+        }
+        liveness_probe = {
+          transport               = "HTTP"
+          port                    = 9000
+          path                    = "/health/live"
+          initial_delay           = 0 # Not needed if using a Startup Probe
+          interval_seconds        = 10
+          failure_count_threshold = 5
         }
       }
     ]
   }
 }
 
-/*
 module "backend_aihub" {
   source = "../../modules/container_app"
 
@@ -208,44 +213,15 @@ module "backend_aihub" {
     principal_id = azurerm_user_assigned_identity.containerapp.principal_id
   }
 
-  # auth = {
-  #   global_validation = {
-  #     unauthenticated_client_action = "RedirectToLoginPage"
-  #     excluded_paths                = ["/health", "/favicon.ico"]
-  #   }
-  #   identity_providers = {
-  #     custom_open_id_connect_providers = {
-  #       keycloak = {
-  #         registration = {
-  #           client_id = "api-sso"
-  #           client_credential = {
-  #             client_secret_setting_name = "keycloak-client-secret"
-  #           }
-  #           open_id_connect_configuration = {
-  #             well_known_open_id_configuration = "http://${local.keycloak_fqdn}/realms/api-realm/.well-known/openid-configuration"
-  #             authorization_endpoint           = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/auth"
-  #             token_endpoint                   = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/token"
-  #             issuer                           = "http://${local.keycloak_fqdn}/realms/api-realm"
-  #             certification_uri                = "http://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/certs"
-  #           }
-  #         }
-  #         login = {
-  #           name_claim_type = "preferred_username"
-  #           scopes          = ["openid", "profile", "email"]
-  #         }
-  #       }
-  #     }
-  #   }
-  # }
-
   registry_fqdn = local.acr_login_server
 
   acr_id = data.azurerm_container_registry.acr.id
   kv_id  = azurerm_key_vault.this.id
 
   ingress = {
-    external_enabled = true
-    target_port      = var.app_port
+    allow_insecure_connections = true
+    external_enabled           = true
+    target_port                = var.app_port
     traffic_weight = [
       {
         latest_revision = true
@@ -254,9 +230,11 @@ module "backend_aihub" {
     ]
   }
 
-  # custom_domain = {
-  #   name = local.backend_aihub_fqdn
-  # }
+  custom_domain = {
+    name                     = local.backend_aihub_fqdn
+    certificate_binding_type = "SniEnabled"
+    certificate_id           = module.container_app_environment.certificate_id
+  }
 
   secrets = [
     {
@@ -425,9 +403,7 @@ module "backend_aihub" {
     azurerm_role_assignment.kv_secrets_user
   ]
 }
-*/
 
-/*
 module "frontend_aihub" {
   source = "../../modules/container_app"
 
@@ -451,14 +427,21 @@ module "frontend_aihub" {
   kv_id         = azurerm_key_vault.this.id
 
   ingress = {
-    external_enabled = true
-    target_port      = 8080
+    allow_insecure_connections = true
+    external_enabled           = true
+    target_port                = 8080
     traffic_weight = [
       {
         latest_revision = true
         percentage      = 100
       }
     ]
+  }
+
+  custom_domain = {
+    name                     = local.frontend_aihub_fqdn
+    certificate_binding_type = "SniEnabled"
+    certificate_id           = module.container_app_environment.certificate_id
   }
 
   secrets                    = []
@@ -553,5 +536,4 @@ module "frontend_aihub" {
     ]
   }
 }
-*/
 

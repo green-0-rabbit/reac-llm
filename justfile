@@ -271,20 +271,24 @@ vm-tunnel port="8888":
     terraform destroy
 
 [group('ops')]
-chrome-proxy env="dev":
+chrome-proxy env="dev" url="":
     #!/usr/bin/env bash
     
-    echo "Getting Frontend URL for {{env}} from Terraform..."
-    pushd .cloud/examples/aihub > /dev/null
-    FQDN=$(terraform output -raw frontend_aihub_fqdn)
-    popd > /dev/null
-    
-    if [ -z "$FQDN" ]; then
-        echo "Error: Could not get frontend_aihub_fqdn from Terraform output. Please ensure 'just tf-apply {{env}} aihub' has been run."
-        exit 1
+    if [ -n "{{url}}" ]; then
+        URL="{{url}}"
+    else
+        echo "Getting Frontend URL for {{env}} from Terraform..."
+        pushd .cloud/examples/aihub > /dev/null
+        FQDN=$(terraform output -raw frontend_aihub_fqdn)
+        popd > /dev/null
+        
+        if [ -z "$FQDN" ]; then
+            echo "Error: Could not get frontend_aihub_fqdn from Terraform output. Please ensure 'just tf-apply {{env}} aihub' has been run."
+            exit 1
+        fi
+        URL="https://$FQDN"
     fi
     
-    URL="https://$FQDN"
     echo "Opening Chrome at $URL..."
     google-chrome --proxy-server="socks5://localhost:8888" --host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE localhost" --user-data-dir="/tmp/chrome-proxy-test" "$URL"
 
