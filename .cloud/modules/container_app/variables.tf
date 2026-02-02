@@ -92,13 +92,13 @@ variable "template" {
           name  = string
           value = string
         })), [])
-        host             = optional(string)
-        interval_seconds = optional(number, 10)
-        path             = optional(string)
-        port             = number
+        host                    = optional(string)
+        interval_seconds        = optional(number, 10)
+        path                    = optional(string)
+        port                    = number
         success_count_threshold = optional(number, 3)
-        timeout          = optional(number, 5)
-        transport        = string
+        timeout                 = optional(number, 5)
+        transport               = string
       }))
       startup_probe = optional(object({
         failure_count_threshold = optional(number)

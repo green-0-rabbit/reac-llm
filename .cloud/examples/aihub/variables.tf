@@ -234,3 +234,8 @@ variable "private_dns_azure_ai_names" {
   type        = list(string)
   description = "List of Private DNS zone names for Azure AI services"
 }
+
+variable "aca_private_endpoint_ip" {
+  description = "Static IP address for the ACA Private Endpoint"
+  type        = string
+}

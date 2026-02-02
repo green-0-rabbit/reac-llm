@@ -12,7 +12,7 @@ output "storage_account_name" {
 ### Container App Outputs
 
 output "log_analytics_workspace_id" {
-  value       = var.log_analytics_workspace_id != "" ? var.log_analytics_workspace_id : (length(azurerm_log_analytics_workspace.this) > 0 ? azurerm_log_analytics_workspace.this[0].id : null)
+  value = var.log_analytics_workspace_id != "" ? var.log_analytics_workspace_id : (length(azurerm_log_analytics_workspace.this) > 0 ? azurerm_log_analytics_workspace.this[0].id : null)
   # value       = null
   description = "Log Analytics Workspace ID."
 }
@@ -77,3 +77,4 @@ output "postgres_administrator_login" {
   value       = module.postgres.administrator_login
   description = "Administrator login for PostgreSQL."
 }
+

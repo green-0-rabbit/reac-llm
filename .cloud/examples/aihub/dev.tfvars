@@ -167,3 +167,5 @@ spoke_vnet_subnets = {
   }
 }
 
+# Static IP for ACA Private Endpoint
+aca_private_endpoint_ip = "10.1.5.10"

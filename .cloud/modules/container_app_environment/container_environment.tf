@@ -7,7 +7,7 @@ resource "azurerm_container_app_environment" "this" {
   internal_load_balancer_enabled     = var.lb_internal_only
   public_network_access              = var.public_network_access_enabled ? "Enabled" : "Disabled"
   infrastructure_resource_group_name = var.infrastructure_resource_group_name != null ? var.infrastructure_resource_group_name : "aca-${var.env}-rg"
-  
+
 
   logs_destination = var.logs_destination
 

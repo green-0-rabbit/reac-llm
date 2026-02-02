@@ -24,6 +24,13 @@ resource "azurerm_private_endpoint" "aca" {
     subresource_names              = ["managedEnvironments"]
   }
 
+  ip_configuration {
+    name               = "aca-static-ip-config"
+    private_ip_address = var.aca_private_endpoint_ip
+    subresource_name   = "managedEnvironments"
+    member_name        = "managedEnvironments"
+  }
+
   private_dns_zone_group {
     name                 = "aca-dns-zone-group"
     private_dns_zone_ids = [azurerm_private_dns_zone.aca.id]
