@@ -57,3 +57,8 @@ resource "azurerm_private_dns_zone" "aifoundry" {
   resource_group_name = azurerm_resource_group.main.name
 }
 
+
+resource "azurerm_private_dns_zone" "aca" {
+  name                = "privatelink.${var.location}.azurecontainerapps.io"
+  resource_group_name = azurerm_resource_group.main.name
+}

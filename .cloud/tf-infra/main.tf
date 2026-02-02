@@ -20,6 +20,7 @@ module "vnet-hub" {
       azurerm_private_dns_zone.keyvault.name,
       azurerm_private_dns_zone.blob.name,
       azurerm_private_dns_zone.postgres.name,
+      azurerm_private_dns_zone.aca.name,
       module.acr.private_dns_zone_name,
     ],
     values(azurerm_private_dns_zone.ampls)[*].name,

@@ -7,7 +7,7 @@ resource "azurerm_storage_account" "this" {
   min_tls_version          = "TLS1_2"
 
   # Security settings
-  public_network_access_enabled = true
+  public_network_access_enabled = false
   shared_access_key_enabled     = true # Enforce RBAC
 
   tags = {

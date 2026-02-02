@@ -17,6 +17,14 @@ locals {
   resource_name_compact = "${var.application_id}${var.environment}${random_string.unique.result}"
 }
 
+resource "azapi_resource_action" "purge_ai_foundry" {
+  type        = "Microsoft.CognitiveServices/locations@2025-09-01"
+  resource_id = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/providers/Microsoft.CognitiveServices/locations/${var.location}"
+  action      = "resourceGroups/${var.target_rg}/deletedAccounts/aif-${local.resource_name}"
+  method      = "DELETE"
+  when        = "destroy"
+}
+
 # AI Foundry account (without network injection)
 resource "azapi_resource" "ai_foundry" {
   type      = "Microsoft.CognitiveServices/accounts@2025-09-01"
@@ -27,6 +35,9 @@ resource "azapi_resource" "ai_foundry" {
     type = "SystemAssigned"
   }
   schema_validation_enabled = false
+  depends_on = [
+    azapi_resource_action.purge_ai_foundry
+  ]
 
   body = {
     kind = var.kind

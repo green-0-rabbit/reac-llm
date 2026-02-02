@@ -12,10 +12,17 @@ output "storage_account_name" {
 ### Container App Outputs
 
 output "log_analytics_workspace_id" {
-  value       = var.log_analytics_workspace_id != "" ? var.log_analytics_workspace_id : (length(azurerm_log_analytics_workspace.this) > 0 ? azurerm_log_analytics_workspace.this[0].id : null)
+  value = var.log_analytics_workspace_id != "" ? var.log_analytics_workspace_id : (length(azurerm_log_analytics_workspace.this) > 0 ? azurerm_log_analytics_workspace.this[0].id : null)
+  # value       = null
   description = "Log Analytics Workspace ID."
 }
 
+output "frontend_aihub_fqdn" {
+  value       = module.frontend_aihub.app_fqdn
+  description = "FQDN of the Frontend Container App."
+}
+
+/*
 output "backend_aihub_fqdn" {
   value       = module.backend_aihub.app_fqdn
   description = "FQDN of the Container App."
@@ -30,6 +37,7 @@ output "container_app_environment_id" {
   value       = module.container_app_environment.id
   description = "ID of the Container App Environment."
 }
+*/
 
 ### AI foundry Outputs
 output "ai_foundry_id" {
@@ -69,3 +77,4 @@ output "postgres_administrator_login" {
   value       = module.postgres.administrator_login
   description = "Administrator login for PostgreSQL."
 }
+

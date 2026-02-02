@@ -44,3 +44,8 @@ data "azurerm_private_dns_zone" "ai_services" {
   name                = each.value
   resource_group_name = var.main_rg_name
 }
+
+data "azurerm_private_dns_zone" "aca" {
+  name                = "privatelink.${var.location}.azurecontainerapps.io"
+  resource_group_name = var.main_rg_name
+}
