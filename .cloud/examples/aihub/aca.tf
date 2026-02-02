@@ -450,56 +450,12 @@ module "frontend_aihub" {
   template = {
     min_replicas = 1
     max_replicas = 1
-    volumes = [
-      {
-        name         = "nginx-conf"
-        storage_type = "EmptyDir"
-      },
-      {
-        name         = "nginx-run"
-        storage_type = "EmptyDir"
-      },
-      {
-        name         = "nginx-cache"
-        storage_type = "EmptyDir"
-      }
-    ]
     containers = [
       {
         name   = "ai-hub-frontend"
-        image  = "${local.acr_login_server}/ai-hub-frontend:21624"
+        image  = "${local.acr_login_server}/ai-hub-frontend:22934"
         cpu    = 0.5
         memory = "1Gi"
-        command = [
-          "/bin/sh",
-          "-c",
-          <<-EOF
-          cp -r /usr/share/nginx/html /tmp/html
-          find /tmp/html -type f -print0 | xargs -0 sed -i 's|api-aihub.lab-iwm.com|'$API_DOMAIN'|g'
-          cat <<NGINX > /etc/nginx/conf.d/default.conf
-          server {
-              listen 8080;
-              listen [::]:8080;
-              server_tokens off;
-              root /tmp/html;
-              index index.html index.htm;
-              location = /index.html {
-                  internal;
-                  add_header Cache-Control 'no-store';
-                  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
-              }
-              location / {
-                  try_files \$uri \$uri/ /index.html;
-              }
-              error_page 500 502 503 504 /50x.html;
-              location = /50x.html {
-                  root /tmp/html;
-              }
-          }
-          NGINX
-          nginx -g 'daemon off;'
-          EOF
-        ]
         env = [
           {
             name  = "API_URL"
@@ -509,29 +465,31 @@ module "frontend_aihub" {
             name  = "API_DOMAIN"
             value = local.backend_aihub_fqdn
           },
-          {
-            name  = "PORT"
-            value = "8080"
-          },
-          {
-            name  = "NGINX_PORT"
-            value = "8080"
-          }
+          # {
+          #   name  = "PORT"
+          #   value = "8080"
+          # },
+          # {
+          #   name  = "NGINX_PORT"
+          #   value = "8080"
+          # }
         ]
-        volume_mounts = [
-          {
-            name = "nginx-conf"
-            path = "/etc/nginx/conf.d"
-          },
-          {
-            name = "nginx-run"
-            path = "/var/run"
-          },
-          {
-            name = "nginx-cache"
-            path = "/var/cache/nginx"
-          }
-        ]
+        startup_probe = {
+          transport               = "HTTP"
+          port                    = 8080
+          path                    = "/"
+          initial_delay           = 30
+          interval_seconds        = 5
+          failure_count_threshold = 10
+        }
+        liveness_probe = {
+          transport               = "HTTP"
+          port                    = 8080
+          path                    = "/"
+          initial_delay           = 30
+          interval_seconds        = 10
+          failure_count_threshold = 3
+        }
       }
     ]
   }

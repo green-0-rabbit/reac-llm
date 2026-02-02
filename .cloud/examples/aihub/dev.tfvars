@@ -113,6 +113,54 @@ spoke_vnet_subnets = {
         source_address_prefixes    = []
         description                = "Allow outbound traffic to Virtual Network"
       }
+      "Allow-AzureFrontDoor-Outbound" = {
+        priority                   = 110
+        direction                  = "Outbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "443"
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "AzureFrontDoor.FirstParty"
+        source_address_prefixes    = []
+        description                = "Allow outbound traffic to ACA Control Plane"
+      }
+      "Allow-MCR-Outbound" = {
+        priority                   = 120
+        direction                  = "Outbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "443"
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "MicrosoftContainerRegistry"
+        source_address_prefixes    = []
+        description                = "Allow outbound traffic to MCR"
+      }
+      "Allow-AAD-Outbound" = {
+        priority                   = 130
+        direction                  = "Outbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "443"
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "AzureActiveDirectory"
+        source_address_prefixes    = []
+        description                = "Allow outbound traffic to AAD"
+      }
+      "Allow-AzureMonitor-Outbound" = {
+        priority                   = 140
+        direction                  = "Outbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "443"
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "AzureMonitor"
+        source_address_prefixes    = []
+        description                = "Allow outbound traffic to Azure Monitor"
+      }
       "Deny-Internet-Outbound" = {
         priority                   = 4000
         direction                  = "Outbound"
