@@ -12,10 +12,10 @@ module "postgres" {
   postgres_version       = "17"
   zone                   = "1"
 
-  public_network_access_enabled = true
+  public_network_access_enabled = false
 
-  # delegated_subnet_id = module.vnet-spoke1.subnet_ids["PostgresSubnet"]
-  # private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
+  delegated_subnet_id = module.vnet-spoke1.subnet_ids["PostgresSubnet"]
+  private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
 
   database_name = "aihub"
 
@@ -28,12 +28,12 @@ module "postgres" {
 #   key_vault_id = azurerm_key_vault.this.id
 # }
 
-resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_all" {
-  name             = "allow-all"
-  server_id        = module.postgres.id
-  start_ip_address = "0.0.0.0"
-  end_ip_address   = "255.255.255.255"
-}
+# resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_all" {
+#   name             = "allow-all"
+#   server_id        = module.postgres.id
+#   start_ip_address = "0.0.0.0"
+#   end_ip_address   = "255.255.255.255"
+# }
 
 resource "azurerm_postgresql_flexible_server_configuration" "extensions_todo" {
   name      = "azure.extensions"

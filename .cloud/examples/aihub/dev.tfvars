@@ -100,6 +100,32 @@ spoke_vnet_subnets = {
         destination_address_prefix = "*"
       }
     }
+    nsg_outbound_rules = {
+      "Allow-VNet-Outbound" = {
+        priority                   = 100
+        direction                  = "Outbound"
+        access                     = "Allow"
+        protocol                   = "*"
+        source_port_range          = "*"
+        destination_port_range     = "*"
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "VirtualNetwork"
+        source_address_prefixes    = []
+        description                = "Allow outbound traffic to Virtual Network"
+      }
+      "Deny-Internet-Outbound" = {
+        priority                   = 4000
+        direction                  = "Outbound"
+        access                     = "Deny"
+        protocol                   = "*"
+        source_port_range          = "*"
+        destination_port_range     = "*"
+        source_address_prefix      = "VirtualNetwork"
+        destination_address_prefix = "Internet"
+        source_address_prefixes    = []
+        description                = "Deny outbound traffic to Internet"
+      }
+    }
   }
   PrivateEndpointSubnet = {
     subnet_address_prefix = ["10.1.5.0/24"]

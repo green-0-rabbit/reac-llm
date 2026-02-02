@@ -24,6 +24,7 @@ module "vnet-spoke1" {
     data.azurerm_private_dns_zone.storage.name,
     data.azurerm_private_dns_zone.acr.name,
     data.azurerm_private_dns_zone.postgres.name,
+    data.azurerm_private_dns_zone.aca.name,
     ], values(data.azurerm_private_dns_zone.monitor)[*].name
     , values(data.azurerm_private_dns_zone.ai_services)[*].name
   )

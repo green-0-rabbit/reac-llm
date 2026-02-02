@@ -38,6 +38,34 @@ resource "azurerm_private_endpoint" "storage_blob" {
   }
 }
 
+resource "azurerm_private_endpoint" "aca" {
+  name                = "pe-${module.container_app_environment.name}"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+  subnet_id           = module.vnet-spoke1.subnet_ids["PrivateEndpointSubnet"]
+
+  private_service_connection {
+    name                           = "psc-${module.container_app_environment.name}"
+    private_connection_resource_id = module.container_app_environment.id
+    is_manual_connection           = false
+    subresource_names              = ["managedEnvironments"]
+  }
+
+  ip_configuration {
+    name               = "aca-static-ip-config"
+    private_ip_address = var.aca_private_endpoint_ip
+    subresource_name   = "managedEnvironments"
+    member_name        = "managedEnvironments"
+  }
+
+  private_dns_zone_group {
+    name                 = "aca-dns-zone-group"
+    private_dns_zone_ids = [data.azurerm_private_dns_zone.aca.id]
+  }
+
+  tags = var.tags
+}
+
 /*
 # https://learn.microsoft.com/en-us/azure/azure-monitor/logs/private-link-configure
 resource "azurerm_private_endpoint" "ampls" {
