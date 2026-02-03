@@ -100,80 +100,92 @@ spoke_vnet_subnets = {
         destination_address_prefix = "*"
       }
     }
-    nsg_outbound_rules = {
-      "Allow-VNet-Outbound" = {
-        priority                   = 100
-        direction                  = "Outbound"
-        access                     = "Allow"
-        protocol                   = "*"
-        source_port_range          = "*"
-        destination_port_range     = "*"
-        source_address_prefix      = "VirtualNetwork"
-        destination_address_prefix = "VirtualNetwork"
-        source_address_prefixes    = []
-        description                = "Allow outbound traffic to Virtual Network"
-      }
-      "Allow-AzureFrontDoor-Outbound" = {
-        priority                   = 110
-        direction                  = "Outbound"
-        access                     = "Allow"
-        protocol                   = "Tcp"
-        source_port_range          = "*"
-        destination_port_range     = "443"
-        source_address_prefix      = "VirtualNetwork"
-        destination_address_prefix = "AzureFrontDoor.FirstParty"
-        source_address_prefixes    = []
-        description                = "Allow outbound traffic to ACA Control Plane"
-      }
-      "Allow-MCR-Outbound" = {
-        priority                   = 120
-        direction                  = "Outbound"
-        access                     = "Allow"
-        protocol                   = "Tcp"
-        source_port_range          = "*"
-        destination_port_range     = "443"
-        source_address_prefix      = "VirtualNetwork"
-        destination_address_prefix = "MicrosoftContainerRegistry"
-        source_address_prefixes    = []
-        description                = "Allow outbound traffic to MCR"
-      }
-      "Allow-AAD-Outbound" = {
-        priority                   = 130
-        direction                  = "Outbound"
-        access                     = "Allow"
-        protocol                   = "Tcp"
-        source_port_range          = "*"
-        destination_port_range     = "443"
-        source_address_prefix      = "VirtualNetwork"
-        destination_address_prefix = "AzureActiveDirectory"
-        source_address_prefixes    = []
-        description                = "Allow outbound traffic to AAD"
-      }
-      "Allow-AzureMonitor-Outbound" = {
-        priority                   = 140
-        direction                  = "Outbound"
-        access                     = "Allow"
-        protocol                   = "Tcp"
-        source_port_range          = "*"
-        destination_port_range     = "443"
-        source_address_prefix      = "VirtualNetwork"
-        destination_address_prefix = "AzureMonitor"
-        source_address_prefixes    = []
-        description                = "Allow outbound traffic to Azure Monitor"
-      }
-      "Deny-Internet-Outbound" = {
-        priority                   = 4000
-        direction                  = "Outbound"
-        access                     = "Deny"
-        protocol                   = "*"
-        source_port_range          = "*"
-        destination_port_range     = "*"
-        source_address_prefix      = "VirtualNetwork"
-        destination_address_prefix = "Internet"
-        source_address_prefixes    = []
-        description                = "Deny outbound traffic to Internet"
-      }
-    }
+    # nsg_outbound_rules = {
+    #   "Allow-VNet-Outbound" = {
+    #     priority                   = 100
+    #     direction                  = "Outbound"
+    #     access                     = "Allow"
+    #     protocol                   = "*"
+    #     source_port_range          = "*"
+    #     destination_port_range     = "*"
+    #     source_address_prefix      = "VirtualNetwork"
+    #     destination_address_prefix = "VirtualNetwork"
+    #     source_address_prefixes    = []
+    #     description                = "Allow outbound traffic to Virtual Network"
+    #   }
+    #   "Allow-AzureFrontDoor-Outbound" = {
+    #     priority                   = 110
+    #     direction                  = "Outbound"
+    #     access                     = "Allow"
+    #     protocol                   = "Tcp"
+    #     source_port_range          = "*"
+    #     destination_port_range     = "443"
+    #     source_address_prefix      = "VirtualNetwork"
+    #     destination_address_prefix = "AzureFrontDoor.FirstParty"
+    #     source_address_prefixes    = []
+    #     description                = "Allow outbound traffic to ACA Control Plane"
+    #   }
+    #   "Allow-MCR-Outbound" = {
+    #     priority                   = 120
+    #     direction                  = "Outbound"
+    #     access                     = "Allow"
+    #     protocol                   = "Tcp"
+    #     source_port_range          = "*"
+    #     destination_port_range     = "443"
+    #     source_address_prefix      = "VirtualNetwork"
+    #     destination_address_prefix = "MicrosoftContainerRegistry"
+    #     source_address_prefixes    = []
+    #     description                = "Allow outbound traffic to MCR"
+    #   }
+    #   "Allow-AAD-Outbound" = {
+    #     priority                   = 130
+    #     direction                  = "Outbound"
+    #     access                     = "Allow"
+    #     protocol                   = "Tcp"
+    #     source_port_range          = "*"
+    #     destination_port_range     = "443"
+    #     source_address_prefix      = "VirtualNetwork"
+    #     destination_address_prefix = "AzureActiveDirectory"
+    #     source_address_prefixes    = []
+    #     description                = "Allow outbound traffic to AAD"
+    #   }
+    #   "Allow-AzureMonitor-Outbound" = {
+    #     priority                   = 140
+    #     direction                  = "Outbound"
+    #     access                     = "Allow"
+    #     protocol                   = "Tcp"
+    #     source_port_range          = "*"
+    #     destination_port_range     = "443"
+    #     source_address_prefix      = "VirtualNetwork"
+    #     destination_address_prefix = "AzureMonitor"
+    #     source_address_prefixes    = []
+    #     description                = "Allow outbound traffic to Azure Monitor"
+    #   }
+    #   "Allow-Internet-HTTPS-Outbound" = { # Required for ACA to pull container images from public registries
+    #     priority                   = 150
+    #     direction                  = "Outbound"
+    #     access                     = "Allow"
+    #     protocol                   = "Tcp"
+    #     source_port_range          = "*"
+    #     destination_port_range     = "443"
+    #     source_address_prefix      = "VirtualNetwork"
+    #     destination_address_prefix = "Internet"
+    #     source_address_prefixes    = []
+    #     description                = "Allow outbound HTTPS traffic to Internet"
+    #   }
+    #   "Deny-Internet-Outbound" = {
+    #     priority                   = 4000
+    #     direction                  = "Outbound"
+    #     access                     = "Deny"
+    #     protocol                   = "*"
+    #     source_port_range          = "*"
+    #     destination_port_range     = "*"
+    #     source_address_prefix      = "VirtualNetwork"
+    #     destination_address_prefix = "Internet"
+    #     source_address_prefixes    = []
+    #     description                = "Deny outbound traffic to Internet"
+    #   }
+    # }
   }
   PrivateEndpointSubnet = {
     subnet_address_prefix = ["10.1.5.0/24"]

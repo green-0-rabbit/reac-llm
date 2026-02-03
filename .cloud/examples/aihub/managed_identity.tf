@@ -16,8 +16,8 @@ resource "azurerm_role_assignment" "storage_blob_data_contributor" {
   principal_id         = azurerm_user_assigned_identity.containerapp.principal_id
 }
 
-
-
-
-
-
+resource "azurerm_role_assignment" "openai_user" {
+  scope                = module.ai_foundry.ai_foundry_id
+  role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = azurerm_user_assigned_identity.containerapp.principal_id
+}
