@@ -238,28 +238,12 @@ module "backend_aihub" {
 
   secrets = [
     {
-      name  = "database-password"
-      value = var.admin_password
-    },
-    {
-      name  = "database-url"
-      value = format("postgresql://%s:%s@%s:5432/%s?schema=aihub", urlencode(var.postgres_administrator_login), urlencode(var.admin_password), module.postgres.fqdn, module.postgres.database_name)
-    },
-    {
-      name  = "api-key"
-      value = module.ai_foundry.primary_access_key
-    },
-    {
       name  = "jwt-secret"
       value = var.jwt_secret
     },
     {
       name  = "keycloak-client-secret"
       value = "supersecret"
-    },
-    {
-      name  = "storage-connection-string"
-      value = azurerm_storage_account.this.primary_connection_string
     }
   ]
 
@@ -269,22 +253,37 @@ module "backend_aihub" {
     containers = [
       {
         name   = "aihub-backend"
-        image  = "${local.acr_login_server}/ai-hub-backend:21274"
+        image  = "${local.acr_login_server}/ai-hub-backend:23065"
         cpu    = 0.5
         memory = "1Gi"
-        command = [
-          "/bin/sh",
-          "-c",
-          <<-EOF
-          echo "Patching: Creating unaccent extension..."
-          echo "CREATE EXTENSION IF NOT EXISTS unaccent SCHEMA aihub;" | npx prisma db execute --stdin --url "$DATABASE_URL"
-          ./entrypoint.sh
-          EOF
-        ]
         env = [
           {
             name  = "APP_NAME"
             value = var.app_name
+          },
+          {
+            name  = "DB_HOST"
+            value = module.postgres.fqdn
+          },
+          {
+            name  = "DB_PORT"
+            value = "5432"
+          },
+          {
+            name  = "DB_NAME"
+            value = "aihub"
+          },
+          {
+            name  = "DB_USE_AAD_TOKEN"
+            value = "true"
+          },
+          {
+            name  = "DB_USERNAME"
+            value = azurerm_user_assigned_identity.containerapp.name
+          },
+          {
+            name  = "DB_SCHEMA"
+            value = "aihub"
           },
           {
             name  = "APP_PORT"
@@ -307,19 +306,23 @@ module "backend_aihub" {
             value = "https://${local.frontend_aihub_fqdn}"
           },
           {
-            name        = "DATABASE_URL"
-            secret_name = "database-url"
+            name  = "DATABASE_HOST"
+            value = module.postgres.fqdn
           },
           {
-            name        = "AZURE_STORAGE_CONNECTION_STRING"
-            secret_name = "storage-connection-string"
+            name  = "DATABASE_USERNAME"
+            value = azurerm_user_assigned_identity.containerapp.name
+          },
+          {
+            name  = "DATABASE_SCHEMA"
+            value = "aihub"
           },
           {
             name  = "AZURE_STORAGE_CONTAINER_NAME"
             value = azurerm_storage_container.this.name
           },
           {
-            name  = "AZURE_STORAGE_SERVICE_URI"
+            name  = "AZURE_STORAGE_ACCOUNT_URL"
             value = azurerm_storage_account.this.primary_blob_endpoint
           },
           {
@@ -329,10 +332,6 @@ module "backend_aihub" {
           {
             name  = "AZURE_CLIENT_ID"
             value = azurerm_user_assigned_identity.containerapp.client_id
-          },
-          {
-            name        = "API_KEY"
-            secret_name = "api-key"
           },
           {
             name  = "API_ENDPOINT"
@@ -389,11 +388,7 @@ module "backend_aihub" {
           {
             name  = "AUTH_JWKS_URI"
             value = "https://${local.keycloak_fqdn}/realms/api-realm/protocol/openid-connect/certs"
-          },
-          # {
-          #   name  = "NODE_TLS_REJECT_UNAUTHORIZED"
-          #   value = "0"
-          # }
+          }
         ]
       }
     ]
@@ -450,56 +445,12 @@ module "frontend_aihub" {
   template = {
     min_replicas = 1
     max_replicas = 1
-    volumes = [
-      {
-        name         = "nginx-conf"
-        storage_type = "EmptyDir"
-      },
-      {
-        name         = "nginx-run"
-        storage_type = "EmptyDir"
-      },
-      {
-        name         = "nginx-cache"
-        storage_type = "EmptyDir"
-      }
-    ]
     containers = [
       {
         name   = "ai-hub-frontend"
-        image  = "${local.acr_login_server}/ai-hub-frontend:21624"
+        image  = "${local.acr_login_server}/ai-hub-frontend:22934"
         cpu    = 0.5
         memory = "1Gi"
-        command = [
-          "/bin/sh",
-          "-c",
-          <<-EOF
-          cp -r /usr/share/nginx/html /tmp/html
-          find /tmp/html -type f -print0 | xargs -0 sed -i 's|api-aihub.lab-iwm.com|'$API_DOMAIN'|g'
-          cat <<NGINX > /etc/nginx/conf.d/default.conf
-          server {
-              listen 8080;
-              listen [::]:8080;
-              server_tokens off;
-              root /tmp/html;
-              index index.html index.htm;
-              location = /index.html {
-                  internal;
-                  add_header Cache-Control 'no-store';
-                  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
-              }
-              location / {
-                  try_files \$uri \$uri/ /index.html;
-              }
-              error_page 500 502 503 504 /50x.html;
-              location = /50x.html {
-                  root /tmp/html;
-              }
-          }
-          NGINX
-          nginx -g 'daemon off;'
-          EOF
-        ]
         env = [
           {
             name  = "API_URL"
@@ -508,32 +459,25 @@ module "frontend_aihub" {
           {
             name  = "API_DOMAIN"
             value = local.backend_aihub_fqdn
-          },
-          {
-            name  = "PORT"
-            value = "8080"
-          },
-          {
-            name  = "NGINX_PORT"
-            value = "8080"
           }
         ]
-        volume_mounts = [
-          {
-            name = "nginx-conf"
-            path = "/etc/nginx/conf.d"
-          },
-          {
-            name = "nginx-run"
-            path = "/var/run"
-          },
-          {
-            name = "nginx-cache"
-            path = "/var/cache/nginx"
-          }
-        ]
+        startup_probe = {
+          transport               = "HTTP"
+          port                    = 8080
+          path                    = "/"
+          initial_delay           = 30
+          interval_seconds        = 5
+          failure_count_threshold = 10
+        }
+        liveness_probe = {
+          transport               = "HTTP"
+          port                    = 8080
+          path                    = "/"
+          initial_delay           = 30
+          interval_seconds        = 10
+          failure_count_threshold = 3
+        }
       }
     ]
   }
 }
-

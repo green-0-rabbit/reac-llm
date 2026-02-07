@@ -63,8 +63,8 @@ remote_acr_config = {
   username = "aihubazqsbx"
   fqdn     = "aiportalregistry.azurecr.io"
   images = [
-    "ai-hub-backend:21274",
-    "ai-hub-frontend:21624",
+    "ai-hub-backend:23065",
+    "ai-hub-frontend:22934",
   ]
 }
 
