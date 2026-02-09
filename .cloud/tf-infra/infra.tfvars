@@ -42,12 +42,22 @@ hub_subnets = {
         source_address_prefixes    = ["0.0.0.0/0"]
         destination_address_prefix = "*"
       }
+      "Allow-RDP-From-Bastion" = {
+        priority                   = 210
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "3389"
+        source_address_prefixes    = ["10.0.3.0/26"]
+        destination_address_prefix = "*"
+      }
     }
   }
-  # Only needed if Azure Bastion is sku 'Standard' or higher
-  # AzureBastionSubnet = {
-  #   subnet_address_prefix = ["10.0.3.0/26"]
-  # }
+  # Required for Azure Bastion (Standard or higher)
+  AzureBastionSubnet = {
+    subnet_address_prefix = ["10.0.3.0/26"]
+  }
 }
 
 hub_firewall = {

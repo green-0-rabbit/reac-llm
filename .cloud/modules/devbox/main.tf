@@ -1,13 +1,13 @@
 ############################
 # VM
 ############################
-resource "azurerm_linux_virtual_machine" "bastion" {
+resource "azurerm_linux_virtual_machine" "devbox" {
   name                = var.vm_name
   location            = var.location
   resource_group_name = var.resource_group_name
   size                = var.vm_size
 
-  network_interface_ids = [azurerm_network_interface.bastion.id]
+  network_interface_ids = [azurerm_network_interface.nic.id]
 
   admin_username                  = var.admin_username
   disable_password_authentication = false
@@ -29,12 +29,7 @@ resource "azurerm_linux_virtual_machine" "bastion" {
   # Pass the computed FQDN into cloud-init
   custom_data = base64encode(
     templatefile("${path.module}/cloud-init.yml", {
-      acr_name                = var.acr_name
-      remote_acr_username     = var.remote_acr_config.username
-      remote_acr_password     = var.remote_acr_password
-      remote_acr_fqdn         = var.remote_acr_config.fqdn
-      remote_acr_images       = var.remote_acr_config.images
-      sync_remote_acr_acr_b64 = base64encode(file("${path.module}/scripts/sync_remote_acr_acr.sh"))
+      env_vars = var.env_vars
     })
   )
 
@@ -52,7 +47,7 @@ resource "azurerm_linux_virtual_machine" "bastion" {
 # Disks
 ############################
 
-resource "azurerm_managed_disk" "bastion_data" {
+resource "azurerm_managed_disk" "devbox_data" {
   name                 = coalesce(var.datadisk_name, "${var.vm_name}-data")
   location             = var.location
   resource_group_name  = var.resource_group_name
@@ -62,9 +57,9 @@ resource "azurerm_managed_disk" "bastion_data" {
 }
 
 
-resource "azurerm_virtual_machine_data_disk_attachment" "bastion" {
-  managed_disk_id    = azurerm_managed_disk.bastion_data.id
-  virtual_machine_id = azurerm_linux_virtual_machine.bastion.id
+resource "azurerm_virtual_machine_data_disk_attachment" "devbox" {
+  managed_disk_id    = azurerm_managed_disk.devbox_data.id
+  virtual_machine_id = azurerm_linux_virtual_machine.devbox.id
   lun                = 0
   caching            = "ReadWrite"
 }
@@ -73,9 +68,9 @@ resource "azurerm_virtual_machine_data_disk_attachment" "bastion" {
 # Extensions
 ############################
 
-resource "azurerm_virtual_machine_extension" "bastion_provision" {
-  name                       = "bastion-provisioning"
-  virtual_machine_id         = azurerm_linux_virtual_machine.bastion.id
+resource "azurerm_virtual_machine_extension" "provision" {
+  name                       = "devbox-provisioning"
+  virtual_machine_id         = azurerm_linux_virtual_machine.devbox.id
   publisher                  = "Microsoft.Azure.Extensions"
   type                       = "CustomScript"
   type_handler_version       = "2.1"
@@ -85,30 +80,12 @@ resource "azurerm_virtual_machine_extension" "bastion_provision" {
     commandToExecute = <<-EOT
       bash -lc '
       until [ -f /var/lib/cloud/instance/boot-finished ]; do echo waiting-cloud-init; sleep 5; done
-      nohup /usr/local/bin/sync_remote_acr_acr.sh \
-      ${var.remote_acr_config.username} \
-      ${var.remote_acr_password} \
-      ${var.remote_acr_config.fqdn} \
-      >/var/log/sync_remote_acr_acr.log 2>&1 &
+      echo "DevBox Provisioning Complete" > /var/log/devbox_provisioned.log
       '
     EOT
   })
 
   depends_on = [
-    azurerm_virtual_machine_data_disk_attachment.bastion
+    azurerm_virtual_machine_data_disk_attachment.devbox
   ]
-}
-
-resource "azurerm_role_assignment" "bastion_vm_acr_push" {
-  count                = var.enable_managed_identity ? 1 : 0
-  scope                = var.acr_id
-  role_definition_name = "AcrPush"
-  principal_id         = azurerm_linux_virtual_machine.bastion.identity[0].principal_id
-
-  lifecycle {
-    precondition {
-      condition     = var.acr_id != ""
-      error_message = "acr_id must be provided when enable_managed_identity is true."
-    }
-  }
 }
