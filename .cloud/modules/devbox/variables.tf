@@ -97,6 +97,12 @@ variable "image_sku" {
   description = "Source image SKU (Ubuntu 24.04 LTS)."
 }
 
+variable "custom_image_id" {
+  type        = string
+  default     = null
+  description = "Optional custom image ID to use instead of a marketplace image."
+}
+
 variable "tags" {
   type    = map(string)
   default = {}

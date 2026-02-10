@@ -15,6 +15,8 @@ storage_account_name = "sbxinfrastoragekag"
 #### nexus vm variables
 admin_username = "bastionadmin"
 
+devbox_custom_image_id = "/subscriptions/64aff275-5209-47fd-88a0-f127dfab04b8/resourceGroups/sbx-main-rg/providers/Microsoft.Compute/galleries/sbx_devbox_gallery_kag/images/devbox/versions/0.0.1"
+
 private_dns_zone_name = "sbx-kag.io"
 
 vnet_name               = "main-hub"

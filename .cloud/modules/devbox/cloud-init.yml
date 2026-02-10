@@ -7,7 +7,6 @@ packages:
   - xfce4
   - xfce4-goodies
   - xorgxrdp
-  - firefox
   - docker.io
   - jq
   - openssl
@@ -45,6 +44,11 @@ runcmd:
   - [ bash, -c, 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list' ]
   - [ apt-get, update ]
   - [ apt-get, install, -y, terraform ]
+  # Install Google Chrome
+  - [ bash, -c, 'wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-linux-signing-keyring.gpg' ]
+  - [ bash, -c, 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list' ]
+  - [ apt-get, update ]
+  - [ apt-get, install, -y, google-chrome-stable ]
   # Install Just
   - [ bash, -c, 'curl --proto "=https" --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin' ]
   # Install Node.js (Latest LTS) and Yarn (Berry)
@@ -56,6 +60,7 @@ runcmd:
   # Install VS Code
   - [ snap, install, code, --classic ]
   # Enable RDP for GUI access via Azure Bastion
+  - [ apt-get, install, -y, xrdp, xorgxrdp ]
   - [ systemctl, enable, --now, xrdp ]
   - [ bash, -c, 'adduser xrdp ssl-cert || true' ]
   # Configure XFCE for XRDP
@@ -64,8 +69,6 @@ runcmd:
   # Fix permissions for XRDP SSL key to prevent connection errors
   - [ chgrp, ssl-cert, /etc/xrdp/key.pem ]
   - [ chmod, 640, /etc/xrdp/key.pem ]
-  # Fix Firefox Snap visibility in XFCE menu
-  - [ bash, -c, 'ln -s /var/lib/snapd/desktop/applications/firefox_firefox.desktop /usr/share/applications/firefox.desktop || true' ]
   # Fix VS Code Snap visibility in XFCE menu
   - [ bash, -c, 'ln -s /var/lib/snapd/desktop/applications/code_code.desktop /usr/share/applications/code.desktop || true' ]
   - [ systemctl, restart, xrdp ]

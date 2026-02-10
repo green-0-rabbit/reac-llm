@@ -109,6 +109,12 @@ variable "admin_password" {
   sensitive = true
 }
 
+variable "devbox_custom_image_id" {
+  type        = string
+  default     = null
+  description = "Optional custom image ID for the DevBox VM."
+}
+
 
 variable "acr_settings" {
   description = "Azure Container Registry configuration."

@@ -19,19 +19,24 @@ resource "azurerm_linux_virtual_machine" "devbox" {
     storage_account_type = var.os_disk_sku
   }
 
-  source_image_reference {
-    publisher = var.image_publisher
-    offer     = var.image_offer
-    sku       = var.image_sku
-    version   = "latest"
+  source_image_id = var.custom_image_id
+
+  dynamic "source_image_reference" {
+    for_each = var.custom_image_id == null ? [1] : []
+    content {
+      publisher = var.image_publisher
+      offer     = var.image_offer
+      sku       = var.image_sku
+      version   = "latest"
+    }
   }
 
-  # Pass the computed FQDN into cloud-init
-  custom_data = base64encode(
+  # Skip cloud-init when using a custom image
+  custom_data = var.custom_image_id == null ? base64encode(
     templatefile("${path.module}/cloud-init.yml", {
       env_vars = var.env_vars
     })
-  )
+  ) : null
 
   tags = var.tags
 
@@ -69,6 +74,7 @@ resource "azurerm_virtual_machine_data_disk_attachment" "devbox" {
 ############################
 
 resource "azurerm_virtual_machine_extension" "provision" {
+  count = var.custom_image_id == null ? 1 : 0
   name                       = "devbox-provisioning"
   virtual_machine_id         = azurerm_linux_virtual_machine.devbox.id
   publisher                  = "Microsoft.Azure.Extensions"

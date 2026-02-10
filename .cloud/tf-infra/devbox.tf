@@ -13,6 +13,7 @@ module "devbox_vm" {
   vm_name        = "vm-devbox-${var.env}"
   admin_username = var.admin_username
   admin_password = var.admin_password
+  custom_image_id = var.devbox_custom_image_id
 
   # Identity
   enable_managed_identity = true
