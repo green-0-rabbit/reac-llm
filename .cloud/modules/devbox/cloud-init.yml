@@ -6,11 +6,7 @@ package_upgrade: false
 packages:
   - xfce4
   - xfce4-goodies
-  - xfce4-session
   - xorgxrdp
-  - dbus-x11
-  - dbus-user-session
-  - xauth
   - firefox
   - docker.io
   - jq
@@ -63,7 +59,7 @@ runcmd:
   - [ systemctl, enable, --now, xrdp ]
   - [ bash, -c, 'adduser xrdp ssl-cert || true' ]
   # Configure XFCE for XRDP
-  - [ bash, -c, 'cat > /etc/xrdp/startwm.sh <<"EOF"\n#!/bin/sh\nif [ -r /etc/default/locale ]; then\n  . /etc/default/locale\n  export LANG LANGUAGE\nfi\nunset DBUS_SESSION_BUS_ADDRESS\nunset XDG_RUNTIME_DIR\nexport XDG_SESSION_TYPE=x11\nexport XDG_CURRENT_DESKTOP=XFCE\nexport XDG_SESSION_DESKTOP=xfce\nexec /usr/bin/startxfce4\nEOF' ]
+  - [ bash, -c, 'echo "startxfce4" > /etc/xrdp/startwm.sh' ]
   - [ chmod, 755, /etc/xrdp/startwm.sh ]
   # Fix permissions for XRDP SSL key to prevent connection errors
   - [ chgrp, ssl-cert, /etc/xrdp/key.pem ]
