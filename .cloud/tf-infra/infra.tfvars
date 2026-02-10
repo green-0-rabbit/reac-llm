@@ -49,7 +49,7 @@ hub_subnets = {
         protocol                   = "Tcp"
         source_port_range          = "*"
         destination_port_range     = "3389"
-        source_address_prefixes    = ["10.0.3.0/26"]
+        source_address_prefixes    = ["0.0.0.0/0"]
         destination_address_prefix = "*"
       }
     }

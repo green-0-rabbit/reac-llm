@@ -118,3 +118,27 @@ variable "enable_public_ip" {
   type    = bool
   default = false
 }
+
+variable "enable_bastion_host" {
+  type        = bool
+  default     = true
+  description = "Enable Azure Bastion host creation for the DevBox."
+}
+
+variable "bastion_subnet_id" {
+  type        = string
+  default     = null
+  description = "Subnet ID for AzureBastionSubnet."
+}
+
+variable "bastion_name" {
+  type        = string
+  default     = null
+  description = "Optional Bastion host name override."
+}
+
+variable "bastion_pip_name" {
+  type        = string
+  default     = null
+  description = "Optional Bastion public IP name override."
+}

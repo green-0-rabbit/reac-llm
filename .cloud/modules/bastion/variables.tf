@@ -144,7 +144,6 @@ variable "enable_bastion_host" {
   description = "Enable Azure Bastion host creation."
 }
 
-variable "bastion_subnet_id" {
-  type        = string
-  description = "Subnet ID for AzureBastionSubnet (required for Bastion Standard)."
+variable "vnet_id" {
+  type = string
 }

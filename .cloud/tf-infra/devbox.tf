@@ -17,6 +17,10 @@ module "devbox_vm" {
   # Identity
   enable_managed_identity = true
 
+  # Bastion (dedicated)
+  enable_bastion_host = true
+  bastion_subnet_id   = module.vnet-hub.subnet_ids["AzureBastionSubnet"]
+
   # Dummy env vars for testing
   env_vars = {
     EXAMPLE_ONE = "value_one"

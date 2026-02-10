@@ -15,3 +15,13 @@ output "principal_id" {
 output "public_ip" {
   value = var.enable_public_ip ? azurerm_public_ip.pip[0].ip_address : null
 }
+
+output "bastion_name" {
+  value       = var.enable_bastion_host ? azurerm_bastion_host.devbox_bastion[0].name : null
+  description = "Name of the DevBox Bastion host."
+}
+
+output "bastion_public_ip" {
+  value       = var.enable_bastion_host ? azurerm_public_ip.devbox_bastion_pip[0].ip_address : null
+  description = "Public IP of the DevBox Bastion host."
+}
