@@ -7,12 +7,18 @@ $l="C:\WindowsAzure\Logs\bwsl.log"
 function L($m){"$(Get-Date -f 'yyyy-MM-dd HH:mm:ss') $m"|Out-File $l -Append}
 L "P1 START"
 
-# VS Code (machine-wide install, safe under SYSTEM)
+# VS Code (machine-wide silent install, direct download - winget unreliable under SYSTEM)
 if(!(Test-Path "C:\Program Files\Microsoft VS Code\Code.exe")){
-  if(Get-Command winget -EA 0){
-    winget install --id Microsoft.VisualStudioCode -e --scope machine --accept-package-agreements --accept-source-agreements --silent 2>&1|Out-Null
-    L "vscode installed"
-  }
+  $vscUrl="https://update.code.visualstudio.com/latest/win32-x64/stable"
+  $vscExe="$env:TEMP\vscode-setup.exe"
+  L "downloading vscode"
+  & curl.exe -fSL -o $vscExe $vscUrl 2>&1|Out-Null
+  L "installing vscode"
+  Start-Process -Wait -FilePath $vscExe -ArgumentList '/verysilent','/mergetasks=!runcode,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath'
+  Remove-Item $vscExe -EA 0
+  L "vscode installed"
+}else{
+  L "vscode exists"
 }
 
 # Enable WSL + VM-Platform features (need reboot to activate kernel)
