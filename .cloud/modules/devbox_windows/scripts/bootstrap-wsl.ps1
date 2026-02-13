@@ -12,7 +12,9 @@ if(!(Test-Path "C:\Program Files\Microsoft VS Code\Code.exe")){
   $vscUrl="https://update.code.visualstudio.com/latest/win32-x64/stable"
   $vscExe="$env:TEMP\vscode-setup.exe"
   L "downloading vscode"
+  $ErrorActionPreference="Continue"
   & curl.exe -fSL -o $vscExe $vscUrl 2>&1|Out-Null
+  $ErrorActionPreference="Stop"
   L "installing vscode"
   Start-Process -Wait -FilePath $vscExe -ArgumentList '/verysilent','/mergetasks=!runcode,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath'
   Remove-Item $vscExe -EA 0
