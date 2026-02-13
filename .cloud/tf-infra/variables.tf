@@ -115,6 +115,47 @@ variable "devbox_custom_image_id" {
   description = "Optional custom image ID for the DevBox VM."
 }
 
+variable "enable_windows_devbox" {
+  type        = bool
+  default     = false
+  description = "Enable deployment of a Windows DevBox VM."
+}
+
+variable "windows_devbox_vm_size" {
+  type        = string
+  default     = "Standard_D2s_v3"
+  description = "VM size for Windows DevBox."
+}
+
+variable "windows_devbox_custom_image_id" {
+  type        = string
+  default     = null
+  description = "Optional custom image ID for the Windows DevBox VM."
+}
+
+variable "windows_devbox_enable_wsl_bootstrap" {
+  type        = bool
+  default     = false
+  description = "Enable first-boot bootstrap (VS Code + WSL + Ubuntu + toolchain)."
+}
+
+variable "windows_devbox_image_publisher" {
+  type        = string
+  default     = "MicrosoftWindowsDesktop"
+  description = "Marketplace publisher for Windows DevBox fallback image."
+}
+
+variable "windows_devbox_image_offer" {
+  type        = string
+  default     = "windows-11"
+  description = "Marketplace offer for Windows DevBox fallback image."
+}
+
+variable "windows_devbox_image_sku" {
+  type        = string
+  default     = "win11-25h2-pro"
+  description = "Marketplace SKU for Windows DevBox fallback image."
+}
 
 variable "acr_settings" {
   description = "Azure Container Registry configuration."

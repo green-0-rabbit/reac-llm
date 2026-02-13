@@ -12,10 +12,10 @@ module "postgres" {
   postgres_version       = "17"
   zone                   = "1"
 
-  public_network_access_enabled = true
+  public_network_access_enabled = false
 
-  # delegated_subnet_id = module.vnet-spoke1.subnet_ids["PostgresSubnet"]
-  # private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
+  delegated_subnet_id = module.vnet-spoke1.subnet_ids["PostgresSubnet"]
+  private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
 
   database_name = "aihub"
 

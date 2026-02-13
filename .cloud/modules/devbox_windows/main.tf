@@ -1,17 +1,17 @@
 ############################
 # VM
 ############################
-resource "azurerm_linux_virtual_machine" "devbox" {
+resource "azurerm_windows_virtual_machine" "devbox" {
   name                = var.vm_name
+  computer_name       = substr(var.vm_name, 0, 15)
   location            = var.location
   resource_group_name = var.resource_group_name
   size                = var.vm_size
 
   network_interface_ids = [azurerm_network_interface.nic.id]
 
-  admin_username                  = var.admin_username
-  disable_password_authentication = false
-  admin_password                  = var.admin_password
+  admin_username = var.admin_username
+  admin_password = var.admin_password
 
   os_disk {
     name                 = coalesce(var.osdisk_name, "${var.vm_name}-osdisk")
@@ -31,12 +31,8 @@ resource "azurerm_linux_virtual_machine" "devbox" {
     }
   }
 
-  # Skip cloud-init when using a custom image
-  custom_data = var.custom_image_id == null ? base64encode(
-    templatefile("${path.module}/cloud-init.yml", {
-      env_vars = var.env_vars
-    })
-  ) : null
+  automatic_updates_enabled = true
+  patch_mode                = "AutomaticByOS"
 
   tags = var.tags
 
@@ -61,10 +57,9 @@ resource "azurerm_managed_disk" "devbox_data" {
   disk_size_gb         = var.data_disk_size_gb
 }
 
-
 resource "azurerm_virtual_machine_data_disk_attachment" "devbox" {
   managed_disk_id    = azurerm_managed_disk.devbox_data.id
-  virtual_machine_id = azurerm_linux_virtual_machine.devbox.id
+  virtual_machine_id = azurerm_windows_virtual_machine.devbox.id
   lun                = 0
   caching            = "ReadWrite"
 }
@@ -73,22 +68,17 @@ resource "azurerm_virtual_machine_data_disk_attachment" "devbox" {
 # Extensions
 ############################
 
-resource "azurerm_virtual_machine_extension" "provision" {
-  count                      = var.custom_image_id == null ? 1 : 0
-  name                       = "devbox-provisioning"
-  virtual_machine_id         = azurerm_linux_virtual_machine.devbox.id
-  publisher                  = "Microsoft.Azure.Extensions"
-  type                       = "CustomScript"
-  type_handler_version       = "2.1"
+resource "azurerm_virtual_machine_extension" "wsl_bootstrap" {
+  count                      = var.enable_wsl_bootstrap ? 1 : 0
+  name                       = "wsl-bootstrap"
+  virtual_machine_id         = azurerm_windows_virtual_machine.devbox.id
+  publisher                  = "Microsoft.Compute"
+  type                       = "CustomScriptExtension"
+  type_handler_version       = "1.10"
   auto_upgrade_minor_version = true
 
   protected_settings = jsonencode({
-    commandToExecute = <<-EOT
-      bash -lc '
-      until [ -f /var/lib/cloud/instance/boot-finished ]; do echo waiting-cloud-init; sleep 5; done
-      echo "DevBox Provisioning Complete" > /var/log/devbox_provisioned.log
-      '
-    EOT
+    commandToExecute = "powershell -NoProfile -ExecutionPolicy Bypass -Command \"[IO.File]::WriteAllBytes('C:\\bstrap.ps1',[Convert]::FromBase64String('${base64encode(file("${path.module}/scripts/bootstrap-wsl.ps1"))}'));& 'C:\\bstrap.ps1'\""
   })
 
   depends_on = [

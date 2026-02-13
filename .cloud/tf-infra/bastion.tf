@@ -2,20 +2,20 @@
 #   source = "../modules/bastion"
 
 #   project = var.project
-#   vm_size = "Standard_B2s"
+#   vm_size = "Standard_B1s"
 
 #   # Placement
 #   resource_group_name = azurerm_resource_group.main.name
 #   location            = var.location
+#   vnet_id             = module.vnet-hub.id
 #   subnet_id           = module.vnet-hub.subnet_ids["BastionSubnet"]
-#   bastion_subnet_id   = module.vnet-hub.subnet_ids["AzureBastionSubnet"]
 
 #   # VM basics
 #   vm_name             = "vm-bastion-${var.env}"
 #   admin_username      = var.admin_username
 #   admin_password      = var.admin_password
 #   enable_public_ip    = true
-#   enable_bastion_host = true
+#   enable_bastion_host = false
 
 #   # ACR / identity wiring
 #   enable_managed_identity = true

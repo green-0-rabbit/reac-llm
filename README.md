@@ -1,3 +1,15 @@
+## workshop resources
+
+Please could you create the mermaid architecture of the current setup #file:tf-infra and #file:aihub ? We should clearly identify, vnet hub, spoke, resource
+
+- aihub frontend : aihub-frontend-dev.sbx-kag.io 
+- storage account: sbxaihubinfrastsa.blob.core.windows.net
+- postgres server: psql-dev-sbx-aihub.postgres.database.azure.com
+
+
+
+pkill -f 'google-chrome|chrome' 2>/dev/null; rm -f ~/.config/google-chrome/SingletonLock ~/.config/google-chrome/SingletonCookie ~/.config/google-chrome/SingletonSocket; google-chrome &
+
 ## modules architecture references
 
 - [resources module](https://azure.github.io/Azure-Verified-Modules/indexes/terraform/tf-resource-modules/)
@@ -71,3 +83,29 @@ az sig image-version update \
 - The DevBox VM is generalized during capture and cannot be started again.
 - Community gallery requires publisher info and a public EULA URL.
 - If RDP fails on a VM from this image, verify `xrdp` is installed and running on the VM.
+
+## windows devbox (bastion developer + wsl)
+
+- Windows DevBox deployment is optional and controlled by `enable_windows_devbox`.
+- Windows Bastion is configured with `Developer` SKU (no public IP).
+- When `windows_devbox_enable_wsl_bootstrap = true`, a VM extension bootstraps:
+    - WSL2
+    - Ubuntu distro
+    - Inside Ubuntu: `terraform`, `docker`, `nodejs` (LTS), and `just`
+- Bootstrap log path on Windows VM: `C:\\Windows\\Temp\\wsl-bootstrap.log`
+
+### windows image catalog details
+
+- Gallery: `sbx_devbox_gallery_kag`
+- Image definition: `windevbox` (publisher `kag`, offer `free`, sku `windows-server-2022-wsl`)
+- Version: `0.0.1`
+- Managed image: `windevbox-infra-img-0-0-1`
+- Regions: `westeurope`, `switzerlandnorth`
+- Image version ID:
+    - `/subscriptions/64aff275-5209-47fd-88a0-f127dfab04b8/resourceGroups/sbx-main-rg/providers/Microsoft.Compute/galleries/sbx_devbox_gallery_kag/images/windevbox/versions/0.0.1`
+
+### windows terraform usage
+
+- Set `windows_devbox_custom_image_id` in [.cloud/tf-infra/infra.tfvars](.cloud/tf-infra/infra.tfvars) to the Windows image version ID.
+- Keep `windows_devbox_enable_wsl_bootstrap = true` only when provisioning from marketplace or non-prebaked images.
+- For this prebaked image, prefer `windows_devbox_enable_wsl_bootstrap = false`.
