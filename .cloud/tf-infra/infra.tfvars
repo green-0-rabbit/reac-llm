@@ -20,7 +20,7 @@ devbox_custom_image_id = "/subscriptions/64aff275-5209-47fd-88a0-f127dfab04b8/re
 # Optional Windows DevBox deployment
 enable_windows_devbox               = true
 windows_devbox_vm_size              = "Standard_D2s_v3"
-windows_devbox_custom_image_id      = "/subscriptions/64aff275-5209-47fd-88a0-f127dfab04b8/resourceGroups/sbx-main-rg/providers/Microsoft.Compute/galleries/sbx_devbox_gallery_kag/images/windevbox/versions/0.0.3"
+windows_devbox_custom_image_id      = "/communityGalleries/sbckag-03a467c4-f8e6-470f-a19a-0b1f72763fd6/images/windevbox/versions/0.0.3"
 windows_devbox_enable_wsl_bootstrap = true
 
 private_dns_zone_name = "sbx-kag.io"
