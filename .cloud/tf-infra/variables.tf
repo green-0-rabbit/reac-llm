@@ -227,8 +227,9 @@ variable "remote_acr_password" {
 variable "bunny_dns" {
   description = "Configuration for Bunny DNS and ACME (Let's Encrypt)."
   type = object({
-    acme_email = string
-    zone_name  = string
+    acme_email            = string
+    zone_name             = string
+    additional_zone_names = optional(list(string), [])
   })
 }
 

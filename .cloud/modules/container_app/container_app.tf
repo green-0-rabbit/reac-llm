@@ -161,13 +161,24 @@ resource "azurerm_container_app" "app" {
 
 }
 
+locals {
+  merged_custom_domains = concat(
+    var.custom_domain != null ? [var.custom_domain] : [],
+    var.custom_domains
+  )
+
+  custom_domains_by_name = {
+    for domain in local.merged_custom_domains : domain.name => domain
+  }
+}
+
 resource "azurerm_container_app_custom_domain" "custom_domain" {
-  count = var.custom_domain != null ? 1 : 0
+  for_each = local.custom_domains_by_name
 
   container_app_id                         = azurerm_container_app.app.id
-  name                                     = var.custom_domain.name
-  certificate_binding_type                 = var.custom_domain.certificate_binding_type
-  container_app_environment_certificate_id = var.custom_domain.certificate_id
+  name                                     = each.value.name
+  certificate_binding_type                 = each.value.certificate_binding_type
+  container_app_environment_certificate_id = each.value.certificate_id
 }
 
 resource "azurerm_role_assignment" "acr_pull_uai" {

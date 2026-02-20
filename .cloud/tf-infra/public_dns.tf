@@ -1,5 +1,19 @@
+locals {
+  acme_domain_names = flatten([
+    for zone_name in concat([var.bunny_dns.zone_name], var.bunny_dns.additional_zone_names) : [
+      "*.${zone_name}",
+      zone_name,
+    ]
+  ])
+}
+
 resource "bunnynet_dns_zone" "public" {
   domain = var.bunny_dns.zone_name
+}
+
+resource "bunnynet_dns_zone" "additional" {
+  for_each = toset(var.bunny_dns.additional_zone_names)
+  domain   = each.value
 }
 
 resource "acme_registration" "reg" {
@@ -8,8 +22,8 @@ resource "acme_registration" "reg" {
 
 resource "acme_certificate" "wildcard" {
   account_key_pem           = acme_registration.reg.account_key_pem
-  common_name               = "*.${var.bunny_dns.zone_name}"
-  subject_alternative_names = [var.bunny_dns.zone_name]
+  common_name               = local.acme_domain_names[0]
+  subject_alternative_names = slice(local.acme_domain_names, 1, length(local.acme_domain_names))
 
   dns_challenge {
     provider = "bunny"
@@ -18,7 +32,10 @@ resource "acme_certificate" "wildcard" {
     }
   }
 
-  depends_on = [bunnynet_dns_zone.public]
+  depends_on = [
+    bunnynet_dns_zone.public,
+    bunnynet_dns_zone.additional,
+  ]
 }
 
 resource "bunnynet_dns_record" "aca_wildcard" {
@@ -27,6 +44,52 @@ resource "bunnynet_dns_record" "aca_wildcard" {
   name  = "*"
   value = var.aca_private_endpoint_ip
   ttl   = 120
+}
+
+resource "bunnynet_dns_record" "aca_apex" {
+  zone  = bunnynet_dns_zone.public.id
+  type  = "A"
+  name  = ""
+  value = var.aca_private_endpoint_ip
+  ttl   = 120
+}
+
+resource "bunnynet_dns_record" "aca_wildcard_additional_cname" {
+  for_each = bunnynet_dns_zone.additional
+
+  zone  = each.value.id
+  type  = "CNAME"
+  name  = "*"
+  value = var.bunny_dns.zone_name
+  ttl   = 120
+}
+
+resource "bunnynet_dns_record" "aca_apex_additional_cname" {
+  for_each = bunnynet_dns_zone.additional
+
+  zone  = each.value.id
+  type  = "CNAME"
+  name  = ""
+  value = var.bunny_dns.zone_name
+  ttl   = 120
+}
+
+output "bunnynet_zone_nameservers" {
+  value = merge(
+    {
+      (bunnynet_dns_zone.public.domain) = {
+        nameserver1 = bunnynet_dns_zone.public.nameserver1
+        nameserver2 = bunnynet_dns_zone.public.nameserver2
+      }
+    },
+    {
+      for _, zone in bunnynet_dns_zone.additional :
+      zone.domain => {
+        nameserver1 = zone.nameserver1
+        nameserver2 = zone.nameserver2
+      }
+    }
+  )
 }
 
 output "acme_certificate_pem" {

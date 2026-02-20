@@ -54,6 +54,16 @@ variable "custom_domain" {
   })
   default = null
 }
+
+variable "custom_domains" {
+  description = "List of custom domain configurations for the container app."
+  type = list(object({
+    name                     = string
+    certificate_id           = optional(string)
+    certificate_binding_type = optional(string)
+  }))
+  default = []
+}
 variable "template" {
   type = object({
     containers = list(object({

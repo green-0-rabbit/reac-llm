@@ -21,12 +21,23 @@ resource "azurerm_container_app_environment" "this" {
   tags = var.tags
 }
 
+locals {
+  merged_certificate_configs = concat(
+    var.certificate_config != null ? [var.certificate_config] : [],
+    var.certificate_configs
+  )
+
+  certificate_configs_by_name = {
+    for cfg in local.merged_certificate_configs : cfg.name => cfg
+  }
+}
+
 resource "azurerm_container_app_environment_certificate" "this" {
-  count                        = var.certificate_config != null ? 1 : 0
-  name                         = var.certificate_config.name
+  for_each                     = local.certificate_configs_by_name
+  name                         = each.value.name
   container_app_environment_id = azurerm_container_app_environment.this.id
-  certificate_blob_base64      = var.certificate_config.certificate_blob_base64
-  certificate_password         = var.certificate_config.certificate_password
+  certificate_blob_base64      = each.value.certificate_blob_base64
+  certificate_password         = each.value.certificate_password
 }
 
 # https://learn.microsoft.com/en-us/azure/container-apps/log-options
