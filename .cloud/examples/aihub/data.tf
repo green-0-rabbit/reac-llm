@@ -1,5 +1,13 @@
 data "azurerm_client_config" "current" {}
 
+data "terraform_remote_state" "infra" {
+  backend = "http"
+
+  config = {
+    address = "${var.http_address_base}/infra"
+  }
+}
+
 data "azurerm_container_registry" "acr" {
   name                = var.acr_name
   resource_group_name = var.main_rg_name

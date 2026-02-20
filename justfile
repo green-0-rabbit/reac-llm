@@ -32,6 +32,15 @@
         -var="tenant_id=${ARM_TENANT_ID}"
 
 [group('terraform')]
+[working-directory: '.cloud/tf-infra']
+@tf-import-infra address id:
+    terraform import -var-file="infra.tfvars" \
+        -var="env=infra" \
+        -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
+        -var="tenant_id=${ARM_TENANT_ID}" \
+        {{address}} {{id}}
+
+[group('terraform')]
 @tf-fmt *target:
     terraform -chdir={{target}}  fmt -recursive
 
@@ -71,6 +80,15 @@
         -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
         -var="tenant_id=${ARM_TENANT_ID}" \
         {{args}}
+
+[group('terraform')]
+[working-directory: '.cloud/examples']
+@tf-import env dir address id:
+    terraform -chdir={{dir}} import -var-file="{{env}}.tfvars" \
+        -var="env={{env}}" \
+        -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
+        -var="tenant_id=${ARM_TENANT_ID}" \
+        {{address}} {{id}}
 
 [group('docker')]
 [working-directory: '.cloud/docker']
@@ -170,7 +188,7 @@ vm-exec +command:
     popd > /dev/null
 
     if [ -z "$IP" ]; then
-        echo "Error: Could not get Nexus VM Public IP."
+        echo "Error: Could not get bastion VM Public IP."
         exit 1
     fi
 

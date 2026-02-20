@@ -1,8 +1,14 @@
 locals {
   acr_login_server    = data.azurerm_container_registry.acr.login_server
-  backend_aihub_fqdn  = "aihub-backend-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
-  keycloak_fqdn       = "keycloak-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
-  frontend_aihub_fqdn = "aihub-frontend-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
+  # Previous domain model (private DNS zone):
+  # backend_aihub_fqdn  = "aihub-backend-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
+  # keycloak_fqdn       = "keycloak-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
+  # frontend_aihub_fqdn = "aihub-frontend-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
+
+  # Current domain model (public domain + Let's Encrypt wildcard):
+  backend_aihub_fqdn  = "aihub-backend-${var.env}.${var.public_domain_name}"
+  keycloak_fqdn       = "keycloak-${var.env}.${var.public_domain_name}"
+  frontend_aihub_fqdn = "aihub-frontend-${var.env}.${var.public_domain_name}"
 }
 
 
