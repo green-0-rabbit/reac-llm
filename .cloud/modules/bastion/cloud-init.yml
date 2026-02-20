@@ -1,6 +1,6 @@
 #cloud-config
-# Optimized: Skip package_update, install azure-cli via InstallAzureCLIDeb script
-package_update: false
+# Optimized: Docker, Azure CLI, Postgres Client
+package_update: true
 package_upgrade: false
 
 packages:

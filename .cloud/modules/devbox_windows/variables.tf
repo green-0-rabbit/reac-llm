@@ -5,7 +5,7 @@ variable "project" {
 
 variable "resource_group_name" {
   type        = string
-  description = "Resource group where the Bastion VM and related resources (NIC/NSG/disks) will be created."
+  description = "Resource group where the Windows DevBox VM and related resources (NIC/NSG/disks) will be created."
 }
 
 variable "location" {
@@ -15,13 +15,13 @@ variable "location" {
 
 variable "subnet_id" {
   type        = string
-  description = "Subnet ID where the Bastion VM NIC will be attached."
+  description = "Subnet ID where the Windows DevBox VM NIC will be attached."
 }
 
 variable "vm_name" {
   type        = string
-  default     = "vm-bastion"
-  description = "Name of the Bastion VM."
+  default     = "vm-windevbox"
+  description = "Name of the Windows DevBox VM."
 }
 
 variable "nic_name" {
@@ -44,20 +44,20 @@ variable "datadisk_name" {
 
 variable "vm_size" {
   type        = string
-  default     = "Standard_B2s"
-  description = "VM size for Bastion (POC-friendly default)."
+  default     = "Standard_D2s_v3"
+  description = "VM size (defaults to Standard_D2s_v3)."
 }
 
 variable "admin_username" {
   type        = string
-  default     = "azureuser"
+  default     = "devadmin"
   description = "Admin username for the VM."
 }
 
 variable "admin_password" {
   type        = string
   sensitive   = true
-  description = "Local admin password (used with Azure Bastion)."
+  description = "Local admin password."
 }
 
 variable "os_disk_sku" {
@@ -75,26 +75,32 @@ variable "data_disk_sku" {
 variable "data_disk_size_gb" {
   type        = number
   default     = 100
-  description = "Data disk size in GB for Bastion blob storage."
+  description = "Data disk size in GB."
 }
 
-# Ubuntu LTS defaults (Jammy)
+# Windows 11 defaults
 variable "image_publisher" {
   type        = string
-  default     = "Canonical"
+  default     = "MicrosoftWindowsDesktop"
   description = "Source image publisher."
 }
 
 variable "image_offer" {
   type        = string
-  default     = "0001-com-ubuntu-server-jammy"
-  description = "Source image offer (Ubuntu Jammy)."
+  default     = "windows-11"
+  description = "Source image offer."
 }
 
 variable "image_sku" {
   type        = string
-  default     = "22_04-lts"
-  description = "Source image SKU (Ubuntu 22.04 LTS)."
+  default     = "win11-25h2-pro"
+  description = "Source image SKU (Windows 11 25H2 Pro)."
+}
+
+variable "custom_image_id" {
+  type        = string
+  default     = null
+  description = "Optional custom image ID to use instead of a marketplace image."
 }
 
 variable "tags" {
@@ -105,32 +111,7 @@ variable "tags" {
 variable "enable_managed_identity" {
   type        = bool
   default     = true
-  description = "Enable system-assigned managed identity on the Bastion VM."
-}
-
-variable "acr_id" {
-  type        = string
-  default     = ""
-  description = "Target ACR resource ID for AcrPush assignment. Leave empty to disable."
-}
-
-variable "acr_name" {
-  type        = string
-  default     = ""
-  description = "ACR name (login server is <acr_name>.azurecr.io)."
-}
-
-variable "remote_acr_config" {
-  type = object({
-    username = string
-    fqdn     = string
-    images   = list(string)
-  })
-}
-
-variable "remote_acr_password" {
-  type      = string
-  sensitive = true
+  description = "Enable system-assigned managed identity on the VM."
 }
 
 variable "enable_public_ip" {
@@ -138,12 +119,26 @@ variable "enable_public_ip" {
   default = false
 }
 
+variable "enable_wsl_bootstrap" {
+  type        = bool
+  default     = false
+  description = "Run first-boot bootstrap to install VS Code (machine), WSL Ubuntu, and base toolchain."
+}
+
 variable "enable_bastion_host" {
   type        = bool
   default     = true
-  description = "Enable Azure Bastion host creation."
+  description = "Enable Azure Bastion host creation for the Windows DevBox."
 }
 
-variable "vnet_id" {
-  type = string
+variable "virtual_network_id" {
+  type        = string
+  default     = null
+  description = "Virtual Network ID required for Developer Bastion."
+}
+
+variable "bastion_name" {
+  type        = string
+  default     = null
+  description = "Optional Bastion host name override."
 }

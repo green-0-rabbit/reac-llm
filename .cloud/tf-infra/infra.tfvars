@@ -15,6 +15,14 @@ storage_account_name = "sbxinfrastoragekag"
 #### nexus vm variables
 admin_username = "bastionadmin"
 
+devbox_custom_image_id = "/subscriptions/64aff275-5209-47fd-88a0-f127dfab04b8/resourceGroups/sbx-main-rg/providers/Microsoft.Compute/galleries/sbx_devbox_gallery_kag/images/devbox/versions/0.0.1"
+
+# Optional Windows DevBox deployment
+enable_windows_devbox               = true
+windows_devbox_vm_size              = "Standard_D2s_v3"
+windows_devbox_custom_image_id      = "/communityGalleries/sbckag-03a467c4-f8e6-470f-a19a-0b1f72763fd6/images/windevbox/versions/0.0.3"
+windows_devbox_enable_wsl_bootstrap = true
+
 private_dns_zone_name = "sbx-kag.io"
 
 vnet_name               = "main-hub"
@@ -42,12 +50,22 @@ hub_subnets = {
         source_address_prefixes    = ["0.0.0.0/0"]
         destination_address_prefix = "*"
       }
+      "Allow-RDP-From-Bastion" = {
+        priority                   = 210
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "3389"
+        source_address_prefixes    = ["0.0.0.0/0"]
+        destination_address_prefix = "*"
+      }
     }
   }
-  # Only needed if Azure Bastion is sku 'Standard' or higher
-  # AzureBastionSubnet = {
-  #   subnet_address_prefix = ["10.0.3.0/26"]
-  # }
+  # Required for Azure Bastion (Standard or higher)
+  AzureBastionSubnet = {
+    subnet_address_prefix = ["10.0.3.0/26"]
+  }
 }
 
 hub_firewall = {

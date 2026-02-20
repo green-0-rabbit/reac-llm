@@ -112,9 +112,3 @@ resource "azurerm_role_assignment" "bastion_vm_acr_push" {
     }
   }
 }
-
-
-
-
-
-
