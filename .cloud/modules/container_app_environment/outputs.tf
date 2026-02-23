@@ -19,7 +19,21 @@ output "static_ip_address" {
 }
 
 output "certificate_id" {
-  value = var.certificate_config != null ? azurerm_container_app_environment_certificate.this[0].id : null
+  value = (
+    var.certificate_config != null
+    ? azurerm_container_app_environment_certificate.this[var.certificate_config.name].id
+    : (
+      length(var.certificate_configs) > 0
+      ? azurerm_container_app_environment_certificate.this[var.certificate_configs[0].name].id
+      : null
+    )
+  )
+}
+
+output "certificate_ids" {
+  value = {
+    for name, cert in azurerm_container_app_environment_certificate.this : name => cert.id
+  }
 }
 
 output "logs_destination" {

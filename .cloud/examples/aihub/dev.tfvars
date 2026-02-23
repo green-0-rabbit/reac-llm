@@ -26,6 +26,9 @@ main_rg_name   = "sbx-main-rg"
 
 ### Private DNS zone RG (backbone)
 private_dns_zone_name = "sbx-kag.io"
+# Previous app domain model (private zone style):
+# public_domain_name = "sbx-kag.io"
+public_domain_name    = "wp.humaapi.com"
 
 private_dns_zone_kv_name       = "privatelink.vaultcore.azure.net"
 private_dns_zone_storage_name  = "privatelink.blob.core.windows.net"

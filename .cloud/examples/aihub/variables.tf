@@ -27,6 +27,12 @@ variable "private_dns_zone_name" {
   description = "Private DNS zone name (e.g. sbx.example.com)."
 }
 
+variable "public_domain_name" {
+  type        = string
+  description = "Public base domain used for ACA custom hostnames (e.g. wp.humaapi.com)."
+  default     = "wp.humaapi.com"
+}
+
 variable "env" {
   type        = string
   description = "Deployment environment (e.g., dev, staging, prod)."
@@ -237,5 +243,10 @@ variable "private_dns_azure_ai_names" {
 
 variable "aca_private_endpoint_ip" {
   description = "Static IP address for the ACA Private Endpoint"
+  type        = string
+}
+
+variable "http_address_base" {
+  description = "Base HTTP Terraform state address (e.g. .../terraform/state) used to derive infra state URL."
   type        = string
 }

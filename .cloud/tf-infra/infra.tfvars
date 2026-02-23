@@ -86,3 +86,11 @@ remote_acr_config = {
   ]
 }
 
+bunny_dns = {
+  acme_email            = "contact@humaapi.com"
+  zone_name             = "wp.humaapi.com"
+  additional_zone_names = ["wps-blazers.humaapi.com"]
+}
+
+aca_private_endpoint_ip = "10.1.5.10"
+

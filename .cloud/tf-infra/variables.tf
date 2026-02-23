@@ -224,3 +224,23 @@ variable "remote_acr_password" {
   sensitive = true
 }
 
+variable "bunny_dns" {
+  description = "Configuration for Bunny DNS and ACME (Let's Encrypt)."
+  type = object({
+    acme_email            = string
+    zone_name             = string
+    additional_zone_names = optional(list(string), [])
+  })
+}
+
+variable "bunnynet_api_key" {
+  description = "The API key for Bunny.net to manage DNS records."
+  type        = string
+  sensitive   = true
+}
+
+variable "aca_private_endpoint_ip" {
+  description = "The static private IP address of the ACA environment's private endpoint."
+  type        = string
+}
+

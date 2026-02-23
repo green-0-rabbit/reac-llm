@@ -1,8 +1,18 @@
 locals {
   acr_login_server    = data.azurerm_container_registry.acr.login_server
-  backend_aihub_fqdn  = "aihub-backend-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
-  keycloak_fqdn       = "keycloak-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
-  frontend_aihub_fqdn = "aihub-frontend-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
+  # Previous domain model (private DNS zone):
+  # backend_aihub_fqdn  = "aihub-backend-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
+  # keycloak_fqdn       = "keycloak-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
+  # frontend_aihub_fqdn = "aihub-frontend-${var.env}.${data.azurerm_private_dns_zone.sbx.name}"
+
+  # Current domain model (public domain + Let's Encrypt wildcard):
+  backend_aihub_fqdn      = "aihub-backend-${var.env}.${var.public_domain_name}"
+  keycloak_fqdn           = "keycloak-${var.env}.${var.public_domain_name}"
+  frontend_aihub_fqdn     = var.public_domain_name
+
+  backend_aihub_fqdn_wps  = "aihub-backend-${var.env}.wps-blazers.humaapi.com"
+  keycloak_fqdn_wps       = "keycloak-${var.env}.wps-blazers.humaapi.com"
+  frontend_aihub_fqdn_wps = "wps-blazers.humaapi.com"
 }
 
 
@@ -46,11 +56,18 @@ module "keycloak" {
     ]
   }
 
-  custom_domain = {
-    name                     = local.keycloak_fqdn
-    certificate_binding_type = "SniEnabled"
-    certificate_id           = module.container_app_environment.certificate_id
-  }
+  custom_domains = [
+    {
+      name                     = local.keycloak_fqdn
+      certificate_binding_type = "SniEnabled"
+      certificate_id           = module.container_app_environment.certificate_id
+    },
+    {
+      name                     = local.keycloak_fqdn_wps
+      certificate_binding_type = "SniEnabled"
+      certificate_id           = module.container_app_environment.certificate_id
+    }
+  ]
 
   secrets = [
     {
@@ -230,11 +247,18 @@ module "backend_aihub" {
     ]
   }
 
-  custom_domain = {
-    name                     = local.backend_aihub_fqdn
-    certificate_binding_type = "SniEnabled"
-    certificate_id           = module.container_app_environment.certificate_id
-  }
+  custom_domains = [
+    {
+      name                     = local.backend_aihub_fqdn
+      certificate_binding_type = "SniEnabled"
+      certificate_id           = module.container_app_environment.certificate_id
+    },
+    {
+      name                     = local.backend_aihub_fqdn_wps
+      certificate_binding_type = "SniEnabled"
+      certificate_id           = module.container_app_environment.certificate_id
+    }
+  ]
 
   secrets = [
     {
@@ -293,18 +317,24 @@ module "backend_aihub" {
             name  = "ENABLE_CORS"
             value = "true"
           },
+          // This is important to correctly redirect and access the backend
           {
             name  = "CORS_ALLOWED_ORIGINS"
-            value = "https://${local.frontend_aihub_fqdn}"
+            value = "https://${local.frontend_aihub_fqdn_wps}" 
           },
           {
             name  = "NODE_ENV"
             value = "production"
           },
+          // These are used by the backend to redirect to the frontend in the saml/callback 
           {
             name  = "FRONTEND_URL"
-            value = "https://${local.frontend_aihub_fqdn}"
+            value = "https://${local.frontend_aihub_fqdn_wps}"
           },
+          # {
+          #   name  = "FRONTEND_URL"
+          #   value = "https://${local.frontend_aihub_fqdn}"
+          # },
           {
             name  = "DATABASE_HOST"
             value = module.postgres.fqdn
@@ -433,11 +463,18 @@ module "frontend_aihub" {
     ]
   }
 
-  custom_domain = {
-    name                     = local.frontend_aihub_fqdn
-    certificate_binding_type = "SniEnabled"
-    certificate_id           = module.container_app_environment.certificate_id
-  }
+  custom_domains = [
+    {
+      name                     = local.frontend_aihub_fqdn
+      certificate_binding_type = "SniEnabled"
+      certificate_id           = module.container_app_environment.certificate_id
+    },
+    {
+      name                     = local.frontend_aihub_fqdn_wps
+      certificate_binding_type = "SniEnabled"
+      certificate_id           = module.container_app_environment.certificate_id
+    }
+  ]
 
   secrets                    = []
   create_acr_role_assignment = false

@@ -66,6 +66,16 @@ variable "certificate_config" {
   default = null
 }
 
+variable "certificate_configs" {
+  description = "List of certificates to upload to the Container App Environment."
+  type = list(object({
+    name                    = string
+    certificate_blob_base64 = string
+    certificate_password    = optional(string, "")
+  }))
+  default = []
+}
+
 variable "logs_destination" {
   type        = string
   description = "Where Container Apps Env sends logs: log-analytics (direct) or azure-monitor (via diagnostic settings) or none."
